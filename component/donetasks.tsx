@@ -25,6 +25,16 @@ const formatCompletedAt = (iso?: string | null) => {
 
 export default function DonePage() {
   const [doneTasks, setDoneTasks] = useState<Task[]>([]);
+  const [showtype, setShowType] = useState(false);
+  const [typework, setTypeWork] = useState(false);
+  const [selectedType, setSelectedType] = useState<"work" | "study" | "activities">("work");
+
+  const handleTypeToggle = () => setShowType((s) => !s);
+  const chooseType = (t: "work" | "study" | "activities") => {
+    setSelectedType(t);
+    setShowType(false); // close mobile menu after choice
+  };
+
   const handleDelete = (id: number) => {
     try {
       const storedTasks: Task[] = JSON.parse(localStorage.getItem("tasks") || "[]");
@@ -90,6 +100,13 @@ export default function DonePage() {
     };
   }, []);
 
+  const showTypeList = () => {
+    setShowType(!showtype)
+  }
+  const handleTypeWork = () => {
+    setTypeWork(!typework)
+  }
+
   return (
     <div className="w-full max-h-[100%] overflow-y-auto font-serif sm:border-0
      border-red-900 relative bg-sky-950 flex flex-col sm:ml-44 ">
@@ -105,175 +122,214 @@ export default function DonePage() {
             Clear All
           </button>
         )}
-      </div>
-      <hr className="mb-3 text-amber-300 mx-15 "></hr>
-
-      <div className="flex border-0 border-b-blue-900 ">
-        {doneTasks.length === 0 ? (
-          <p className="text-center text-gray-500">No completed tasks yet.</p>
-        ) : (
-          <section className="flex justify-center border-0 border-fuchsia-600 w-full gap-1">
-            <div className="border-0 border-amber-400   sm:w-full   w-full flex flex-col gap-0 sm:gap-0 px-2 ">
-              <h1 className="text-white m-0 text-center font-bold text-shadow-md text-shadow-amber-600">Work Tasks</h1>
-              <p className="text-end text-white  text-xl m-0 bg-orange-400 rounded-t-md">
-                <label className="text-sm ">tasks: </label><span className="mr-3 font-bold">
-                {doneTasks.filter(t => (t.type) === "work").length}</span></p>
-              <ul className="w-full border-0 border-amber-500 h-[500px] overflow-y-auto p-2  bg-gray-500 hide-scrollbar">
-                {doneTasks
-                  .filter(t => (t.type) === "work")
-                  .map((task, index) => (
-                    <li key={task.id} className="p-5 sm:p-6 bg-white shadow-md rounded-xl 
-                                 border-l-4 border-green-400 break-words">
-                      <div className="flex items-start gap-2">
-                        <h2 className="text-lg font-bold text-gray-800 break-words flex-1 min-w-0">{task.title}</h2>
-                        {task.priority && (
-                          <span className="px-3 py-1 rounded-full text-xs sm:text-sm font-semibold border bg-green-100 text-green-600 border-green-400 shrink-0">
-                            {task.priority}
-                          </span>
-                        )}
-                      </div>
-                      {task.description && (
-                        <p className="text-gray-600 mt-1 break-words whitespace-normal">{task.description}</p>
-                      )}
-                      <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500 mt-3">
-                        {task.date && (
-                          <span>
-                            📅 Due Date: <span className="text-gray-700 font-medium font-sans">{task.date}</span>
-                          </span>
-                        )}
-                        {task.time && (
-                          <span className="border-l-2 pl-2">
-                            ⏰ Time: <span className="text-gray-700 font-medium font-sans">{task.time}</span>
-                          </span>
-                        )}
-                        <button
-                          onClick={() => {
-                            if (window.confirm("Are you sure you want to delete this completed task?")) {
-                              handleDelete(task.id);
-                            }
-                          }}
-                          className="ml-auto cursor-pointer px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                      <p className="text-sm text-gray-400 mt-2">
-                        ✅ Done at: <span className="text-gray-700 font-medium font-sans">{formatCompletedAt(task.completedAt)}</span>
-                      </p>
-                    </li>
-                  ))}
+        <div className="sm:hidden ">
+          <button
+            onClick={handleTypeToggle}
+            className="px-3 py-1 rounded-md bg-slate-200 dark:bg-slate-700"
+          >
+            Choose type
+          </button>
+          {showtype && (
+            <div className=" absolute ml-2 mt-2 w-40 bg-white dark:bg-gray-800 rounded-md shadow-lg z-50">
+              <ul>
+                <li>
+                  <button
+                    onClick={() => chooseType("work")}
+                    className="w-full text-left px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700">work</button>
+                </li>
+                <li>
+                  <button
+                    onClick={() => chooseType("study")}
+                    className="w-full text-left px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700">study</button>
+                </li>
+                <li>
+                  <button
+                    onClick={() => chooseType("activities")}
+                    className="w-full text-left px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700">activities</button>
+                </li>
               </ul>
             </div>
+          )}
+        </div>
 
-            <div className="sm:w-full  border-0 border-amber-400   w-fit flex flex-col gap-0 sm:gap-0 px-2">
-              <h1 className="text-white m-0 text-center font-bold text-shadow-md text-shadow-amber-600">study tasks</h1>
-              <p className="text-white text-end font-bold text-xl m-0  rounded-t-md bg-orange-400"><label className="text-sm">tasks: </label><span className="mr-3">{doneTasks.filter(t => (t.type) === "study").length}</span></p>
-              <ul className="w-full sm:gap-2 h-[500px] overflow-y-auto hide-scrollbar bg-gray-500 p-2 " >
-                {doneTasks
-                  .filter(t => (t.type) === "study")
-                  .map((task, index) => (
-                    <li key={task.id} className="p-5 sm:p-6 bg-white shadow-md rounded-xl 
+
+
+        < hr className="mb-3 text-amber-300 mx-15 "></hr>
+        <div className="flex border-0 border-b-blue-900 ">
+          {doneTasks.length === 0 ? (
+            <p className="text-center text-gray-500">No completed tasks yet.</p>
+          ) : (
+            <section className="flex justify-center border-0 border-fuchsia-600 w-full gap-1">
+              {!typework &&
+                <div className= {` ${(selectedType !== "work" ) ? "hidden" : "block"} sm:block border-0 border-amber-400   sm:w-full   w-full flex 
+                  flex-col gap-0 sm:gap-0 px-2 `}>
+                  <h1 className="text-white m-0 text-center font-bold text-shadow-md text-shadow-amber-600">Work Tasks</h1>
+                  <p className="text-end text-white  text-xl m-0 bg-orange-400 rounded-t-md">
+                    <label className="text-sm ">tasks: </label><span className="mr-3 font-bold">
+                      {doneTasks.filter(t => (t.type) === "work").length}</span></p>
+                  {doneTasks.filter(t => (t.type) === "work").length === 0 ? <p className="text-center text-white">No completed work tasks yet.</p> :
+                    <ul className="w-full border-0 border-amber-500 h-[500px] overflow-y-auto p-2  bg-gray-500 hide-scrollbar">
+                      {doneTasks
+                        .filter(t => (t.type) === "work")
+                        .map((task, index) => (
+                          <li key={task.id} className="p-5 sm:p-6 bg-white shadow-md rounded-xl 
                                  border-l-4 border-green-400 break-words">
-                      <div className="flex items-start gap-2">
-                        <h2 className="text-lg font-bold text-gray-800 break-words flex-1 min-w-0">{task.title}</h2>
-                        {task.priority && (
-                          <span className="px-3 py-1 rounded-full text-xs sm:text-sm font-semibold border bg-green-100 text-green-600 border-green-400 shrink-0">
-                            {task.priority}
-                          </span>
-                        )}
-                      </div>
-                      {task.description && (
-                        <p className="text-gray-600 mt-1 break-words whitespace-normal">{task.description}</p>
-                      )}
-                      <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500 mt-3">
-                        {task.date && (
-                          <span>
-                            📅 Due Date: <span className="text-gray-700 font-medium font-sans">{task.date}</span>
-                          </span>
-                        )}
-                        {task.time && (
-                          <span className="border-l-2 pl-2">
-                            ⏰ Time: <span className="text-gray-700 font-medium font-sans">{task.time}</span>
-                          </span>
-                        )}
-                        <button
-                          onClick={() => {
-                            if (window.confirm("Are you sure you want to delete this completed task?")) {
-                              handleDelete(task.id);
-                            }
-                          }}
-                          className="ml-auto cursor-pointer px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                      <p className="text-sm text-gray-400 mt-2">
-                        ✅ Done at: <span className="text-gray-700 font-medium font-sans">{formatCompletedAt(task.completedAt)}</span>
-                      </p>
-                    </li>
-                  ))}
-              </ul>
-            </div>
-
-
-            <div className="border-0 border-amber-400   sm:w-full  w-full flex flex-col gap-0 sm:gap-0 px-2">
-              <h1 className="text-white m-0 text-center font-bold text-shadow-md text-shadow-amber-600">Activities Tasks</h1>
-              <p className="text-end text-white  text-xl m-0 bg-orange-400 rounded-t-md">
-                <label className="text-sm ">tasks: </label><span className="mr-3 font-bold">
-                {doneTasks.filter(t => (t.type) === "activities").length}</span></p>
-              {doneTasks.filter(t => (t.type) === "activities").length === 0 ? <p className="text-center text-white">No completed activity tasks yet.</p> :
-                <ul className="w-full sm:gap-2 h-[500px] overflow-y-auto hide-scrollbar bg-gray-500 p-2">
-                  {doneTasks
-                    .filter(t => (t.type) === "activities")
-                    .map((task, index) => (
-                      <li key={task.id} className="p-5 sm:p-6 bg-white shadow-md rounded-xl 
-                                 border-l-4 border-green-400 break-words">
-                        <div className="flex items-start gap-2">
-                          <h2 className="text-lg font-bold text-gray-800 break-words flex-1 min-w-0">{task.title}</h2>
-                          {task.priority && (
-                            <span className="px-3 py-1 rounded-full text-xs sm:text-sm font-semibold border bg-green-100 text-green-600 border-green-400 shrink-0">
-                              {task.priority}
-                            </span>
-                          )}
-                        </div>
-                        {task.description && (
-                          <p className="text-gray-600 mt-1 break-words whitespace-normal">{task.description}</p>
-                        )}
-                        <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500 mt-3">
-                          {task.date && (
-                            <span>
-                              📅 Due Date: <span className="text-gray-700 font-medium font-sans">{task.date}</span>
-                            </span>
-                          )}
-                          {task.time && (
-                            <span className="border-l-2 pl-2">
-                              ⏰ Time: <span className="text-gray-700 font-medium font-sans">{task.time}</span>
-                            </span>
-                          )}
-                          <button
-                            onClick={() => {
-                              if (window.confirm("Are you sure you want to delete this completed task?")) {
-                                handleDelete(task.id);
-                              }
-                            }}
-                            className="ml-auto cursor-pointer px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600"
-                          >
-                            Delete
-                          </button>
-                        </div>
-                        <p className="text-sm text-gray-400 mt-2">
-                          ✅ Done at: <span className="text-gray-700 font-medium font-sans">{formatCompletedAt(task.completedAt)}</span>
-                        </p>
-                      </li>
-                    ))}
-                </ul>
+                            <div className="flex items-start gap-2">
+                              <h2 className="text-lg font-bold text-gray-800 break-words flex-1 min-w-0">{task.title}</h2>
+                              {task.priority && (
+                                <span className="px-3 py-1 rounded-full text-xs sm:text-sm font-semibold border bg-green-100 text-green-600 border-green-400 shrink-0">
+                                  {task.priority}
+                                </span>
+                              )}
+                            </div>
+                            {task.description && (
+                              <p className="text-gray-600 mt-1 break-words whitespace-normal">{task.description}</p>
+                            )}
+                            <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500 mt-3">
+                              {task.date && (
+                                <span>
+                                  📅 Due Date: <span className="text-gray-700 font-medium font-sans">{task.date}</span>
+                                </span>
+                              )}
+                              {task.time && (
+                                <span className="border-l-2 pl-2">
+                                  ⏰ Time: <span className="text-gray-700 font-medium font-sans">{task.time}</span>
+                                </span>
+                              )}
+                              <button
+                                onClick={() => {
+                                  if (window.confirm("Are you sure you want to delete this completed task?")) {
+                                    handleDelete(task.id);
+                                  }
+                                }}
+                                className="ml-auto cursor-pointer px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600"
+                              >
+                                Delete
+                              </button>
+                            </div>
+                            <p className="text-sm text-gray-400 mt-2">
+                              ✅ Done at: <span className="text-gray-700 font-medium font-sans">{formatCompletedAt(task.completedAt)}</span>
+                            </p>
+                          </li>
+                        ))}
+                    </ul>}
+                </div>
               }
-            </div>
+              { }
 
-          </section>
-        )
-        }
-      </div>
+              <div className={`${(selectedType !== "study" ) ? "hidden" : "block"} sm:block sm:w-full  border-0 border-amber-400  w-fit 
+              flex flex-col gap-0 sm:gap-0 px-2`}>
+                <h1 className="text-white m-0 text-center font-bold text-shadow-md text-shadow-amber-600">study tasks</h1>
+                <p className="text-white text-end font-bold text-xl m-0  rounded-t-md bg-orange-400"><label className="text-sm">tasks: </label><span className="mr-3">{doneTasks.filter(t => (t.type) === "study").length}</span></p>
+                {doneTasks.filter(t => (t.type) === "study").length === 0 ? <p className="text-center text-white">No completed activity tasks yet.</p> :
+                  <ul className="w-full sm:gap-2 h-[500px] overflow-y-auto hide-scrollbar bg-gray-500 p-2 " >
+                    {doneTasks
+                      .filter(t => (t.type) === "study")
+                      .map((task, index) => (
+                        <li key={task.id} className="p-5 sm:p-6 bg-white shadow-md rounded-xl 
+                                 border-l-4 border-green-400 break-words">
+                          <div className="flex items-start gap-2">
+                            <h2 className="text-lg font-bold text-gray-800 break-words flex-1 min-w-0">{task.title}</h2>
+                            {task.priority && (
+                              <span className="px-3 py-1 rounded-full text-xs sm:text-sm font-semibold border bg-green-100 text-green-600 border-green-400 shrink-0">
+                                {task.priority}
+                              </span>
+                            )}
+                          </div>
+                          {task.description && (
+                            <p className="text-gray-600 mt-1 break-words whitespace-normal">{task.description}</p>
+                          )}
+                          <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500 mt-3">
+                            {task.date && (
+                              <span>
+                                📅 Due Date: <span className="text-gray-700 font-medium font-sans">{task.date}</span>
+                              </span>
+                            )}
+                            {task.time && (
+                              <span className="border-l-2 pl-2">
+                                ⏰ Time: <span className="text-gray-700 font-medium font-sans">{task.time}</span>
+                              </span>
+                            )}
+                            <button
+                              onClick={() => {
+                                if (window.confirm("Are you sure you want to delete this completed task?")) {
+                                  handleDelete(task.id);
+                                }
+                              }}
+                              className="ml-auto cursor-pointer px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                          <p className="text-sm text-gray-400 mt-2">
+                            ✅ Done at: <span className="text-gray-700 font-medium font-sans">{formatCompletedAt(task.completedAt)}</span>
+                          </p>
+                        </li>
+                      ))}
+                  </ul>}
+              </div>
+
+
+              <div className={`${(selectedType !== "activities" ) ? "hidden" : "block"} sm:block border-0 border-amber-400   sm:w-full  w-full flex
+               flex-col gap-0 sm:gap-0 px-2`}>
+                <h1 className="text-white m-0 text-center font-bold text-shadow-md text-shadow-amber-600">Activities Tasks</h1>
+                <p className="text-end text-white  text-xl m-0 bg-orange-400 rounded-t-md">
+                  <label className="text-sm ">tasks: </label><span className="mr-3 font-bold">
+                    {doneTasks.filter(t => (t.type) === "activities").length}</span></p>
+                {doneTasks.filter(t => (t.type) === "activities").length === 0 ? <p className="text-center text-white">No completed activity tasks yet.</p> :
+                  <ul className="w-full sm:gap-2 h-[500px] overflow-y-auto hide-scrollbar bg-gray-500 p-2">
+                    {doneTasks
+                      .filter(t => (t.type) === "activities")
+                      .map((task, index) => (
+                        <li key={task.id} className="p-5 sm:p-6 bg-white shadow-md rounded-xl 
+                                 border-l-4 border-green-400 break-words">
+                          <div className="flex items-start gap-2">
+                            <h2 className="text-lg font-bold text-gray-800 break-words flex-1 min-w-0">{task.title}</h2>
+                            {task.priority && (
+                              <span className="px-3 py-1 rounded-full text-xs sm:text-sm font-semibold border bg-green-100 text-green-600 border-green-400 shrink-0">
+                                {task.priority}
+                              </span>
+                            )}
+                          </div>
+                          {task.description && (
+                            <p className="text-gray-600 mt-1 break-words whitespace-normal">{task.description}</p>
+                          )}
+                          <div className="flex flex-wrap items-center gap-3 text-sm text-gray-500 mt-3">
+                            {task.date && (
+                              <span>
+                                📅 Due Date: <span className="text-gray-700 font-medium font-sans">{task.date}</span>
+                              </span>
+                            )}
+                            {task.time && (
+                              <span className="border-l-2 pl-2">
+                                ⏰ Time: <span className="text-gray-700 font-medium font-sans">{task.time}</span>
+                              </span>
+                            )}
+                            <button
+                              onClick={() => {
+                                if (window.confirm("Are you sure you want to delete this completed task?")) {
+                                  handleDelete(task.id);
+                                }
+                              }}
+                              className="ml-auto cursor-pointer px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600"
+                            >
+                              Delete
+                            </button>
+                          </div>
+                          <p className="text-sm text-gray-400 mt-2">
+                            ✅ Done at: <span className="text-gray-700 font-medium font-sans">{formatCompletedAt(task.completedAt)}</span>
+                          </p>
+                        </li>
+                      ))}
+                  </ul>
+                }
+              </div>
+
+            </section>
+          )
+          }
+        </div>
+      </div >
     </div >
   );
 }

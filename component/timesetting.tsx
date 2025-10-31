@@ -50,29 +50,30 @@ export default function TimeSetting() {
   const formattedplushour = `${String(hours).padStart(2, "0")}: ${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}.${String(cs).padStart(2, "0")}`;
 
   return (
-    <div className="p-4 mt-10">
-      <h2 className="text-4xl font-semibold mb-2 text-center font-serif" >Timer</h2>
-      <div className="text-7xl font-mono mb-4 ">{minutes >= 60 ? formattedplushour : formatted}</div>
-      <div className="flex gap-6 font-serif">
+    <div className="p-4 mt-10 flex flex-col flex-wrap">
+      <h2 className="sm:text-4xl text-xl font-semibold mb-2 text-center font-serif" >Timer</h2>
+      <div className="sm:text-7xl text-5xl flex justify-center font-mono mb-4 ">
+        {minutes >= 60 ? formattedplushour : formatted}</div>
+      <div className="flex sm:gap-6 gap-3 font-serif">
         <button
           onClick={start}
-          className="px-7 py-2 bg-green-500 text-black rounded cursor-pointer disabled:opacity-50"
+          className="sm:px-7 px-5 py-2 bg-green-500 text-black
+           rounded cursor-pointer disabled:opacity-50"
           disabled={running}
         >
           Start
         </button>
         <button
           onClick={stop}
-          className="px-7 py-2 bg-yellow-400 text-black rounded disabled:opacity-50 cursor-pointer"
+          className="sm:px-7 px-5 py-2 bg-yellow-400 text-black rounded disabled:opacity-50 cursor-pointer"
           disabled={!running}
         >
           Pause
         </button>
-        <button onClick={reset} className="px-7 py-2 bg-red-500 text-black rounded cursor-pointer">
+        <button onClick={reset} className="sm:px-7 px-5 py-2 bg-red-500 text-black rounded cursor-pointer">
           Reset
         </button>
       </div>
     </div>
   );
 }
-// ...existing code...

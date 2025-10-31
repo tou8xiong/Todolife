@@ -21,7 +21,7 @@ export default function ListPage() {
     const [timeedit, settimeEdit] = useState("");
     const [editPopup, setEditPopup] = useState(false);
     const [selectedTask, setSelectedTask] = useState<Task | null>(null);
-    const [typetwork, setTypeTWork] = useState("")
+    
 
     const handleEditClick = (task: Task) => {
         setSelectedTask(task);
@@ -99,7 +99,7 @@ export default function ListPage() {
             <hr className="bg-amber-400 text-amber-600 w-[96%] mb-5"></hr>
             {editPopup && selectedTask && (
                 <div className="fixed top-0 left-0 w-full h-full flex justify-center items-center bg-black bg-opacity-50">
-                    <div className="bg-white p-6 rounded-md w-80">
+                    <div className="bg-white p-6 rounded-md w-96 shadow-lg">
                         <h2 className="text-xl font-semibold mb-4">Update Task</h2>
 
                         <input
@@ -109,9 +109,8 @@ export default function ListPage() {
                             onChange={(e) => setTitleEdit(e.target.value)}
                             className="border p-2 w-full mb-2"
                         />
-
-                        <input
-                            type="text"
+                        <textarea
+                        
                             placeholder="Description"
                             value={descritionedit}
                             onChange={(e) => setDescittionEdit(e.target.value)}

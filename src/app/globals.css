@@ -1,5 +1,4 @@
 @import "tailwindcss";
-
 :root {
   --background: #ffffff;
   --foreground: #171717;
@@ -24,3 +23,24 @@ body {
   scrollbar-width: none;     /* Firefox */
 }
 
+
+.textanimated{
+    background: linear-gradient(90deg, #0062ff, #ff0101, #01ff0dff);
+    background-size: 200% 200%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    animation: herotextanimated 3s ease-in-out infinite;
+}
+@keyframes herotextanimated {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
