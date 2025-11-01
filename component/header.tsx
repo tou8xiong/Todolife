@@ -3,7 +3,7 @@ import Image from "next/image";
 import Logo from "../public/Logo1.png"
 import Link from "next/link";
 import { useTaskCounts } from "./useTaskCounts";
-import { use, useState } from "react";
+import { useState } from "react";
 import { FaList } from "react-icons/fa";
 
 
@@ -12,7 +12,7 @@ export default function Header() {
     const [showMenu, setShowMenu] = useState(false);
     return (
         <div className="bg-blue-300  sm:flex flex-wrap sm:items-center  sm:w-full
-         justify-between sm:justify-between sm:gap-2 sticky top-0 z-50 shadow-xl sm:shadow-sm shadow-black sm:border-0
+         justify-between sm:justify-between sm:gap-2 sticky top-0 z-50 shadow-sm sm:shadow-sm shadow-black sm:border-0
           border-red-400 w-full sm:px-4 py-2 max-w-full">
             <button className="m-1 cursor-pointer"><Link href={"/"}>
                 <Image src={Logo} alt="logo" className="w-32 sm:w-48 md:w-[250px]" /></Link>
@@ -42,7 +42,7 @@ export default function Header() {
                         <div className="sm:hidden border-none absolute mt-0 ml-2 w-40 bg-white border rounded-sm shadow-lg">
                             <ul className="p-2 flex flex-col gap-1">
                                 <li className="border-1 border-gray-400 rounded p-0.5 active:bg-gray-400"><a href="/settimepage">Timer</a></li>
-                                <li className="border-1 border-gray-400 rounded p-0.5 active:bg-gray-400"><a href="#">idea</a></li>
+                                <li className="border-1 border-gray-400 rounded p-0.5 active:bg-gray-400"><a href="noteidea">NoteIdea</a></li>
                                 <li className="border-1 border-gray-400 rounded p-0.5 active:bg-gray-400"><a href="#">notebook</a></li>
                                 <li className="border-1 border-gray-400 rounded p-0.5 active:bg-gray-400"><a href="#">fgsf</a></li>
                             </ul>
