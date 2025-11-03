@@ -45,7 +45,7 @@ export default function AddTasks() {
             <form
                 className="sm:rounded-xl sm:flex sm:items-center sm:flex-col sm:border-2 border-amber-300 
                 sm:m-1 bg-sky-50 sm:w-[590px] w-full sm:gap-7 sm:shadow-lg shadow-stone-500 
-                 w-fit flex flex-wrap m-1 justify-center items-center flex-col">
+                  flex flex-wrap m-1 justify-center items-center flex-col">
                 <div className=" sm:flex sm:justify-around sm:flex-row sm:w-full sm:gap-1 sm:mt-3 
                                  flex flex-wrap flex-col justify-center items-center w-full gap-2 mt-2 border-0 border-amber-950">
                     <span className="sm:text-xl font-serif sm:border-0 border-amber-300 w-full sm:w-[200px] sm:text-center">Tasks Title :</span>
