@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
-
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "@/lib/firebase"
 interface Task {
   id: number;
   title: string;
@@ -28,6 +29,21 @@ export default function DonePage() {
   const [showtype, setShowType] = useState(false);
   const [typework, setTypeWork] = useState(false);
   const [selectedType, setSelectedType] = useState<"work" | "study" | "activities">("work");
+  const [user, setUser] = useState<any>(null);
+  const [loadingUser, setLoadingUser] = useState(true);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      setLoadingUser(false);
+      if (currentUser) {
+        // Load user-specific tasks from localStorage
+        const storedTasks = localStorage.getItem(`tasks_${currentUser.email}`);
+        setDoneTasks(storedTasks ? JSON.parse(storedTasks) : []);
+      }
+    });
+    return () => unsubscribe();
+  }, []);
 
   const handleTypeToggle = () => setShowType((s) => !s);
   const chooseType = (t: "work" | "study" | "activities") => {
@@ -36,10 +52,11 @@ export default function DonePage() {
   };
 
   const handleDelete = (id: number) => {
+    if (!user?.email) return;
     try {
-      const storedTasks: Task[] = JSON.parse(localStorage.getItem("tasks") || "[]");
+      const storedTasks: Task[] = JSON.parse(localStorage.getItem(`tasks_${user.email}`) || "[]");
       const updatedTasks = storedTasks.filter((t: Task) => t.id !== id);
-      localStorage.setItem("tasks", JSON.stringify(updatedTasks));
+      localStorage.setItem(`tasks_${user.email}`, JSON.stringify(updatedTasks));
       if (typeof window !== "undefined") {
         window.dispatchEvent(new Event("tasksUpdated"));
       }
@@ -56,11 +73,12 @@ export default function DonePage() {
   };
 
   const handleClearAll = () => {
+    if (!user?.email) return;
     if (!window.confirm("Delete all completed tasks? This cannot be undone.")) return;
     try {
-      const storedTasks: Task[] = JSON.parse(localStorage.getItem("tasks") || "[]");
+      const storedTasks: Task[] = JSON.parse(localStorage.getItem(`tasks_${user.email}`) || "[]");
       const updatedTasks = storedTasks.filter((t: Task) => !t.completed);
-      localStorage.setItem("tasks", JSON.stringify(updatedTasks));
+      localStorage.setItem(`tasks_${user.email}`, JSON.stringify(updatedTasks));
       if (typeof window !== "undefined") {
         window.dispatchEvent(new Event("tasksUpdated"));
       }
@@ -71,25 +89,29 @@ export default function DonePage() {
   };
 
   useEffect(() => {
+    if (loadingUser) return;
+    if (loadingUser || !user?.email) return;
+
     const load = () => {
-      try {
-        const storedTasks: Task[] = JSON.parse(localStorage.getItem("tasks") || "[]");
+      if (user) {
+        const storedTasks: Task[] = JSON.parse(localStorage.getItem(`tasks_${user.email}`) || "[]");
         const completedOnly = storedTasks.filter((t: Task) => t.completed);
         // sort by most recently completed first
         completedOnly.sort((a, b) => {
           const ta = a.completedAt ? new Date(a.completedAt).getTime() : 0;
           const tb = b.completedAt ? new Date(b.completedAt).getTime() : 0;
           return tb - ta;
+
         });
         setDoneTasks(completedOnly);
-      } catch (e) {
-        console.error("Failed to load tasks from localStorage", e);
-        setDoneTasks([]);
+      } else {
+        alert("Please sign up or login");
       }
+
     };
     load();
     const onStorage = (e: StorageEvent) => {
-      if (e.key === "tasks") load();
+      if (e.key === ("tasks")) load();
     };
     const onUpdated = () => load();
     window.addEventListener("storage", onStorage);
@@ -98,19 +120,13 @@ export default function DonePage() {
       window.removeEventListener("storage", onStorage);
       window.removeEventListener("tasksUpdated", onUpdated as EventListener);
     };
-  }, []);
+  }, [user, loadingUser]);
 
-  const showTypeList = () => {
-    setShowType(!showtype)
-  }
-  const handleTypeWork = () => {
-    setTypeWork(!typework)
-  }
 
   return (
     <div className="w-full max-h-[100%] overflow-y-auto font-serif sm:border-0
      border-red-900 relative bg-sky-950 flex flex-col sm:ml-44 ">
-      <div className="flex flex-wrap sm:items-center justify-between gap-3 mb-5 sm:flex sm:justify-center 
+      <div className="flex flex-wrap sm:items-center sm:flex-col justify-between gap-3 mb-5 sm:flex sm:justify-center 
                 border-0 border-amber-700 sm:p-4 p-4 ">
         <h1 className="text-2xl sm:text-3xl font-bold text-green-600">✅ Completed Tasks</h1>
         {doneTasks.length > 0 && (
@@ -153,15 +169,14 @@ export default function DonePage() {
         </div>
 
 
-
         < hr className="mb-3 text-amber-300 mx-15 "></hr>
-        <div className="flex border-0 border-b-blue-900 ">
+        <div className="flex border-0 w-full border-blue-900 ">
           {doneTasks.length === 0 ? (
             <p className="text-center text-gray-500">No completed tasks yet.</p>
           ) : (
-            <section className="flex justify-center border-0 border-fuchsia-600 w-full gap-1">
+            <section className="flex justify-center border-1 border-fuchsia-600 w-full gap-1">
               {!typework &&
-                <div className= {` ${(selectedType !== "work" ) ? "hidden" : "block"} sm:block border-0 border-amber-400   sm:w-full   w-full flex 
+                <div className={` ${(selectedType !== "work") ? "hidden" : "block"} sm:block border-0 border-amber-400   sm:w-full   w-full flex 
                   flex-col gap-0 sm:gap-0 px-2 `}>
                   <h1 className="text-white m-0 text-center font-bold text-shadow-md text-shadow-amber-600">Work Tasks</h1>
                   <p className="text-end text-white  text-xl m-0 bg-orange-400 rounded-t-md">
@@ -217,7 +232,7 @@ export default function DonePage() {
               }
               { }
 
-              <div className={`${(selectedType !== "study" ) ? "hidden" : "block"} sm:block sm:w-full  border-0 border-amber-400  w-fit 
+              <div className={`${(selectedType !== "study") ? "hidden" : "block"} sm:block sm:w-full  border-0 border-amber-400  w-fit 
               flex flex-col gap-0 sm:gap-0 px-2`}>
                 <h1 className="text-white m-0 text-center font-bold text-shadow-md text-shadow-amber-600">study tasks</h1>
                 <p className="text-white text-end font-bold text-xl m-0  rounded-t-md bg-orange-400"><label className="text-sm">tasks: </label><span className="mr-3">{doneTasks.filter(t => (t.type) === "study").length}</span></p>
@@ -270,7 +285,7 @@ export default function DonePage() {
               </div>
 
 
-              <div className={`${(selectedType !== "activities" ) ? "hidden" : "block"} sm:block border-0 border-amber-400   sm:w-full  w-full flex
+              <div className={`${(selectedType !== "activities") ? "hidden" : "block"} sm:block border-0 border-amber-400   sm:w-full  w-full flex
                flex-col gap-0 sm:gap-0 px-2`}>
                 <h1 className="text-white m-0 text-center font-bold text-shadow-md text-shadow-amber-600">Activities Tasks</h1>
                 <p className="text-end text-white  text-xl m-0 bg-orange-400 rounded-t-md">

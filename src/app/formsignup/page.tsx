@@ -1,7 +1,7 @@
 "use client";
 import { useState } from "react";
 import { FcGoogle } from "react-icons/fc";
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 
 export default function FormSignUp() {
@@ -20,6 +20,19 @@ export default function FormSignUp() {
             setLoading(false);
         }
     };
+
+    const handleGoogleLogin = async () => {
+    const provider = new GoogleAuthProvider();
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      alert(`Welcome, ${user.displayName || "User"}!`);
+       window.location.href = "/";
+    } catch (error: any) {
+      console.error("Google login error:", error);
+      alert(error.message);
+    }
+  };
 
     const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -76,7 +89,7 @@ export default function FormSignUp() {
                         </button>
                         <br />
                         <div className="w-full">
-                            <button type="button" className="p-0 border-0 w-full cursor-pointer bg-sky-300 flex text-center items-center hover:bg-sky-400">
+                            <button onClick={handleGoogleLogin} className="p-0 border-0 w-full cursor-pointer bg-sky-300 flex text-center items-center hover:bg-sky-400">
                                 <FcGoogle className="bg-white sm:m-0.5 m-0.5 sm:mr-10" size={50} />
                                 log in with google
                             </button>

@@ -3,6 +3,8 @@ import { GiNotebook } from "react-icons/gi";
 import { FaPenClip } from "react-icons/fa6";
 import { useState, useEffect } from "react";
 import { MdDelete } from "react-icons/md";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "@/lib/firebase";
 
 interface Idea {
     id: number;
@@ -14,12 +16,27 @@ export default function NooteBook() {
         ideatext: ""
     });
     const [ideas, setIdeas] = useState<Idea[]>([]);
+    const [user, setUser] = useState<any>(null);
+
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+            setUser(currentUser);
+            if (currentUser) {
+                // Load user-specific tasks from localStorage
+                const storeIdeas = localStorage.getItem(`Ideas_${currentUser.email}`);
+                setIdeas(storeIdeas ? JSON.parse(storeIdeas) : []);
+            }
+        });
+        return () => unsubscribe();
+    }, []);
 
 
     useEffect(() => {
-        const storeIdeas = JSON.parse(localStorage.getItem("Ideas") || "[]");
-        setIdeas(storeIdeas);
-    }, []);
+        if (user) {
+            const storeIdeas = JSON.parse(localStorage.getItem(`Ideas_${user.email}`) || "[]");
+            setIdeas(storeIdeas);
+        }
+    }, [user]);
 
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
@@ -28,17 +45,20 @@ export default function NooteBook() {
     };
     const handleaddIdea = () => {
         if (!curentideas.ideatext.trim()) return;
-
-        const newIdea = { id: Date.now(), ...curentideas };
-        const updatedIdeas = [...ideas, newIdea];
-        localStorage.setItem("Ideas", JSON.stringify(updatedIdeas));
-        setIdeas(updatedIdeas);
-        setCurentIdeas({ ideatext: "" });
+        if (user) {
+            const newIdea = { id: Date.now(), ...curentideas };
+            const updatedIdeas = [...ideas, newIdea];
+            localStorage.setItem(`Ideas_${user.email}`, JSON.stringify(updatedIdeas));
+            setIdeas(updatedIdeas);
+            setCurentIdeas({ ideatext: "" });
+        } else (
+            alert("pls login or signup")
+        )
     }
     const handleDelete = (id: number) => {
-        const storeIdeas: Idea[] = JSON.parse(localStorage.getItem("Ideas") || "[]");
+        const storeIdeas: Idea[] = JSON.parse(localStorage.getItem(`Ideas_${user.email}`) || "[]");
         const updatedIdeas = storeIdeas.filter((idea) => idea.id !== id);
-        localStorage.setItem("Ideas", JSON.stringify(updatedIdeas));
+        localStorage.setItem(`Ideas_${user.email}`, JSON.stringify(updatedIdeas));
         if (typeof window !== "undefined") {
             window.dispatchEvent(new Event("updatedIdeas"));
         }
@@ -68,7 +88,7 @@ export default function NooteBook() {
                             <li key={idea.id} className="hover:shadow-lg shadow-gray-300 transition border-b-2 py-2 border-gray-400 break-words"><span>{index + 1}.</span><span className="ml-5">{idea.ideatext}</span>
                                 <button onClick={() => handleDelete(idea.id)}
                                     className="p-1 float-end px-1 rounded"><MdDelete
-                                        color="red" className="cursor-pointer" size={25} /></button></li>
+                                        color="#fa6b6b" className="cursor-pointer" size={25} /></button></li>
                         ))}
                     </ul>
                 </div>

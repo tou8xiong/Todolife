@@ -18,25 +18,24 @@ export default function Profile() {
   }, []);
 
   const handleUpdate = async () => {
-    if (user) {
+    if (!user) return;
       try {
         await updateProfile(user, { displayName });
         await user.reload();
         const updatedUser = auth.currentUser;
-        setUser({ ...updatedUser });
+        setUser(updatedUser);
         alert("✅ Profile updated!");
       } catch (error) {
         console.error("Update error:", error);
-        alert("Update failed!");
+        alert("Update failed! Try agian leter");
       }
-    }
+    
   };
 
   const handleSignOut = async () => {
-    await signOut(auth);
+   await signOut(auth);
     alert("Signed out!");
   };
-
 
   if (!user) return <p>Please log in</p>;
 
@@ -53,18 +52,19 @@ export default function Profile() {
           <p>Email: {user.email}</p>
           <p className="">
             Name: {user.displayName || "No name set"}
-            <button onClick={handleChangeName} className="cursor-pointer ml-22"><FaEdit size={16}/></button></p>
+            <button onClick={handleChangeName} className="cursor-pointer ml-22"><FaEdit size={16} /></button></p>
         </div>
-        {changename && <div><input
-          type="text"
-          value={displayName}
-          onChange={(e) => setDisplayName(e.target.value)}
-          className="border p-2 rounded mt-3"
-          placeholder="Your name"/>
-        <button onClick={handleUpdate} className="bg-blue-500 text-white px-4 py-2 rounded">Update</button>
+        {changename && <div>
+          <input
+            type="text"
+            value={displayName}
+            onChange={(e) => setDisplayName(e.target.value)}
+            className="border p-2 rounded mt-3"
+            placeholder="Your name" />
+          <button onClick={handleUpdate} className="bg-blue-500 text-white px-4 py-2 rounded">Update</button>
         </div>}
         <div className="mt-10 flex justify-center gap-2">
-          <button onClick={handleSignOut} className="bg-red-500 text-white px-3  py-1 rounded">Sign out</button>
+          <button onClick={handleSignOut} className="bg-red-400 cursor-pointer text-white px-3  py-1 rounded">Sign out</button>
         </div>
       </div>
     </div>
