@@ -14,34 +14,27 @@ export default function Header() {
     const [showMenu, setShowMenu] = useState(false);
     const [user, setUser] = useState<any>(null);
     const [hideform, setHideForm] = useState(true);
-    const [displayName, setDisplayName] = useState("");
-
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-            setUser(currentUser);   
-            if(user){
-            }
-
+            setUser(currentUser);
         });
         return () => unsubscribe();
     }, []);
 
-    useEffect(() =>{
-        if(user){
-            setHideForm(!hideform);
+    useEffect(() => {
+        if (user) {
+            setHideForm(false);
+        } else {
+            setHideForm(true);
         }
-    },[user])
-
-
-
-
+    }, [user])
 
     return (
         <div className="bg-blue-300  sm:flex flex-wrap sm:items-center  sm:w-full
          justify-between sm:justify-between sm:gap-2 sticky top-0 z-50 shadow-sm sm:shadow-sm shadow-black sm:border-0
           border-red-400 w-full sm:px-4 py-2 max-w-full">
-            <button className="m-1 cursor-pointer"><Link href={"/"}>
+            <button data-aos="flip-left" className="m-1 cursor-pointer"><Link href={"/"}>
                 <Image src={Logo} alt="logo" className="w-32 sm:w-48 md:w-[250px]" /></Link>
             </button>
             <div className="flex flex-wrap gap-2 justify-around sm:items-center sm:gap-6
@@ -54,13 +47,13 @@ export default function Header() {
                     className="hover:bg-amber-100 p-2 rounded-xl  sm:px-6 flex items-center sm:border-0 border-2 border-sky-600">
                     <Link href={"/mytasks"} className="sm:text-lg text-[12px] ">My Tasks</Link>
                     <span className="ml-2 rounded-full px-2 py-0.5 text-[10px] sm:text-xs font-semibold
-                     bg-slate-800 text-white">{user? pending : "0"}</span>
+                     bg-slate-800 text-white">{user ? pending : "0"}</span>
                 </button>
                 <button
                     className="hover:bg-amber-100 p-2 rounded-xl  sm:px-6 flex items-center sm:border-0 border-2 border-sky-600">
                     <Link href={"/completetasks"} className="sm:text-lg text-[12px] ">Complete Tasks</Link>
                     <span className="ml-2 rounded-full px-2 py-0.5 text-[10px] sm:text-xs font-semibold bg-green-700
-                     text-white">{user? completed : "0"}</span>
+                     text-white">{user ? completed : "0"}</span>
                 </button>
             </div>
             <div className=" flex items-center ">
@@ -70,17 +63,17 @@ export default function Header() {
                     {showMenu &&
                         <div className="sm:hidden border-none absolute mt-0 ml-2 w-40 bg-white border rounded-sm shadow-lg">
                             <ul className="p-2 flex flex-col gap-1">
-                                <li className="border-1 border-gray-400 rounded p-0.5 active:bg-gray-400"><a href="/settimepage">Timer</a></li>
-                                <li className="border-1 border-gray-400 rounded p-0.5 active:bg-gray-400"><a href="noteidea">NoteIdea</a></li>
-                                <li className="border-1 border-gray-400 rounded p-0.5 active:bg-gray-400"><a href="#">notebook</a></li>
-                                <li className="border-1 border-gray-400 rounded p-0.5 active:bg-gray-400"><a href="#">fgsf</a></li>
+                                <li className="border border-gray-400 rounded p-0.5 active:bg-gray-400"><a href="/settimepage">Timer</a></li>
+                                <li className="border border-gray-400 rounded p-0.5 active:bg-gray-400"><a href="/noteidea">NoteIdea</a></li>
+                                <li className="border border-gray-400 rounded p-0.5 active:bg-gray-400"><a href="#">notebook</a></li>
+                                <li className="border border-gray-400 rounded p-0.5 active:bg-gray-400"><a href="#">fgsf</a></li>
                             </ul>
                         </div>}
                 </div>
             </div>
 
             <div className="sm:p-2 flex sm:gap-2 sm:flex sm:w-[auto] w-fit ml-auto sm:m-0  mt-2">
-                {hideform &&  (
+                {hideform && (
                     <div className="sm:m-0 ml-auto sm:gap-3">
                         <button
                             className=" px-4 sm:px-7 py-2 rounded-md font-serif text-sm sm:text-lg bg-amber-100 hover:bg-amber-200 shadow-lg">
@@ -91,14 +84,14 @@ export default function Header() {
                         </button>
                     </div>
                 )}
-                    
-                    {!hideform && (
-                        <div className="border-0 flex flex-col justify-center items-center">
-                            <Link href="/profile">
-                                <CgProfile size={34} color="white" className=" bg-black rounded-4xl" />
-                            </Link>
-                            <label className="font-bold font-serif">{user.displayName}</label>
-                        </div>)}
+
+                {!hideform && (
+                    <div className="border-0 flex flex-col justify-center items-center">
+                        <Link href="/profile">
+                            <CgProfile size={34} color="white" className=" bg-black rounded-3xl" />
+                        </Link>
+                        <label className="font-bold font-serif">{user.displayName}</label>
+                    </div>)}
             </div>
         </div>
     );

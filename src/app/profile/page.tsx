@@ -34,14 +34,13 @@ export default function Profile() {
 
   const handleSignOut = async () => {
    await signOut(auth);
+   window.location.href = "/";
     alert("Signed out!");
   };
-
   if (!user) return <p>Please log in</p>;
 
   const handleChangeName = () => {
     setChangeName(!changename);
-
   }
 
   return (

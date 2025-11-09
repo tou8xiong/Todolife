@@ -174,9 +174,11 @@ export default function DonePage() {
           {doneTasks.length === 0 ? (
             <p className="text-center text-gray-500">No completed tasks yet.</p>
           ) : (
-            <section className="flex justify-center border-1 border-fuchsia-600 w-full gap-1">
+            <section className="flex justify-center border-0 border-fuchsia-600 w-full gap-1">
               {!typework &&
-                <div className={` ${(selectedType !== "work") ? "hidden" : "block"} sm:block border-0 border-amber-400   sm:w-full   w-full flex 
+                <div data-aos="flip-left"
+                  data-aos-easing="ease-out-cubic"
+                  data-aos-duration="2000" className={` ${(selectedType !== "work") ? "hidden" : "block"} sm:block border-0 border-amber-400   sm:w-full   w-full flex 
                   flex-col gap-0 sm:gap-0 px-2 `}>
                   <h1 className="text-white m-0 text-center font-bold text-shadow-md text-shadow-amber-600">Work Tasks</h1>
                   <p className="text-end text-white  text-xl m-0 bg-orange-400 rounded-t-md">
@@ -232,8 +234,10 @@ export default function DonePage() {
               }
               { }
 
-              <div className={`${(selectedType !== "study") ? "hidden" : "block"} sm:block sm:w-full  border-0 border-amber-400  w-fit 
-              flex flex-col gap-0 sm:gap-0 px-2`}>
+              <div data-aos="flip-left"
+                data-aos-easing="ease-out-cubic"
+                data-aos-duration="2000" className={`${(selectedType !== "study") ? "hidden" : "block"} sm:block sm:w-full  border-0 border-amber-400  w-fit 
+               flex flex-col gap-0 sm:gap-0 px-2`}>
                 <h1 className="text-white m-0 text-center font-bold text-shadow-md text-shadow-amber-600">study tasks</h1>
                 <p className="text-white text-end font-bold text-xl m-0  rounded-t-md bg-orange-400"><label className="text-sm">tasks: </label><span className="mr-3">{doneTasks.filter(t => (t.type) === "study").length}</span></p>
                 {doneTasks.filter(t => (t.type) === "study").length === 0 ? <p className="text-center text-white">No completed activity tasks yet.</p> :
@@ -284,8 +288,9 @@ export default function DonePage() {
                   </ul>}
               </div>
 
-
-              <div className={`${(selectedType !== "activities") ? "hidden" : "block"} sm:block border-0 border-amber-400   sm:w-full  w-full flex
+              <div data-aos="flip-left"
+                data-aos-easing="ease-out-cubic"
+                data-aos-duration="2000" className={`${(selectedType !== "activities") ? "hidden" : "block"} sm:block border-0 border-amber-400   sm:w-full  w-full flex
                flex-col gap-0 sm:gap-0 px-2`}>
                 <h1 className="text-white m-0 text-center font-bold text-shadow-md text-shadow-amber-600">Activities Tasks</h1>
                 <p className="text-end text-white  text-xl m-0 bg-orange-400 rounded-t-md">

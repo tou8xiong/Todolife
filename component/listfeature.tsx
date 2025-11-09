@@ -166,7 +166,7 @@ export default function ListPage() {
             {tasks.length === 0 ? (
                 <p className="text-center text-gray-500">No tasks yet. Add one!</p>
             ) : (
-                <ul className="space-y-4 md:mx-auto md:max-w-3xl">
+                <ul data-aos="zoom-in-up" className="space-y-4 md:mx-auto md:max-w-3xl">
                     {tasks.map((task) => (
                         <li
                             key={task.id}

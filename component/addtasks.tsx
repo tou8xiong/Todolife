@@ -33,15 +33,15 @@ export default function AddTasks() {
     };
 
     const handleAdd = () => {
-        if(!user){
+        if (!user) {
             alert("please login or signup!");
             return;
 
-        }else if(!task.title.trim()) {
+        } else if (!task.title.trim()) {
             alert("Please enter a task title!");
             return;
         }
-        else if(!task.type){
+        else if (!task.type) {
             alert("please select the tasks type");
             return;
         }
@@ -63,9 +63,12 @@ export default function AddTasks() {
     };
     return (
         <div className="bg-sky-100 dark:bg-gray-900 sm:w-[700px] sm:flex items-center flex-col
-         rounded-2xl w-full max-w-full sm:h-[700px] ">
-            <h1 className="text-center p-3 font-bold text-3xl font-serif mt-3 text-shadow-sm text-shadow-violet-500" >Add Tasks</h1>
+               rounded-2xl w-full max-w-full sm:h-[700px] ">
+            <h1 data-aos="flip-left"
+                data-aos-easing="ease-out-cubic"
+                data-aos-duration="2000" className="text-center p-3 font-bold text-3xl font-serif mt-3 text-shadow-sm text-shadow-violet-500" >Add Tasks</h1>
             <form
+                data-aos="zoom-out-up"
                 className="sm:rounded-xl sm:flex sm:items-center sm:flex-col sm:border-2 border-amber-300 
                 sm:m-1 bg-sky-50 sm:w-[590px] w-full sm:gap-7 sm:shadow-lg shadow-stone-500 
                   flex flex-wrap m-1 justify-center items-center flex-col">
@@ -114,7 +117,7 @@ export default function AddTasks() {
                         id="priority"
                         className="bg-cyan-200 sm:p-2 p-1.5 rounded-md border-2 border-gray-500 ">
                         <option className="text-gray-600 ">pick priority</option>
-                        <option value="high"  className="bg-red-400">High</option>
+                        <option value="high" className="bg-red-400">High</option>
                         <option value="medium" className="bg-orange-400">Medium</option>
                         <option value="low" className="bg-green-400">Low</option>
                     </select>
