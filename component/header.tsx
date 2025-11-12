@@ -65,8 +65,6 @@ export default function Header() {
                             <ul className="p-2 flex flex-col gap-1">
                                 <li className="border border-gray-400 rounded p-0.5 active:bg-gray-400"><a href="/settimepage">Timer</a></li>
                                 <li className="border border-gray-400 rounded p-0.5 active:bg-gray-400"><a href="/noteidea">NoteIdea</a></li>
-                                <li className="border border-gray-400 rounded p-0.5 active:bg-gray-400"><a href="#">notebook</a></li>
-                                <li className="border border-gray-400 rounded p-0.5 active:bg-gray-400"><a href="#">fgsf</a></li>
                             </ul>
                         </div>}
                 </div>

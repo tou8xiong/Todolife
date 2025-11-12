@@ -38,7 +38,6 @@ export default function NooteBook() {
         }
     }, [user]);
 
-
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         setCurentIdeas((prev) => ({ ...prev, [name]: value }));
