@@ -232,9 +232,7 @@ export default function DonePage() {
               }
               { }
 
-              <div data-aos="flip-left"
-                data-aos-easing="ease-out-cubic"
-                data-aos-duration="2000" className={`${(selectedType !== "study") ? "hidden" : "block"} sm:block sm:w-full  border-0 border-amber-400  w-fit 
+              <div className={`${(selectedType !== "study") ? "hidden" : "block"} sm:block sm:w-full  border-0 border-amber-400  w-fit 
                flex flex-col gap-0 sm:gap-0 px-2`}>
                 <h1 className="text-white m-0 text-center font-bold text-shadow-md text-shadow-amber-600">study tasks</h1>
                 <p className="text-white text-end font-bold text-xl m-0  rounded-t-md bg-orange-400"><label className="text-sm">tasks: </label><span className="mr-3">{doneTasks.filter(t => (t.type) === "study").length}</span></p>
@@ -286,9 +284,7 @@ export default function DonePage() {
                   </ul>}
               </div>
 
-              <div data-aos="flip-left"
-                data-aos-easing="ease-out-cubic"
-                data-aos-duration="2000" className={`${(selectedType !== "activities") ? "hidden" : "block"} sm:block border-0 border-amber-400   sm:w-full  w-full flex
+              <div  className={`${(selectedType !== "activities") ? "hidden" : "block"} sm:block border-0 border-amber-400   sm:w-full  w-full flex
                flex-col gap-0 sm:gap-0 px-2`}>
                 <h1 className="text-white m-0 text-center font-bold text-shadow-md text-shadow-amber-600">Activities Tasks</h1>
                 <p className="text-end text-white  text-xl m-0 bg-orange-400 rounded-t-md">
