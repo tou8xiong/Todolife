@@ -31,9 +31,9 @@ export default function Header() {
     }, [user])
 
     return (
-        <div className="bg-blue-300  sm:flex flex-wrap sm:items-center  sm:w-full
+        <div className="bg-blue-300  sm:flex flex-wrap sm:items-center w-full  sm:w-full
          justify-between sm:justify-between sm:gap-2 sticky top-0 z-50 shadow-sm sm:shadow-sm shadow-black sm:border-0
-          border-red-400 w-full sm:px-4 py-2 max-w-full">
+          border-red-400  sm:px-0 py-2 max-w-full border-0 m-0">
             <button data-aos="flip-left" className="m-1 cursor-pointer"><Link href={"/"}>
                 <Image src={Logo} alt="logo" className="w-32 sm:w-48 md:w-[250px]" /></Link>
             </button>
@@ -56,40 +56,42 @@ export default function Header() {
                      text-white">{user ? completed : "0"}</span>
                 </button>
             </div>
-            <div className=" flex items-center ">
-                <div className="border-0 border-amber-400 w-fit sm:hidden font-serif h-full ">
-                    <button onClick={() => setShowMenu(!showMenu)}
-                        className=" sm:hidden ml-5 rounded hover:bg-gray-500 mt-2"><FaList size={26} /></button>
-                    {showMenu &&
-                        <div className="sm:hidden border-none absolute mt-0 ml-2 w-40 bg-white border rounded-sm shadow-lg">
-                            <ul className="p-2 flex flex-col gap-1">
-                                <li className="border border-gray-400 rounded p-0.5 active:bg-gray-400"><a href="/settimepage">Timer</a></li>
-                                <li className="border border-gray-400 rounded p-0.5 active:bg-gray-400"><a href="/noteidea">NoteIdea</a></li>
-                            </ul>
-                        </div>}
-                </div>
-            </div>
-
-            <div className="sm:p-2 flex sm:gap-2 sm:flex sm:w-[auto] w-fit ml-auto sm:m-0  mt-2">
-                {hideform && (
-                    <div className="sm:m-0 ml-auto sm:gap-3">
-                        <button
-                            className=" px-4 sm:px-7 py-2 rounded-md font-serif text-sm sm:text-lg bg-amber-100 hover:bg-amber-200 shadow-lg">
-                            <Link href={"/formlogin"}>Log in </Link>
-                        </button>
-                        <button className="mx-3 px-4 sm:px-7 py-2 rounded-md font-serif text-sm sm:text-lg bg-green-300 hover:bg-green-400 shadow-xl">
-                            <Link href={"/formsignup"}> Sign up</Link>
-                        </button>
+            <div className="sm:flex flex justify-between md:flex md:justify-between sm:justify-between">
+                <div className=" flex items-center w-fit">
+                    <div className="border-0 border-amber-400 w-fit md:hidden font-serif h-full ">
+                        <button onClick={() => setShowMenu(!showMenu)}
+                            className=" md:hidden ml-5 rounded hover:bg-gray-500 mt-2"><FaList size={26} /></button>
+                        {showMenu &&
+                            <div className="md:hidden border-none  absolute mt-0  ml-2 w-40 bg-white rounded-sm shadow-lg">
+                                <ul className="p-2 flex flex-col gap-1">
+                                    <li className="border border-gray-400 rounded p-0.5 active:bg-gray-400"><a href="/settimepage">Timer</a></li>
+                                    <li className="border border-gray-400 rounded p-0.5 active:bg-gray-400"><a href="/noteidea">NoteIdea</a></li>
+                                </ul>
+                            </div>}
                     </div>
-                )}
+                </div>
 
-                {!hideform && (
-                    <div className="border-0 flex flex-col justify-center items-center">
-                        <Link href="/profile">
-                            <CgProfile size={34} color="white" className=" bg-black rounded-3xl" />
-                        </Link>
-                        <label className="font-bold font-serif">{user.displayName}</label>
-                    </div>)}
+                <div className="sm:p-2 flex sm:gap-2 border-0 sm:flex sm:w-[auto] w-fit ml-auto sm:m-0  mt-2">
+                    {hideform && (
+                        <div className="sm:m-0 ml-auto sm:gap-3">
+                            <button
+                                className=" px-4 sm:px-7 py-2 rounded-md font-serif text-sm sm:text-lg bg-amber-100 hover:bg-amber-200 shadow-lg">
+                                <Link href={"/formlogin"}>Log in </Link>
+                            </button>
+                            <button className="mx-3 px-4 sm:px-7 py-2 rounded-md font-serif text-sm sm:text-lg bg-green-300 hover:bg-green-400 shadow-xl">
+                                <Link href={"/formsignup"}> Sign up</Link>
+                            </button>
+                        </div>
+                    )}
+
+                    {!hideform && (
+                        <div className="border-0 flex sm:m-0 mx-3 flex-col justify-center items-center">
+                            <Link href="/profile">
+                                <CgProfile size={34} color="white" className=" bg-black rounded-3xl" />
+                            </Link>
+                            <label className="font-bold font-serif">{user.displayName}</label>
+                        </div>)}
+                </div>
             </div>
         </div>
     );

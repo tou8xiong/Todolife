@@ -141,7 +141,7 @@ export default function DonePage() {
         <div className="sm:hidden ">
           <button
             onClick={handleTypeToggle}
-            className="px-3 py-1 rounded-md bg-slate-200 dark:bg-slate-700"
+            className="px-3 py-1 rounded-md bg-slate-200 "
           >
             Choose type
           </button>
@@ -172,13 +172,11 @@ export default function DonePage() {
         < hr className="mb-3 text-amber-300 mx-15 "></hr>
         <div className="flex border-0 w-full border-blue-900 ">
           {doneTasks.length === 0 ? (
-            <p className="text-center text-gray-500">No completed tasks yet.</p>
+            <p className="sm:text-center text-gray-500 w-full text-center">No completed tasks yet.</p>
           ) : (
             <section className="flex justify-center border-0 border-fuchsia-600 w-full gap-1">
               {!typework &&
-                <div data-aos="flip-left"
-                  data-aos-easing="ease-out-cubic"
-                  data-aos-duration="2000" className={` ${(selectedType !== "work") ? "hidden" : "block"} sm:block border-0 border-amber-400   sm:w-full   w-full flex 
+                <div className={` ${(selectedType !== "work") ? "hidden" : "block"} sm:block border-0 border-amber-400   sm:w-full   w-full flex 
                   flex-col gap-0 sm:gap-0 px-2 `}>
                   <h1 className="text-white m-0 text-center font-bold text-shadow-md text-shadow-amber-600">Work Tasks</h1>
                   <p className="text-end text-white  text-xl m-0 bg-orange-400 rounded-t-md">
