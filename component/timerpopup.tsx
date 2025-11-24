@@ -112,7 +112,7 @@ export default function TimerPopup() {
                 <div className="fixed bottom-24 right-6 z-50 bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-[320px]">
                     <h2 className="text-2xl font-semibold mb-4 text-center font-serif">Timer</h2>
                     <div className="text-5xl font-mono mb-6 text-center dark:text-white">
-                        {minutes >= 60 ? formattedplushour : formatted}
+                        {minutes > 60 ? formattedplushour : formatted}
                     </div>
                     <div className="flex gap-2 justify-center font-serif">
                         <button

@@ -34,7 +34,7 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"></meta>
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased` }>
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <AosClientWrapper>
           <Header />
           <Sidebar />

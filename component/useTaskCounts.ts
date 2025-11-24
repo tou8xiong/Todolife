@@ -33,7 +33,6 @@ export function useTaskCounts(): TaskCounts {
         const total = tasks.length;
         const completed = tasks.filter((t) => t.completed).length;
         const pending = total - completed;
-        console.log("this is pendimg", pending);
         setCounts({ total, pending, completed });
       } catch {
         setCounts({ total: 0, pending: 0, completed: 0 });
@@ -51,7 +50,8 @@ export function useTaskCounts(): TaskCounts {
       window.removeEventListener("storage", onStorage);
       window.removeEventListener("tasksUpdated", onUpdated as EventListener);
     };
-  }, [user]);
 
+  }, [user]);
   return counts;
+
 }

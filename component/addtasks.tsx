@@ -145,7 +145,7 @@ export default function AddTasks() {
                                 className=" block w-full rounded-lg  text-black border-2 border-gray-500 sm:p-3 p-1.5 font-sans"></input>
                         </div>
                     </div>
-                    <div className="sm:flex mt-7  text-black sm:gap-45 sm:font-serif sm:mt-[20px] sm:mb-[70px] flex gap-10 justify-center mb-3">
+                    <div className="sm:flex mt-7 sm:gap-45 sm:font-serif sm:mt-[20px] sm:mb-[70px] flex gap-10 justify-center mb-3">
                         <button type="button" className="px-7 py-2 rounded-lg bg-slate-400 text-white font-semibold hover:bg-slate-500">chancel</button>
                         <button type="button" onClick={handleAdd} className="px-11 py-2 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700">save</button>
                     </div>
