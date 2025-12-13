@@ -38,7 +38,6 @@ export default function NooteBook() {
         }
     }, [user]);
 
-
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
         setCurentIdeas((prev) => ({ ...prev, [name]: value }));
@@ -52,7 +51,7 @@ export default function NooteBook() {
             setIdeas(updatedIdeas);
             setCurentIdeas({ ideatext: "" });
         } else (
-            alert("pls login or signup")
+            alert("please login or signup!")
         )
     }
     const handleDelete = (id: number) => {
@@ -69,8 +68,8 @@ export default function NooteBook() {
     return (
         <div className="sm:ml-45 mt-0 font-serif">
             <div className=" flex justify-center flex-col items-center p-2 border-0 border-amber-600">
-                <h1 className="text-xl font-bold font-serif "> <GiNotebook size={55} color="#3cbffc" /></h1>
-                <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Your Idea Notes</h2>
+                <h1 data-aos="fade-down" className="text-xl font-bold font-serif "> <GiNotebook size={55} color="#3cbffc" /></h1>
+                <h2 data-aos="fade-down" className="text-2xl font-bold text-gray-800 dark:text-white">Your Idea Notes</h2>
                 <div className="mt-10 flex justify-center sm:w-full w-full flex-col items-center border-0 border-amber-500">
                     <h1 className="flex "> <FaPenClip size={20} color="red" className="m-2" /></h1>
                     <div className="flex flex-col sm:w-auto w-full">

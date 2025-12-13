@@ -1,6 +1,7 @@
 "use client";
-import { title } from "process";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "@/lib/firebase";
 
 export default function AddTasks() {
     const [task, setTask] = useState({
@@ -8,9 +9,23 @@ export default function AddTasks() {
         description: "",
         date: "",
         time: "",
-        priority: "Medium",
         type: "work",
+        priority: "high",
+
     });
+    const [user, setUser] = useState<any>(null)
+
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+            setUser(currentUser);
+            if (currentUser) {
+                // Load user-specific tasks from localStorage
+                const storedTasks = localStorage.getItem(`tasks${currentUser.email}`);
+                setTask(storedTasks ? JSON.parse(storedTasks) : []);
+            }
+        });
+        return () => unsubscribe();
+    }, []);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
@@ -21,11 +36,15 @@ export default function AddTasks() {
         if (!task.title.trim()) {
             alert("Please enter a task title!");
             return;
+        }else if(!task.type){
+            alert('Please select the type')
+        }else if(!task.priority){
+            alert("Please select the priority")
         }
 
-        const storedTasks = JSON.parse(localStorage.getItem("tasks") || "[]");
+        const storedTasks = JSON.parse(localStorage.getItem(`tasks_${user.email}`) || "[]");
         const updatedTasks = [...storedTasks, { id: Date.now(), ...task }];
-        localStorage.setItem("tasks", JSON.stringify(updatedTasks));
+        localStorage.setItem(`tasks_${user.email}`, JSON.stringify(updatedTasks));
 
         alert("Task added!");
         setTask({
@@ -33,8 +52,9 @@ export default function AddTasks() {
             description: "",
             date: "",
             time: "",
-            priority: "Medium",
             type: "work",
+            priority: "high",
+
         });
     };
 
@@ -78,6 +98,7 @@ export default function AddTasks() {
                         onChange={handleChange}
                         id="seclectype"
                         className="bg-amber-200 sm:p-2 p-1.5  rounded-md border-2 border-gray-500">
+                        <option className="bg-white text-gray-600">pick type</option>
                         <option value="work" className="bg-white">Work</option>
                         <option value="study" className="bg-white">Study</option>
                         <option value="activities" className="bg-white">Activities</option>
@@ -89,9 +110,10 @@ export default function AddTasks() {
                         onChange={handleChange}
                         id="priority"
                         className="bg-cyan-200 sm:p-2 p-1.5 rounded-md border-2 border-gray-500 ">
-                        <option className="bg-red-400">High</option>
-                        <option className="bg-orange-400">Medium</option>
-                        <option className="bg-green-400">Low</option>
+                        <option className="text-gray-600 ">pick priority</option>
+                        <option value="high"  className="bg-red-400">High</option>
+                        <option value="medium" className="bg-orange-400">Medium</option>
+                        <option value="low" className="bg-green-400">Low</option>
                     </select>
                 </div>
                 <div className="sm:flex">

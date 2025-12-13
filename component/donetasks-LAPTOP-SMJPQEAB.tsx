@@ -141,7 +141,7 @@ export default function DonePage() {
         <div className="sm:hidden ">
           <button
             onClick={handleTypeToggle}
-            className="px-3 py-1 rounded-md bg-slate-200 dark:bg-slate-700"
+            className="px-3 py-1 rounded-md bg-slate-200 "
           >
             Choose type
           </button>
@@ -170,9 +170,9 @@ export default function DonePage() {
 
 
         < hr className="mb-3 text-amber-300 mx-15 "></hr>
-        <div className="flex border-0 border-b-blue-900 ">
+        <div className="flex border-0 w-full border-blue-900 ">
           {doneTasks.length === 0 ? (
-            <p className="text-center text-gray-500">No completed tasks yet.</p>
+            <p className="sm:text-center text-gray-500 w-full text-center">No completed tasks yet.</p>
           ) : (
             <section className="flex justify-center border-0 border-fuchsia-600 w-full gap-1">
               {!typework &&
@@ -233,7 +233,7 @@ export default function DonePage() {
               { }
 
               <div className={`${(selectedType !== "study") ? "hidden" : "block"} sm:block sm:w-full  border-0 border-amber-400  w-fit 
-              flex flex-col gap-0 sm:gap-0 px-2`}>
+               flex flex-col gap-0 sm:gap-0 px-2`}>
                 <h1 className="text-white m-0 text-center font-bold text-shadow-md text-shadow-amber-600">study tasks</h1>
                 <p className="text-white text-end font-bold text-xl m-0  rounded-t-md bg-orange-400"><label className="text-sm">tasks: </label><span className="mr-3">{doneTasks.filter(t => (t.type) === "study").length}</span></p>
                 {doneTasks.filter(t => (t.type) === "study").length === 0 ? <p className="text-center text-white">No completed activity tasks yet.</p> :
@@ -284,8 +284,7 @@ export default function DonePage() {
                   </ul>}
               </div>
 
-
-              <div className={`${(selectedType !== "activities") ? "hidden" : "block"} sm:block border-0 border-amber-400   sm:w-full  w-full flex
+              <div  className={`${(selectedType !== "activities") ? "hidden" : "block"} sm:block border-0 border-amber-400   sm:w-full  w-full flex
                flex-col gap-0 sm:gap-0 px-2`}>
                 <h1 className="text-white m-0 text-center font-bold text-shadow-md text-shadow-amber-600">Activities Tasks</h1>
                 <p className="text-end text-white  text-xl m-0 bg-orange-400 rounded-t-md">

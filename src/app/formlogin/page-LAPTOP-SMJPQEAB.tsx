@@ -14,9 +14,17 @@ export default function FormLogIN() {
             alert("Login successful!");
             // Optionally redirect user to home page:
             window.location.href = "/";
-        } catch (error) {
-            console.error(error);
-            alert("Login failed. Check email or password.");
+        } catch (error: any) {
+            console.error("Firebase login error:", error.code, error.message);
+            if (error.code === "auth/user-not-found") {
+                alert("No user found with this email.");
+            } else if (error.code === "auth/wrong-password") {
+                alert("Wrong password. Try again.");
+            } else if (error.code === "auth/invalid-email") {
+                alert("Invalid email format.");
+            } else {
+                alert("Login failed: " + error.message);
+            }
         } finally {
             setLoading(false);
         }
@@ -70,6 +78,7 @@ export default function FormLogIN() {
                         </div>
                     </div>
                 </form>
+
             </div>
         </div>
     )

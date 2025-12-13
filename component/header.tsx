@@ -6,23 +6,36 @@ import { useTaskCounts } from "./useTaskCounts";
 import { useState, useEffect } from "react";
 import { FaList } from "react-icons/fa";
 import { CgProfile } from "react-icons/cg";
-import {onAuthStateChanged} from "firebase/auth";
-import {auth} from "@/lib/firebase";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "@/lib/firebase";
 
 export default function Header() {
     const { pending, completed } = useTaskCounts();
     const [showMenu, setShowMenu] = useState(false);
     const [user, setUser] = useState<any>(null);
     const [hideform, setHideForm] = useState(true);
+    const [displayName, setDisplayName] = useState("");
 
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-            setUser(currentUser);
-            setHideForm(!currentUser);
+            setUser(currentUser);   
+            if(user){
+            }
+
         });
-        return () => unsubscribe();  
+        return () => unsubscribe();
     }, []);
+
+    useEffect(() =>{
+        if(user){
+            setHideForm(!hideform);
+        }
+    },[user])
+
+
+
+
 
     return (
         <div className="bg-blue-300  sm:flex flex-wrap sm:items-center  sm:w-full
@@ -40,12 +53,14 @@ export default function Header() {
                 <button
                     className="hover:bg-amber-100 p-2 rounded-xl  sm:px-6 flex items-center sm:border-0 border-2 border-sky-600">
                     <Link href={"/mytasks"} className="sm:text-lg text-[12px] ">My Tasks</Link>
-                    <span className="ml-2 rounded-full px-2 py-0.5 text-[10px] sm:text-xs font-semibold bg-slate-800 text-white">{pending}</span>
+                    <span className="ml-2 rounded-full px-2 py-0.5 text-[10px] sm:text-xs font-semibold
+                     bg-slate-800 text-white">{user? pending : "0"}</span>
                 </button>
                 <button
                     className="hover:bg-amber-100 p-2 rounded-xl  sm:px-6 flex items-center sm:border-0 border-2 border-sky-600">
                     <Link href={"/completetasks"} className="sm:text-lg text-[12px] ">Complete Tasks</Link>
-                    <span className="ml-2 rounded-full px-2 py-0.5 text-[10px] sm:text-xs font-semibold bg-green-700 text-white">{completed}</span>
+                    <span className="ml-2 rounded-full px-2 py-0.5 text-[10px] sm:text-xs font-semibold bg-green-700
+                     text-white">{user ? completed : "0"}</span>
                 </button>
             </div>
             <div className=" flex items-center ">
@@ -62,9 +77,11 @@ export default function Header() {
                             </ul>
                         </div>}
                 </div>
-                <div className="sm:p-2 flex sm:gap-2 sm:flex sm:w-[auto] w-fit ml-auto sm:m-0 border-0 border-amber-700 mt-2">
-                   {hideform && 
-                    <div className="sm:m-0 ml-auto sm:gap-3  ">
+            </div>
+
+            <div className="sm:p-2 flex sm:gap-2 sm:flex sm:w-[auto] w-fit ml-auto sm:m-0  mt-2">
+                {hideform &&  (
+                    <div className="sm:m-0 ml-auto sm:gap-3">
                         <button
                             className=" px-4 sm:px-7 py-2 rounded-md font-serif text-sm sm:text-lg bg-amber-100 hover:bg-amber-200 shadow-lg">
                             <Link href={"/formlogin"}>Log in </Link>
@@ -72,16 +89,17 @@ export default function Header() {
                         <button className="mx-3 px-4 sm:px-7 py-2 rounded-md font-serif text-sm sm:text-lg bg-green-300 hover:bg-green-400 shadow-xl">
                             <Link href={"/formsignup"}> Sign up</Link>
                         </button>
-                    </div>}
-                </div>
+                    </div>
+                )}
+                    
+                    {!hideform && (
+                        <div className="border-0 flex flex-col justify-center items-center">
+                            <Link href="/profile">
+                                <CgProfile size={34} color="white" className=" bg-black rounded-4xl" />
+                            </Link>
+                            <label className="font-bold font-serif">{user.displayName}</label>
+                        </div>)}
             </div>
-            {!hideform &&
-            <div>
-                <Link href="/profile" className="hover:text-blue-500">
-                    <CgProfile size={34} color="#ebb900" className="bg-amber-50 rounded-4xl" />
-
-                </Link>
-            </div>}
         </div>
     );
 }
