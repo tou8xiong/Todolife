@@ -7,7 +7,7 @@ import { useState, useEffect } from "react";
 import { FaList } from "react-icons/fa";
 import { CgProfile } from "react-icons/cg";
 import { onAuthStateChanged, signOut } from "firebase/auth";
-import { auth } from "@/lib/firebase"; 
+import { auth } from "@/lib/firebase";
 
 export default function Header() {
     const { pending, completed } = useTaskCounts();
@@ -82,9 +82,12 @@ export default function Header() {
                         </div>
                     ) : (
                         <div className="relative ml-auto">
-                            <button onClick={() => setShowProfileMenu(!showProfileMenu)} className="cursor-pointer">
-                                <CgProfile size={32} />
-                            </button>
+                            <div className="flex flex-col  justify-center items-center">
+                                <button onClick={() => setShowProfileMenu(!showProfileMenu)} className="cursor-pointer text-center">
+                                    <CgProfile size={32}  className="text-center"/>
+                                </button>
+                                <label className="text-center font-bold">{user?.email?.split('@')[0] || "Guest"}</label>
+                            </div>
                             {showProfileMenu && (
                                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10">
                                     <ul className="p-2 flex flex-col gap-1 font-serif text-black">
