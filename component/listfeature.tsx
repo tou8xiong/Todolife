@@ -92,7 +92,6 @@ export default function ListPage() {
         const pendingTasks = updatedTasks.filter((t) => !t.completed);
         setTasks(pendingTasks);
     };
-
     const handleUpdate = (id: number) => {
         const storedTasks: Task[] = JSON.parse(localStorage.getItem(`tasks_${user.email}`) || "[]");
         const updatedTasks = storedTasks.map((task) =>
@@ -106,14 +105,13 @@ export default function ListPage() {
                 }
                 : task
         );
-
         localStorage.setItem(`tasks_${user.email}`, JSON.stringify(updatedTasks));
         setTasks(updatedTasks.filter((t) => !t.completed));
         setEditPopup(false);
     };
 
     return (
-        <div className="max-h-[100vh] p-4 sm:p-7 max-w-full mx-auto font-serif border-0 border-amber-400 relative overflow-y-auto">
+        <div className="max-h-[100vh] p-4 sm:p-7 max-w-full hide-scrollbar mx-auto font-serif border-0 border-amber-400 relative overflow-y-auto">
             <h1 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-2 text-center text-amber-600 ">
                 Your Task List
             </h1>
@@ -130,20 +128,17 @@ export default function ListPage() {
                             className="border p-2 w-full mb-2"
                         />
                         <textarea
-
                             placeholder="Description"
                             value={descritionedit}
                             onChange={(e) => setDescittionEdit(e.target.value)}
                             className="border p-2 w-full mb-2"
                         />
-
                         <input
                             type="date"
                             value={dateedit}
                             onChange={(e) => setDateEdit(e.target.value)}
                             className="border p-2 w-full mb-2"
                         />
-
                         <input
                             type="time"
                             value={timeedit}
@@ -171,7 +166,7 @@ export default function ListPage() {
             {tasks.length === 0 ? (
                 <p className="text-center text-gray-500">No tasks yet. Add one!</p>
             ) : (
-                <ul className="space-y-4 md:mx-auto md:max-w-3xl">
+                <ul data-aos="zoom-in-up" className="space-y-4 md:mx-auto md:max-w-3xl">
                     {tasks.map((task) => (
                         <li
                             key={task.id}
@@ -179,7 +174,8 @@ export default function ListPage() {
                             <div className="flex items-start gap-2">
                                 <h2 className="text-lg sm:text-xl font-bold text-gray-800 break-words flex-1 min-w-0">{task.title}</h2>
                                 <span
-                                    className={`px-3 py-1 rounded-full text-xs sm:text-sm font-semibold border shrink-0 ${getPriorityColor(
+                                    className={`px-3 py-1 rounded-full text-xs sm:text-sm font-semibold border shrink-0 
+                                        ${getPriorityColor(
                                         task.priority
                                     )}`}>
                                     {task.priority}
@@ -193,7 +189,7 @@ export default function ListPage() {
                                 </p>
 
                                 <p className="flex text-sm border-l-2 pl-3">
-                                    Time: {" "}
+                                    Time: {""}
                                     <span className="text-sm font-sans ml-1">{task.time}</span>
                                 </p>
                                 <div className="ml-auto flex gap-2">

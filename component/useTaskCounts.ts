@@ -24,10 +24,7 @@ export function useTaskCounts(): TaskCounts {
     return () => unsubscribe();
   }, []);
 
-
-
   useEffect(() => {
-
     const compute = () => {
       if (!user) return;
       const key = `tasks_${user.email}`;
@@ -41,7 +38,6 @@ export function useTaskCounts(): TaskCounts {
         setCounts({ total: 0, pending: 0, completed: 0 });
       }
     };
-
     compute();
     const onStorage = (e: StorageEvent) => {
       if (e.key?.startsWith("tasks")) compute();
@@ -54,7 +50,7 @@ export function useTaskCounts(): TaskCounts {
       window.removeEventListener("storage", onStorage);
       window.removeEventListener("tasksUpdated", onUpdated as EventListener);
     };
-  }, [user]);
 
+  }, [user]);
   return counts;
 }

@@ -12,6 +12,7 @@ export default function AddTasks() {
         type: "work",
         priority: "high",
 
+
     });
     const [user, setUser] = useState<any>(null)
 
@@ -33,13 +34,21 @@ export default function AddTasks() {
     };
 
     const handleAdd = () => {
-        if (!task.title.trim()) {
+        if (!user) {
+            alert("please login or signup!");
+            return;
+
+        } else if (!task.title.trim()) {
             alert("Please enter a task title!");
             return;
         }else if(!task.type){
             alert('Please select the type')
         }else if(!task.priority){
             alert("Please select the priority")
+        }
+        else if (!task.type) {
+            alert("please select the tasks type");
+            return;
         }
 
         const storedTasks = JSON.parse(localStorage.getItem(`tasks_${user.email}`) || "[]");
@@ -57,36 +66,41 @@ export default function AddTasks() {
 
         });
     };
-
     return (
-        <div className="bg-sky-100 dark:bg-gray-900 sm:w-[700px] sm:flex items-center flex-col
-         rounded-2xl w-full max-w-full sm:h-[700px] ">
-            <h1 className="text-center p-3 font-bold text-3xl font-serif mt-3 text-shadow-sm text-shadow-violet-500" >Add Tasks</h1>
-            <form
-                className="sm:rounded-xl sm:flex sm:items-center sm:flex-col sm:border-2 border-amber-300 
-                sm:m-1 bg-sky-50 sm:w-[590px] w-full sm:gap-7 sm:shadow-lg shadow-stone-500 
-                  flex flex-wrap m-1 justify-center items-center flex-col">
-                <div className=" sm:flex sm:justify-around sm:flex-row sm:w-full sm:gap-1 sm:mt-3 
+        <div className="sm:flex sm:justify-center flex justify-center ">
+            <div className="bg-sky-100 dark:bg-gray-900 sm:w-[700px] sm:flex items-center flex-col
+               rounded-2xl max-w-full w-full mx-1 my-4 sm:h-[700px] whitespace-nowrap justify-center">
+                <h1 data-aos="flip-left"
+                    data-aos-easing="ease-out-cubic"
+                    data-aos-duration="2000"
+                    className="text-center font-bold text-3xl font-serif mt-3 text-shadow-sm text-shadow-violet-500" >Add Tasks</h1>
+                <form
+                    data-aos="zoom-out-up"
+                    className="sm:rounded-xl rounded px-2 sm:flex sm:items-center w-full text-black sm:flex-col sm:border-2 
+                border-2 border-amber-300 
+                sm:m-1 bg-sky-50 sm:w-[590px]  sm:gap-7 sm:shadow-lg shadow-stone-500 
+                  flex  justify-center items-center flex-col">
+                    <div className=" sm:flex sm:justify-around sm:flex-row sm:w-full sm:gap-1  text-black sm:mt-3 
                                  flex flex-wrap flex-col justify-center items-center w-full gap-2 mt-2 border-0 border-amber-950">
-                    <span className="sm:text-xl font-serif sm:border-0 border-amber-300 w-full sm:w-[200px] sm:text-center">Tasks Title :</span>
-                    <input
-                        type="text"
-                        placeholder="title"
-                        name="title"
-                        value={task.title}
-                        onChange={handleChange}
-                        className=" font-[20px] font-serif sm:w-[300px] w-full border-2 border-gray-400 rounded-sm text-xl p-1 mr-2">
-                    </input>
-                </div>
-                <div className="border-0 w-full border-gray-950 sm:flex sm:justify-around sm:flex-row sm:w-full sm:gap-1 
+                        <span className="sm:text-xl font-serif sm:border-0 border-amber-300 w-full sm:w-[200px] sm:text-center">Tasks Title :</span>
+                        <input
+                            type="text"
+                            placeholder="title"
+                            name="title"
+                            value={task.title}
+                            onChange={handleChange}
+                            className=" font-[20px] font-serif sm:w-[300px] w-full border-2 border-gray-400 rounded-sm text-xl p-1 mr-2">
+                        </input>
+                    </div>
+                    <div className="border-0  text-black w-full border-gray-950 sm:flex sm:justify-around sm:flex-row sm:w-full sm:gap-1 
                 flex flex-wrap justify-center items-center">
-                    <span className="text-xl font-serif border-0 border-amber-300 sm:w-[300px] w-full text-center ">Description :</span>
-                    <textarea
-                        name="description"
-                        value={task.description}
-                        onChange={handleChange}
-                        placeholder="Tasks Detail"
-                        className=" font-[20px] font-serif sm:w-[310px] w-full border-2
+                        <span className="text-xl font-serif border-0 border-amber-300 sm:w-[300px] w-full text-center ">Description :</span>
+                        <textarea
+                            name="description"
+                            value={task.description}
+                            onChange={handleChange}
+                            placeholder="Tasks Detail"
+                            className=" font-[20px] font-serif sm:w-[310px] w-full border-2
                      border-gray-400 rounded-sm text-xl p-1 mr-2 flex flex-wrap">
                     </textarea>
                 </div>
@@ -125,22 +139,23 @@ export default function AddTasks() {
                             type="date"
                             name="date"
                             className=" block w-full rounded-lg border-2 border-gray-500 sm:p-3 p-1.5 font-sans"></input>
+                   </div>
+                        <div>
+                            <span>Time</span>
+                            <input
+                                value={task.time}
+                                type="time"
+                                name="time"
+                                onChange={handleChange}
+                                className=" block w-full rounded-lg  text-black border-2 border-gray-500 sm:p-3 p-1.5 font-sans"></input>
+                        </div>
                     </div>
-                    <div>
-                        <span>Time</span>
-                        <input
-                            value={task.time}
-                            type="time"
-                            name="time"
-                            onChange={handleChange}
-                            className=" block w-full rounded-lg border-2 border-gray-500 sm:p-3 p-1.5 font-sans"></input>
+                    <div className="sm:flex mt-7 sm:gap-45 sm:font-serif sm:mt-[20px] sm:mb-[70px] flex gap-10 justify-center mb-3">
+                        <button type="button" className="px-7 py-2 rounded-lg bg-slate-400 text-white font-semibold hover:bg-slate-500">chancel</button>
+                        <button type="button" onClick={handleAdd} className="px-11 py-2 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700">save</button>
                     </div>
-                </div>
-                <div className="sm:flex mt-7 sm:gap-45 sm:font-serif sm:mt-[20px] sm:mb-[70px] flex gap-10 justify-center">
-                    <button type="button" className="px-7 py-2 rounded-lg bg-slate-400 text-white font-semibold hover:bg-slate-500">chancel</button>
-                    <button type="button" onClick={handleAdd} className="px-11 py-2 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700">save</button>
-                </div>
-            </form >
-        </div >
+                </form >
+            </div >
+        </div>
     )
 };

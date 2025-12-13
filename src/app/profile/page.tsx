@@ -19,29 +19,29 @@ export default function Profile() {
 
   const handleUpdate = async () => {
     if (!user) return;
-      try {
-        await updateProfile(user, { displayName });
-        await user.reload();
-        const updatedUser = auth.currentUser;
-        setUser(updatedUser);
-        alert("✅ Profile updated!");
-      } catch (error) {
-        console.error("Update error:", error);
-        alert("Update failed! Try agian leter");
-      }
-    
+    try {
+      await updateProfile(user, { displayName });
+      await user.reload();
+      const updatedUser = auth.currentUser;
+      setUser(updatedUser);
+      setChangeName(false);
+      alert("✅ Profile updated!");
+    } catch (error) {
+      console.error("Update error:", error);
+      alert("Update failed! Try agian leter");
+    }
+
   };
 
   const handleSignOut = async () => {
     await signOut(auth);
+    window.location.href = "/";
     alert("Signed out!");
   };
-
   if (!user) return <p>Please log in</p>;
 
   const handleChangeName = () => {
     setChangeName(!changename);
-
   }
 
   return (

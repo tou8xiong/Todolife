@@ -1,5 +1,5 @@
 
-import { initializeApp } from "firebase/app";
+import { initializeApp, getApp, getApps } from "firebase/app";
 import {getAuth} from "firebase/auth";
 
 
@@ -12,6 +12,6 @@ const firebaseConfig = {
   appId: "1:1086346775985:web:29d5184cd9a38ff2660190"
 };
 
-const app = initializeApp(firebaseConfig);
+const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 export const auth = getAuth(app);
  
