@@ -110,7 +110,7 @@ export default function TimerPopup() {
 
             {isOpen && (
                 <div className="fixed bottom-24 right-6 z-50 bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 w-[320px]">
-                    <h2 className="text-2xl font-semibold mb-4 text-center font-serif">Timer</h2>
+                    <h2 className="text-2xl font-semibold mb-4 text-center text-black dark:text-white  font-serif">Timer</h2>
                     <div className="text-5xl font-mono mb-6 text-center dark:text-white">
                         {minutes > 60 ? formattedplushour : formatted}
                     </div>
@@ -124,7 +124,8 @@ export default function TimerPopup() {
                         </button>
                         <button
                             onClick={stop}
-                            className="px-4 py-2 bg-yellow-400 hover:bg-yellow-500 text-black rounded-lg disabled:opacity-50 transition-colors"
+                            className="px-4 py-2 bg-yellow-400 hover:bg-yellow-500 dark:text-white
+                             text-black rounded-lg disabled:opacity-50 dark:bg-yellow-400 transition-colors"
                             disabled={!running}
                         >
                             Pause

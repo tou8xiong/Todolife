@@ -73,7 +73,7 @@ export default function AddTasks() {
                 <h1 data-aos="flip-left"
                     data-aos-easing="ease-out-cubic"
                     data-aos-duration="2000"
-                    className="text-center font-bold text-3xl font-serif mt-3 text-shadow-sm text-shadow-violet-500" >Add Tasks</h1>
+                    className="text-center font-bold text-3xl font-serif mt-3 text-shadow-sm dark:text-white text-shadow-violet-500" >Add Tasks</h1>
                 <form
                     data-aos="zoom-out-up"
                     className="sm:rounded-xl rounded px-2 sm:flex sm:items-center w-full text-black sm:flex-col sm:border-2 

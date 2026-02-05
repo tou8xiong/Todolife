@@ -91,9 +91,9 @@ export default function Header() {
                             {showProfileMenu && (
                                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10">
                                     <ul className="p-2 flex flex-col gap-1 font-serif text-black">
-                                        <li className="p-2 hover:bg-gray-100 rounded-md"><Link href="/profile">Profile</Link>
+                                        <li className="p-2 hover:bg-gray-200 rounded-md flex"><Link href="/profile" className="w-full ">Profile</Link>
                                         </li>
-                                        <li className="p-2 hover:bg-gray-100 rounded-md cursor-pointer"
+                                        <li className="p-2 hover:bg-gray-200 rounded-md cursor-pointer"
                                             onClick={handleLogout}>
                                             Logout
                                         </li>
