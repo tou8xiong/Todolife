@@ -44,7 +44,6 @@ export default function DonePage() {
     });
     return () => unsubscribe();
   }, []);
-
   const handleTypeToggle = () => setShowType((s) => !s);
   const chooseType = (t: "work" | "study" | "activities") => {
     setSelectedType(t);
@@ -238,7 +237,7 @@ export default function DonePage() {
                 {doneTasks.filter(t => (t.type) === "study").length === 0 ? <p className="text-center text-white">No completed activity tasks yet.</p> :
                   <ul className="w-full sm:gap-2 h-[500px] overflow-y-auto hide-scrollbar bg-gray-500 p-2 " >
                     {doneTasks
-                 
+
                       .filter(t => (t.type) === "study")
                       .map((task, index) => (
                         <li key={task.id} className="p-5 sm:p-6 bg-white shadow-md rounded-xl 

@@ -19,8 +19,6 @@ export default function Header() {
     const [showMenu, setShowMenu] = useState(false);
     const [user, setUser] = useState<any>(null);
     const [hideform, setHideForm] = useState(true);
-    console.log(pending);
-    console.log(completed);
 
     const [showProfileMenu, setShowProfileMenu] = useState(false);
 
