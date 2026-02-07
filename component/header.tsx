@@ -8,12 +8,19 @@ import { FaList } from "react-icons/fa";
 import { CgProfile } from "react-icons/cg";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
+type TasksCount = {
+    pending: number;
+    completed: number;
+};
+
 
 export default function Header() {
     const { pending, completed } = useTaskCounts();
     const [showMenu, setShowMenu] = useState(false);
     const [user, setUser] = useState<any>(null);
     const [hideform, setHideForm] = useState(true);
+    console.log(pending);
+    console.log(completed);
 
     const [showProfileMenu, setShowProfileMenu] = useState(false);
 
@@ -29,6 +36,11 @@ export default function Header() {
         await signOut(auth);
         setShowProfileMenu(false); // Close menu on logout
     };
+
+    useEffect(() =>{
+        pending;
+        console.log("poddd",pending)
+    }, [pending])
 
     return (
         <div className="bg-blue-300  sm:flex flex-wrap sm:items-center w-full  sm:w-full
@@ -46,7 +58,8 @@ export default function Header() {
                 <button
                     className="hover:bg-amber-100 p-2 rounded-xl  sm:px-6 flex items-center sm:border-0 border-2 border-sky-600">
                     <Link href={"/mytasks"} className="sm:text-lg text-[12px] ">My Tasks</Link>
-                    <span className="ml-2 rounded-full px-2 py-0.5 text-[10px] sm:text-xs font-semibold bg-slate-800 text-white">{pending}</span>
+                    <span className="ml-2 rounded-full px-2 py-0.5 text-[10px] sm:text-xs font-semibold bg-slate-800 text-white">
+                        {pending}</span>
                 </button>
                 <button
                     className="hover:bg-amber-100 p-2 rounded-xl  sm:px-6 flex items-center sm:border-0 border-2 border-sky-600">

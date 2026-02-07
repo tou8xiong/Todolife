@@ -9,8 +9,8 @@ export default function AddTasks() {
         description: "",
         date: "",
         time: "",
-        type: "work",
-        priority: "high",
+        type: "pick type",
+        priority: "",
 
 
     });
@@ -41,10 +41,12 @@ export default function AddTasks() {
         } else if (!task.title.trim()) {
             alert("Please enter a task title!");
             return;
-        }else if(!task.type){
+        }else if(!task.type || task.priority == "pick type"){
             alert('Please select the type')
-        }else if(!task.priority){
+            return;
+        }else if(!task.priority || task.priority == "pick priority"){
             alert("Please select the priority")
+            return;
         }
         else if (!task.type) {
             alert("please select the tasks type");
@@ -61,7 +63,7 @@ export default function AddTasks() {
             description: "",
             date: "",
             time: "",
-            type: "work",
+            type: "pick type",
             priority: "high",
 
         });
@@ -112,7 +114,7 @@ export default function AddTasks() {
                         onChange={handleChange}
                         id="seclectype"
                         className="bg-amber-200 sm:p-2 p-1.5  rounded-md border-2 border-gray-500">
-                        <option className="bg-white text-gray-600">pick type</option>
+                        <option value="pick type" className="bg-white text-gray-600">pick type</option>
                         <option value="work" className="bg-white">Work</option>
                         <option value="study" className="bg-white">Study</option>
                         <option value="activities" className="bg-white">Activities</option>
