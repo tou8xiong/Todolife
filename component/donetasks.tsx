@@ -182,7 +182,7 @@ export default function DonePage() {
                     <label className="text-sm ">tasks: </label><span className="mr-3 font-bold">
                       {doneTasks.filter(t => (t.type) === "work").length}</span></p>
                   {doneTasks.filter(t => (t.type) === "work").length === 0 ? <p className="text-center text-white">No completed work tasks yet.</p> :
-                    <ul className="w-full border-0 border-amber-500 h-[500px] overflow-y-auto p-2  bg-gray-500 hide-scrollbar">
+                    <ul className="w-full border-0 border-amber-500 h-[500px] overflow-y-auto p-2  bg-gray-500 hide-scrollbar flex gap-2 flex-col">
                       {doneTasks
                         .filter(t => (t.type) === "work")
                         .map((task, index) => (
@@ -235,7 +235,7 @@ export default function DonePage() {
                 <h1 className="text-white m-0 text-center font-bold text-shadow-md text-shadow-amber-600">study tasks</h1>
                 <p className="text-white text-end font-bold text-xl m-0  rounded-t-md bg-orange-400"><label className="text-sm">tasks: </label><span className="mr-3">{doneTasks.filter(t => (t.type) === "study").length}</span></p>
                 {doneTasks.filter(t => (t.type) === "study").length === 0 ? <p className="text-center text-white">No completed activity tasks yet.</p> :
-                  <ul className="w-full sm:gap-2 h-[500px] overflow-y-auto hide-scrollbar bg-gray-500 p-2 " >
+                  <ul className="w-full sm:gap-2 h-[500px] overflow-y-auto hide-scrollbar bg-gray-500 p-2 flex flex-col gap-2" >
                     {doneTasks
 
                       .filter(t => (t.type) === "study")
@@ -289,7 +289,7 @@ export default function DonePage() {
                   <label className="text-sm ">tasks: </label><span className="mr-3 font-bold">
                     {doneTasks.filter(t => (t.type) === "activities").length}</span></p>
                 {doneTasks.filter(t => (t.type) === "activities").length === 0 ? <p className="text-center text-white">No completed activity tasks yet.</p> :
-                  <ul className="w-full sm:gap-2 h-[500px] overflow-y-auto hide-scrollbar bg-gray-500 p-2">
+                  <ul className="w-full sm:gap-2 h-125 overflow-y-auto hide-scrollbar bg-gray-500 p-2 flex flex-col gap-2">
                     {doneTasks
                       .filter(t => (t.type) === "activities")
                       .map((task, index) => (

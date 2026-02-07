@@ -8,10 +8,6 @@ import { FaList } from "react-icons/fa";
 import { CgProfile } from "react-icons/cg";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
-type TasksCount = {
-    pending: number;
-    completed: number;
-};
 
 
 export default function Header() {
@@ -19,6 +15,7 @@ export default function Header() {
     const [showMenu, setShowMenu] = useState(false);
     const [user, setUser] = useState<any>(null);
     const [hideform, setHideForm] = useState(true);
+    const [userEmoji, serUserEmoji] = useState<string | null>(null);
 
     const [showProfileMenu, setShowProfileMenu] = useState(false);
 
@@ -35,10 +32,19 @@ export default function Header() {
         setShowProfileMenu(false); // Close menu on logout
     };
 
-    useEffect(() =>{
+    useEffect(() => {
         pending;
-        console.log("poddd",pending)
     }, [pending])
+
+    useEffect(() => {
+        const useremoji = localStorage.getItem("emoji");
+        if (useremoji) {
+            serUserEmoji(useremoji);
+        }
+
+    }, [userEmoji])
+    console.log("header checkl", userEmoji)
+
 
     return (
         <div className="bg-blue-300  sm:flex flex-wrap sm:items-center w-full  sm:w-full
@@ -95,14 +101,15 @@ export default function Header() {
                         <div className="relative ml-auto">
                             <div className="flex flex-col  justify-center items-center">
                                 <button onClick={() => setShowProfileMenu(!showProfileMenu)} className="cursor-pointer text-center">
-                                    <CgProfile size={32}  className="text-center"/>
+                                    {userEmoji ? (<div><Image src={userEmoji} alt="useremoji" width={50} height={50} /></div>) : (<CgProfile size={32} className="text-center" />)}
                                 </button>
-                                <label className="text-center font-bold">{user?.email?.split('@')[0] || "Guest"}</label>
+                                <label className="text-center font-bold">{user?.displayName || user?.email.split("@")[0]}</label>
                             </div>
                             {showProfileMenu && (
                                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10">
                                     <ul className="p-2 flex flex-col gap-1 font-serif text-black">
-                                        <li className="p-2 hover:bg-gray-200 rounded-md flex"><Link href="/profile" className="w-full ">Profile</Link>
+                                        <li className="p-2 hover:bg-gray-200 rounded-md flex">
+                                            <Link href="/profile" className="w-full ">Profile</Link>
                                         </li>
                                         <li className="p-2 hover:bg-gray-200 rounded-md cursor-pointer"
                                             onClick={handleLogout}>
@@ -114,6 +121,6 @@ export default function Header() {
                         </div>)}
                 </div>
             </div>
-        </div>
+        </div >
     );
 }
