@@ -49,7 +49,7 @@ export default function Header() {
     return (
         <div className="bg-blue-300  sm:flex flex-wrap sm:items-center w-full  sm:w-full
          justify-between sm:justify-between sm:gap-2 sticky top-0 z-50 shadow-sm sm:shadow-sm shadow-black sm:border-0
-          border-red-400  sm:px-0 py-2 max-w-full border-0 m-0">
+          border-red-400  sm:px-0  max-w-full border-0 m-0">
             <button data-aos="flip-left" className="m-1 cursor-pointer"><Link href={"/"}>
                 <Image src={Logo} alt="logo" className="w-32 sm:w-48 md:w-[250px]" /></Link>
             </button>
@@ -99,9 +99,9 @@ export default function Header() {
                         </div>
                     ) : (
                         <div className="relative ml-auto">
-                            <div className="flex flex-col  justify-center items-center">
+                            <div className="flex flex-col  justify-center items-center ">
                                 <button onClick={() => setShowProfileMenu(!showProfileMenu)} className="cursor-pointer text-center">
-                                    {userEmoji ? (<div><Image src={userEmoji} alt="useremoji" width={50} height={50} /></div>) : (<CgProfile size={32} className="text-center" />)}
+                                    {userEmoji ? (<div><Image src={userEmoji} alt="useremoji" width={50} height={30} /></div>) : (<CgProfile size={32} className="text-center" />)}
                                 </button>
                                 <label className="text-center font-bold">{user?.displayName || user?.email.split("@")[0]}</label>
                             </div>

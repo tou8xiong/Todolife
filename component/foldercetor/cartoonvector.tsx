@@ -18,7 +18,7 @@ type props = {
 
 export default function EmojiProfiles({ setUserEmoji, userEmogi }: props) {
     return (
-        <div className="flex flex-row justify-center">
+        <div className="flex flex-row justify-center ">
             <ul
                 style={{
                     listStyle: "none",

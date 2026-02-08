@@ -20,12 +20,12 @@ export default function Profile() {
   const [userEmoji, setUserEmoji] = useState<string | null>(null);
 
   useEffect(() => {
-    const saved = localStorage.getItem("emoji"); 
+    const saved = localStorage.getItem("emoji");
     if (saved) {
       setUserEmoji(saved);
     }
 
-  }, []); 
+  }, []);
 
   useEffect(() => {
     if (userEmoji !== null) {
@@ -72,13 +72,13 @@ export default function Profile() {
       <div>
         <div>
           <h1 className="text-2xl font-bold font-mono"> Profile</h1>
-         {userEmoji ? (<div className=" flex justify-center"><Image src={userEmoji} alt="useremoji" width={100} height={100} priority /></div> ) :  ("")}
+          {userEmoji ? (<div className=" flex justify-center"><Image src={userEmoji} alt="useremoji" width={100} height={100} priority /></div>) : ("")}
           <p>Email: {user.email}</p>
           <p className="">
             Name: {user.displayName || "No name set"}
             <button onClick={handleChangeName} className="cursor-pointer ml-22"><FaEdit size={16} /></button></p>
         </div>
-        {changename && <div className="mx-50 ml-60">
+        {changename && <div className="sm:mx-50 sm:ml-60 md:mx50 md:ml-60">
           <div className=" pb-20 rounded-xl bg-amber-100 flex flex-col shadow-xl gap-7">
             <div className="flex flex-col justify-center items-center g">
               <label>Your new name</label>
@@ -91,7 +91,7 @@ export default function Profile() {
             </div>
             <div>
               <label>Choose your emogi</label>
-              <EmojiProfiles setUserEmoji={setUserEmoji} userEmogi={userEmoji}/>
+              <EmojiProfiles setUserEmoji={setUserEmoji} userEmogi={userEmoji} />
             </div>
           </div>
           <button onClick={handleUpdate} className="bg-blue-500 cursor-pointer text-white px-10 py-2 rounded">Update</button>

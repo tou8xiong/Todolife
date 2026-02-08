@@ -1,7 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "@/lib/firebase"
+import { auth } from "@/lib/firebase";
+import { Button } from "@/components/ui/button";
+import { ConfirmDeleteButton } from "@/components/ui/ConfirmDeleteitems";
 
 interface Task {
     id: number;
@@ -70,16 +72,7 @@ export default function ListPage() {
                 return "bg-gray-100 text-gray-600 border-gray-400";
         }
     };
-    const handleDelete = (id: number) => {
-        const storedTasks: Task[] = JSON.parse(localStorage.getItem(`tasks_${user.email}`) || "[]");
-        const updatedTasks = storedTasks.filter((task: any) => task.id !== id);
-        localStorage.setItem(`tasks_${user.email}`, JSON.stringify(updatedTasks));
-        if (typeof window !== "undefined") {
-            window.dispatchEvent(new Event("tasksUpdated"));
-        }
-        const pendingTasks = updatedTasks.filter((t: any) => !t.completed);
-        setTasks(pendingTasks);
-    };
+
     const handleMarkDone = (id: number) => {
         const storedTasks: Task[] = JSON.parse(localStorage.getItem(`tasks_${user.email}`) || "[]");
         const updatedTasks = storedTasks.map((t) =>
@@ -109,6 +102,18 @@ export default function ListPage() {
         setTasks(updatedTasks.filter((t) => !t.completed));
         setEditPopup(false);
     };
+
+    const handleDelete = (id: number) => {
+        const storedTasks: Task[] = JSON.parse(localStorage.getItem(`tasks_${user.email}`) || "[]");
+        const updatedTasks = storedTasks.filter((task: any) => task.id !== id);
+        localStorage.setItem(`tasks_${user.email}`, JSON.stringify(updatedTasks));
+        if (typeof window !== "undefined") {
+            window.dispatchEvent(new Event("tasksUpdated"));
+        }
+        const pendingTasks = updatedTasks.filter((t: any) => !t.completed);
+        setTasks(pendingTasks);
+    };
+
 
     return (
         <div className="max-h-[100vh] p-4 sm:p-7 max-w-full hide-scrollbar mx-auto font-serif border-0 border-amber-400 relative overflow-y-auto">
@@ -199,13 +204,16 @@ export default function ListPage() {
                                     <button
                                         onClick={() => handleMarkDone(task.id)}
                                         className="cursor-pointer px-3 py-1 bg-green-500 text-white rounded-md hover:bg-green-600 ">Done</button>
-                                    <button
-                                        onClick={() => {
-                                            if (window.confirm("Are you sure you want to delete this task?")) {
-                                                handleDelete(task.id);
-                                            }
-                                        }}
-                                        className="cursor-pointer px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 ">Delete</button>
+                                    <ConfirmDeleteButton
+                                        itemName={user ? task.title : task.title}
+                                        itemId={task.id}
+                                        onDelete={() =>handleDelete(task.id)}
+                                    />
+
+                                    {/**    <button
+                                        onClick={() => { handleDelete(task.id); }}
+                                        className="cursor-pointer px-3 py-1 bg-red-500
+                                         text-white rounded-md hover:bg-red-600 ">Delete</button>*/}
                                 </div>
                             </div>
                         </li>

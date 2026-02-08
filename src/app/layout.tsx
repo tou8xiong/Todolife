@@ -6,6 +6,7 @@ import Header from "../../component/header";
 import Sidebar from "../../component/sidebar";
 import TimerPopup from "@/component/timerpopup";
 import AosClientWrapper from "@/component/Aosanimation";
+import { Toaster } from 'sonner'
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -39,6 +40,7 @@ export default function RootLayout({
           <Header />
           <Sidebar />
           {children}
+          <Toaster richColors position="top-right" />
           <TimerPopup />
         </AosClientWrapper>
       </body>

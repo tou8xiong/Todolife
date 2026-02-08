@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/lib/firebase"
+import { ConfirmDeleteButton } from "@/components/ui/ConfirmDeleteitems";
 interface Task {
   id: number;
   title: string;
@@ -210,20 +211,18 @@ export default function DonePage() {
                                   ⏰ Time: <span className="text-gray-700 font-medium font-sans">{task.time}</span>
                                 </span>
                               )}
-                              <button
-                                onClick={() => {
-                                  if (window.confirm("Are you sure you want to delete this completed task?")) {
-                                    handleDelete(task.id);
-                                  }
-                                }}
-                                className="ml-auto cursor-pointer px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600"
-                              >
-                                Delete
-                              </button>
+
                             </div>
                             <p className="text-sm text-gray-400 mt-2">
                               ✅ Done at: <span className="text-gray-700 font-medium font-sans">{formatCompletedAt(task.completedAt)}</span>
                             </p>
+                            <div className="float-end">
+                              <ConfirmDeleteButton
+                                itemId={task.id}
+                                itemName={user ? task.title : task.title}
+                                onDelete={() => { handleDelete(task.id); }}
+                              />
+                            </div>
                           </li>
                         ))}
                     </ul>}
@@ -264,20 +263,18 @@ export default function DonePage() {
                                 ⏰ Time: <span className="text-gray-700 font-medium font-sans">{task.time}</span>
                               </span>
                             )}
-                            <button
-                              onClick={() => {
-                                if (window.confirm("Are you sure you want to delete this completed task?")) {
-                                  handleDelete(task.id);
-                                }
-                              }}
-                              className="ml-auto cursor-pointer px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600"
-                            >
-                              Delete
-                            </button>
+
                           </div>
                           <p className="text-sm text-gray-400 mt-2">
                             ✅ Done at: <span className="text-gray-700 font-medium font-sans">{formatCompletedAt(task.completedAt)}</span>
                           </p>
+                          <div className="float-end">
+                            <ConfirmDeleteButton
+                              itemId={task.id}
+                              itemName={user ? task.title : task.title}
+                              onDelete={() => { handleDelete(task.id); }}
+                            />
+                          </div>
                         </li>
                       ))}
                   </ul>}
@@ -317,20 +314,18 @@ export default function DonePage() {
                                 ⏰ Time: <span className="text-gray-700 font-medium font-sans">{task.time}</span>
                               </span>
                             )}
-                            <button
-                              onClick={() => {
-                                if (window.confirm("Are you sure you want to delete this completed task?")) {
-                                  handleDelete(task.id);
-                                }
-                              }}
-                              className="ml-auto cursor-pointer px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600"
-                            >
-                              Delete
-                            </button>
+
                           </div>
                           <p className="text-sm text-gray-400 mt-2">
                             ✅ Done at: <span className="text-gray-700 font-medium font-sans">{formatCompletedAt(task.completedAt)}</span>
                           </p>
+                          <div className="float-end">
+                            <ConfirmDeleteButton
+                              itemId={task.id}
+                              itemName={user ? task.title : task.title}
+                              onDelete={() => { handleDelete(task.id); }}
+                            />
+                          </div>
                         </li>
                       ))}
                   </ul>
