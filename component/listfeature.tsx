@@ -207,13 +207,17 @@ export default function ListPage() {
                                     <ConfirmDeleteButton
                                         itemName={user ? task.title : task.title}
                                         itemId={task.id}
-                                        onDelete={() =>handleDelete(task.id)}
+                                        onDelete={() => handleDelete(task.id)}
                                     />
 
-                                    {/**    <button
+
+                                    {/*
+                                    <button
                                         onClick={() => { handleDelete(task.id); }}
                                         className="cursor-pointer px-3 py-1 bg-red-500
-                                         text-white rounded-md hover:bg-red-600 ">Delete</button>*/}
+                                         text-white rounded-md hover:bg-red-600 ">Delete
+                                    </button>
+                                    */}
                                 </div>
                             </div>
                         </li>
