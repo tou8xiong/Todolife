@@ -25,7 +25,7 @@ export default function Home() {
             data-aos="fade-down-right"
             className="w-full max-w-xl flex flex-col gap-2 border-0 border-red-500">
             <h1 className=" dark:text-white text-2xl sm:text-4xl font-serif font-bold text-center textanimated">
-              <p className=" text-2xl mb-5">Hi <span className="text-5xl">{user?.email?.split('@')[0] || "Guest"}</span>
+              <p className=" text-2xl mb-5">Hi <span className="text-5xl">{ user?.displayName ||  user?.email?.split('@')[0] || "Guest"}</span>
               </p>Welcome To TODOLIFE </h1>
             <h1 className="font-serif text-center text-base sm:text-lg">TODOLIFE will make your tasks done easier</h1>
           </div>
