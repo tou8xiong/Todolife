@@ -1,4 +1,4 @@
-import ListsPage from "../../../component/listfeature"
+import ListsPage from "@/components/tasks/TaskList"
 
 export default function MyTasks(){
     return(

@@ -1,5 +1,5 @@
 
-import DoneTasks from "../../../component/donetasks";
+import DoneTasks from "@/components/tasks/DoneTasks";
 
 export default function Completetasks(){
     return(

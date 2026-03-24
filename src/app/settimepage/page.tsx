@@ -1,4 +1,4 @@
-import TimeSetting from "../../../component/timesetting";
+import TimeSetting from "@/components/timer/TimerSettings";
 
 export default function SetTimePage(){
     return(
