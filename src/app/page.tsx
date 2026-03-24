@@ -13,7 +13,6 @@ export default function Home() {
       setUser(currentUser);
     });
     return () => unsubscribe();
-
   }, []);
   return (
     <>
