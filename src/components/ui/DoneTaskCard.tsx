@@ -1,5 +1,6 @@
 "use client";
 import { Task } from "@/types/task";
+import { ConfirmDeleteButton } from "@/components/ui/ConfirmDeleteitems";
 
 const formatCompletedAt = (iso?: string | null) => {
   if (!iso) return "N/A";
@@ -42,16 +43,11 @@ export default function DoneTaskCard({ task, onDelete }: DoneTaskCardProps) {
             ⏰ Time: <span className="text-gray-700 font-medium font-sans">{task.time}</span>
           </span>
         )}
-        <button
-          onClick={() => {
-            if (window.confirm("Are you sure you want to delete this completed task?")) {
-              onDelete(task.id);
-            }
-          }}
-          className="ml-auto cursor-pointer px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600"
-        >
-          Delete
-        </button>
+        <ConfirmDeleteButton
+          itemName={task.title}
+          itemId={task.id}
+          onDelete={(id) => onDelete(id as number)}
+        />
       </div>
       <p className="text-sm text-gray-400 mt-2">
         ✅ Done at:{" "}

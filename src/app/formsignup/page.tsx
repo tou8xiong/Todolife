@@ -3,6 +3,7 @@ import { useState } from "react";
 import { FcGoogle } from "react-icons/fc";
 import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { auth } from "@/lib/firebase";
+import { toast } from "sonner";
 
 export default function FormSignUp() {
     const [loading, setLoading] = useState(false);
@@ -12,10 +13,10 @@ export default function FormSignUp() {
         setLoading(true);
         try {
             await createUserWithEmailAndPassword(auth, email, password);
-            alert("Signup success!");
+            toast.success("Signup success!");
         } catch (error) {
             console.error(error);
-            alert("Signup failed. See console for details.");
+            toast.error("Signup failed. See console for details.");
         } finally {
             setLoading(false);
         }
@@ -26,11 +27,11 @@ export default function FormSignUp() {
     try {
       const result = await signInWithPopup(auth, provider);
       const user = result.user;
-      alert(`Welcome, ${user.displayName || "User"}!`);
+      toast.success(`Welcome, ${user.displayName || "User"}!`);
        window.location.href = "/";
     } catch (error: any) {
       console.error("Google login error:", error);
-      alert(error.message);
+      toast.error(error.message);
     }
   };
 
@@ -40,7 +41,7 @@ export default function FormSignUp() {
         const email = String(form.get("email") || "").trim();
         const password = String(form.get("password") || "");
         if (!email || !password) {
-            alert("Fill email and password");
+            toast.error("Fill email and password");
             return;
         }
         handleSignup(email, password, );

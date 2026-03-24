@@ -1,17 +1,11 @@
 "use client";
 import { useState, useEffect } from "react";
 import { auth } from "@/lib/firebase";
-import { onAuthStateChanged, reload, signOut, updateProfile } from "firebase/auth";
-import { FaEdit } from "react-icons/fa";
+import { onAuthStateChanged, signOut, updateProfile } from "firebase/auth";
+import { toast } from "sonner";
+import { FaEdit, FaSignOutAlt, FaEnvelope, FaUser } from "react-icons/fa";
 import EmojiProfiles from "@/component/foldercetor/cartoonvector";
 import Image from "next/image";
-import { text } from "stream/consumers";
-
-interface Task {
-  em: string;
-}
-
-
 
 export default function Profile() {
   const [user, setUser] = useState<any>(null);
@@ -21,10 +15,7 @@ export default function Profile() {
 
   useEffect(() => {
     const saved = localStorage.getItem("emoji");
-    if (saved) {
-      setUserEmoji(saved);
-    }
-
+    if (saved) setUserEmoji(saved);
   }, []);
 
   useEffect(() => {
@@ -43,62 +34,142 @@ export default function Profile() {
 
   const handleUpdate = async () => {
     if (!user) return;
+    if (!displayName.trim()) {
+      toast.error("Display name cannot be empty");
+      return;
+    }
     try {
       await updateProfile(user, { displayName });
       await user.reload();
-      const updatedUser = auth.currentUser;
-      setUser(updatedUser);
+      setUser(auth.currentUser);
       setChangeName(false);
-      alert("✅ Profile updated!");
+      toast.success("Profile updated!");
     } catch (error) {
       console.error("Update error:", error);
-      alert("Update failed! Try agian leter");
+      toast.error("Update failed! Try again later");
     }
   };
+
   const handleSignOut = async () => {
     await signOut(auth);
+    toast.success("Signed out!");
     window.location.href = "/";
-    alert("Signed out!");
   };
-  if (!user) return <p>Please log in</p>;
 
-  const handleChangeName = () => {
-    setChangeName(!changename);
-  }
-
+  if (!user) return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-sky-50 to-blue-100">
+      <p className="text-gray-500 font-serif text-lg">Please log in to view your profile.</p>
+    </div>
+  );
 
   return (
-    <div className="p-6 text-center">
-      <div>
-        <div>
-          <h1 className="text-2xl font-bold font-mono"> Profile</h1>
-          {userEmoji ? (<div className=" flex justify-center"><Image src={userEmoji} alt="useremoji" width={100} height={100} priority /></div>) : ("")}
-          <p>Email: {user.email}</p>
-          <p className="">
-            Name: {user.displayName || "No name set"}
-            <button onClick={handleChangeName} className="cursor-pointer ml-22"><FaEdit size={16} /></button></p>
+    <div className="min-h-screen bg-gradient-to-br from-sky-50 to-blue-100 font-serif pb-12">
+
+      {/* Banner */}
+      <div className="relative h-44 bg-gradient-to-r from-blue-500 to-sky-400 rounded-b-3xl shadow-lg">
+        <div className="absolute -bottom-14 left-1/2 -translate-x-1/2">
+          <div className="w-28 h-28 rounded-full border-4 border-white shadow-xl overflow-hidden bg-amber-100 flex items-center justify-center">
+            {userEmoji ? (
+              <Image src={userEmoji} alt="avatar" width={112} height={112} className="object-cover" priority />
+            ) : (
+              <span className="text-5xl font-bold text-blue-600">
+                {(user.displayName || user.email || "U")[0].toUpperCase()}
+              </span>
+            )}
+          </div>
         </div>
-        {changename && <div className="sm:mx-50 sm:ml-60 md:mx50 md:ml-60">
-          <div className=" pb-20 rounded-xl bg-amber-100 flex flex-col shadow-xl gap-7">
-            <div className="flex flex-col justify-center items-center g">
-              <label>Your new name</label>
+      </div>
+
+      <div className="mt-20 px-4 max-w-lg mx-auto space-y-4">
+
+        {/* Info Card */}
+        <div className="bg-white rounded-2xl shadow-md p-6 text-center">
+          <h2 className="text-2xl font-bold text-gray-800">{user.displayName || "No name set"}</h2>
+          <div className="flex items-center justify-center gap-1 text-gray-500 mt-1 text-sm">
+            <FaEnvelope size={12} />
+            <span>{user.email}</span>
+          </div>
+          <button
+            onClick={() => setChangeName(!changename)}
+            className="mt-4 px-5 py-1.5 text-sm bg-sky-100 hover:bg-sky-200 text-sky-700 rounded-full inline-flex items-center gap-1.5 transition"
+          >
+            <FaEdit size={12} />
+            {changename ? "Close Editor" : "Edit Profile"}
+          </button>
+        </div>
+
+        {/* Account Details Card */}
+        <div className="bg-white rounded-2xl shadow-md p-5 space-y-3">
+          <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wide">Account Details</h3>
+          <div className="flex items-center gap-3 p-3 bg-sky-50 rounded-xl">
+            <div className="w-9 h-9 rounded-full bg-sky-200 flex items-center justify-center">
+              <FaUser size={14} className="text-sky-600" />
+            </div>
+            <div>
+              <p className="text-xs text-gray-400">Display Name</p>
+              <p className="text-sm font-semibold text-gray-700">{user.displayName || "Not set"}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3 p-3 bg-amber-50 rounded-xl">
+            <div className="w-9 h-9 rounded-full bg-amber-200 flex items-center justify-center">
+              <FaEnvelope size={14} className="text-amber-600" />
+            </div>
+            <div>
+              <p className="text-xs text-gray-400">Email</p>
+              <p className="text-sm font-semibold text-gray-700">{user.email}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Edit Panel */}
+        {changename && (
+          <div className="bg-white rounded-2xl shadow-md p-6 space-y-4">
+            <h3 className="text-base font-bold text-gray-700">Edit Profile</h3>
+
+            <div>
+              <label className="text-sm font-medium text-gray-600 block mb-1">Display Name</label>
               <input
                 type="text"
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
-                className="border p-2 rounded "
-                placeholder="Your name" />
+                className="w-full border-2 border-sky-200 focus:border-sky-400 rounded-xl p-2.5 outline-none text-gray-800 transition"
+                placeholder="Your name"
+              />
             </div>
+
             <div>
-              <label>Choose your emogi</label>
+              <label className="text-sm font-medium text-gray-600 block mb-2">Choose Avatar</label>
               <EmojiProfiles setUserEmoji={setUserEmoji} userEmogi={userEmoji} />
             </div>
+
+            <div className="flex gap-3 pt-1">
+              <button
+                onClick={() => setChangeName(false)}
+                className="flex-1 py-2.5 rounded-xl border-2 border-gray-200 text-gray-600 hover:bg-gray-50 font-medium transition"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleUpdate}
+                className="flex-1 py-2.5 rounded-xl bg-blue-500 hover:bg-blue-600 text-white font-semibold transition"
+              >
+                Save Changes
+              </button>
+            </div>
           </div>
-          <button onClick={handleUpdate} className="bg-blue-500 cursor-pointer text-white px-10 py-2 rounded">Update</button>
-        </div>}
-        <div className="mt-10 flex justify-center gap-2">
-          <button onClick={handleSignOut} className="bg-red-400 cursor-pointer text-white px-3  py-1 rounded">Sign out</button>
+        )}
+
+        {/* Sign Out Card */}
+        <div className="bg-white rounded-2xl shadow-md p-4">
+          <button
+            onClick={handleSignOut}
+            className="w-full py-2.5 rounded-xl bg-red-50 hover:bg-red-100 text-red-500 font-semibold flex items-center justify-center gap-2 transition"
+          >
+            <FaSignOutAlt size={15} />
+            Sign Out
+          </button>
         </div>
+
       </div>
     </div>
   );

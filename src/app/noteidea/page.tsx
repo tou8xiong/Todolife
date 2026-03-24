@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { MdDelete } from "react-icons/md";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/lib/firebase";
+import { toast } from "sonner";
 
 interface Idea {
     id: number;
@@ -50,10 +51,9 @@ export default function NooteBook() {
             localStorage.setItem(`Ideas_${user.email}`, JSON.stringify(updatedIdeas));
             setIdeas(updatedIdeas);
             setCurentIdeas({ ideatext: "" });
-        } else (
-
-
-            alert("please login or signup!"))
+        } else {
+            toast.error("Please login or signup!");
+        }
     }
     const handleDelete = (id: number) => {
         const storeIdeas: Idea[] = JSON.parse(localStorage.getItem(`Ideas_${user.email}`) || "[]");

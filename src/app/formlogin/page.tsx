@@ -3,6 +3,7 @@ import { FcGoogle } from "react-icons/fc";
 import { useState } from "react";
 import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { auth } from "@/lib/firebase";
+import { toast } from "sonner";
 
 export default function FormLogIN() {
     const [loading, setLoading] = useState(false);
@@ -11,19 +12,19 @@ export default function FormLogIN() {
         setLoading(true);
         try {
             await signInWithEmailAndPassword(auth, email, password);
-            alert("Login successful!");
+            toast.success("Login successful!");
             // Optionally redirect user to home page:
             window.location.href = "/";
         } catch (error: any) {
             console.error("Firebase login error:", error.code, error.message);
             if (error.code === "auth/user-not-found") {
-                alert("No user found with this email.");
+                toast.error("No user found with this email.");
             } else if (error.code === "auth/wrong-password") {
-                alert("Wrong password. Try again.");
+                toast.error("Wrong password. Try again.");
             } else if (error.code === "auth/invalid-email") {
-                alert("Invalid email format.");
+                toast.error("Invalid email format.");
             } else {
-                alert("Login failed: " + error.message);
+                toast.error("Login failed: " + error.message);
             }
         } finally {
             setLoading(false);
@@ -36,7 +37,7 @@ export default function FormLogIN() {
         const email = String(form.get("email") || "").trim();
         const password = String(form.get("password") || "");
         if (!email || !password) {
-            alert("Please enter email and password");
+            toast.error("Please enter email and password");
             return;
         }
         handleLogin(email, password);
@@ -46,11 +47,11 @@ export default function FormLogIN() {
         try {
             const result = await signInWithPopup(auth, provider);
             const user = result.user;
-            alert(`Welcome, ${user.displayName || "User"}!`);
+            toast.success(`Welcome, ${user.displayName || "User"}!`);
             window.location.href = "/";
         } catch (error: any) {
             console.error("Google login error:", error);
-            alert(error.message);
+            toast.error(error.message);
         }
     };
     return (

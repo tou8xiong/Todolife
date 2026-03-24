@@ -4,6 +4,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { Task } from "@/types/task";
 import DoneTaskCard from "@/components/ui/DoneTaskCard";
+import { ConfirmDeleteButton } from "@/components/ui/ConfirmDeleteitems";
 
 type TaskType = "work" | "study" | "activities";
 
@@ -107,9 +108,8 @@ export default function DoneTasks() {
     }
   };
 
-  const handleClearAll = () => {
+  const doClearAll = () => {
     if (!user?.email) return;
-    if (!window.confirm("Delete all completed tasks? This cannot be undone.")) return;
     try {
       const storedTasks: Task[] = JSON.parse(localStorage.getItem(`tasks_${user.email}`) || "[]");
       const updatedTasks = storedTasks.filter((t) => !t.completed);
@@ -136,12 +136,13 @@ export default function DoneTasks() {
         <h1 className="text-2xl sm:text-3xl font-bold text-green-600">✅ Completed Tasks</h1>
 
         {doneTasks.length > 0 && (
-          <button
-            onClick={handleClearAll}
-            className="cursor-pointer px-3 sm:px-4 py-2 rounded-md bg-red-600 text-white font-semibold hover:bg-red-700 shadow"
+          <ConfirmDeleteButton
+            itemName="all completed tasks"
+            itemId="all"
+            onDelete={() => doClearAll()}
           >
             Clear All
-          </button>
+          </ConfirmDeleteButton>
         )}
 
         <div className="sm:hidden">

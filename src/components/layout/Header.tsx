@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useTaskCounts } from "@/hooks/useTaskCounts";
 import { useState, useEffect } from "react";
 import { FaList } from "react-icons/fa";
-import { CgProfile } from "react-icons/cg";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 
@@ -15,6 +14,7 @@ export default function Header() {
     const [user, setUser] = useState<any>(null);
     const [hideform, setHideForm] = useState(true);
     const [showProfileMenu, setShowProfileMenu] = useState(false);
+    const [userEmoji, setUserEmoji] = useState<string | null>(null);
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -24,10 +24,22 @@ export default function Header() {
         return () => unsubscribe();
     }, []);
 
+    useEffect(() => {
+        const loadEmoji = () => {
+            const saved = localStorage.getItem("emoji");
+            setUserEmoji(saved);
+        };
+        loadEmoji();
+        window.addEventListener("storage", loadEmoji);
+        return () => window.removeEventListener("storage", loadEmoji);
+    }, []);
+
     const handleLogout = async () => {
         await signOut(auth);
         setShowProfileMenu(false);
     };
+
+    const username = user?.displayName || user?.email?.split('@')[0] || "Guest";
 
     return (
         <div className="bg-blue-300  sm:flex flex-wrap sm:items-center w-full  sm:w-full
@@ -81,12 +93,21 @@ export default function Header() {
                         </div>
                     ) : (
                         <div className="relative ml-auto">
-                            <div className="flex flex-col  justify-center items-center">
-                                <button onClick={() => setShowProfileMenu(!showProfileMenu)} className="cursor-pointer text-center">
-                                    <CgProfile size={32} className="text-center" />
-                                </button>
-                                <label className="text-center font-bold">{user?.email?.split('@')[0] || "Guest"}</label>
-                            </div>
+                            <button
+                                onClick={() => setShowProfileMenu(!showProfileMenu)}
+                                className="cursor-pointer flex items-center gap-2 px-2 py-1 rounded-xl hover:bg-blue-200 transition"
+                            >
+                                <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-white shadow-sm flex items-center justify-center bg-amber-100 shrink-0">
+                                    {userEmoji ? (
+                                        <Image src={userEmoji} alt="avatar" width={36} height={36} className="object-cover w-full h-full" />
+                                    ) : (
+                                        <span className="text-base font-bold text-blue-600">
+                                            {username[0].toUpperCase()}
+                                        </span>
+                                    )}
+                                </div>
+                                <span className="font-bold text-sm hidden sm:block text-gray-800 max-w-[100px] truncate">{username}</span>
+                            </button>
                             {showProfileMenu && (
                                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10">
                                     <ul className="p-2 flex flex-col gap-1 font-serif text-black">
