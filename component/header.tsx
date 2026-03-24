@@ -9,11 +9,13 @@ import { CgProfile } from "react-icons/cg";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 
+
 export default function Header() {
     const { pending, completed } = useTaskCounts();
     const [showMenu, setShowMenu] = useState(false);
     const [user, setUser] = useState<any>(null);
     const [hideform, setHideForm] = useState(true);
+    const [userEmoji, serUserEmoji] = useState<string | null>(null);
 
     const [showProfileMenu, setShowProfileMenu] = useState(false);
 
@@ -30,10 +32,24 @@ export default function Header() {
         setShowProfileMenu(false); // Close menu on logout
     };
 
+    useEffect(() => {
+        pending;
+    }, [pending])
+
+    useEffect(() => {
+        const useremoji = localStorage.getItem("emoji");
+        if (useremoji) {
+            serUserEmoji(useremoji);
+        }
+
+    }, [userEmoji])
+    console.log("header checkl", userEmoji)
+
+
     return (
         <div className="bg-blue-300  sm:flex flex-wrap sm:items-center w-full  sm:w-full
          justify-between sm:justify-between sm:gap-2 sticky top-0 z-50 shadow-sm sm:shadow-sm shadow-black sm:border-0
-          border-red-400  sm:px-0 py-2 max-w-full border-0 m-0">
+          border-red-400  sm:px-0  max-w-full border-0 m-0">
             <button data-aos="flip-left" className="m-1 cursor-pointer"><Link href={"/"}>
                 <Image src={Logo} alt="logo" className="w-32 sm:w-48 md:w-[250px]" /></Link>
             </button>
@@ -46,7 +62,8 @@ export default function Header() {
                 <button
                     className="hover:bg-amber-100 p-2 rounded-xl  sm:px-6 flex items-center sm:border-0 border-2 border-sky-600">
                     <Link href={"/mytasks"} className="sm:text-lg text-[12px] ">My Tasks</Link>
-                    <span className="ml-2 rounded-full px-2 py-0.5 text-[10px] sm:text-xs font-semibold bg-slate-800 text-white">{pending}</span>
+                    <span className="ml-2 rounded-full px-2 py-0.5 text-[10px] sm:text-xs font-semibold bg-slate-800 text-white">
+                        {pending}</span>
                 </button>
                 <button
                     className="hover:bg-amber-100 p-2 rounded-xl  sm:px-6 flex items-center sm:border-0 border-2 border-sky-600">
@@ -82,16 +99,17 @@ export default function Header() {
                         </div>
                     ) : (
                         <div className="relative ml-auto">
-                            <div className="flex flex-col  justify-center items-center">
+                            <div className="flex flex-col  justify-center items-center ">
                                 <button onClick={() => setShowProfileMenu(!showProfileMenu)} className="cursor-pointer text-center">
-                                    <CgProfile size={32}  className="text-center"/>
+                                    {userEmoji ? (<div><Image src={userEmoji} alt="useremoji" width={50} height={30} /></div>) : (<CgProfile size={32} className="text-center" />)}
                                 </button>
-                                <label className="text-center font-bold">{user?.email?.split('@')[0] || "Guest"}</label>
+                                <label className="text-center font-bold">{user?.displayName || user?.email.split("@")[0]}</label>
                             </div>
                             {showProfileMenu && (
                                 <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-10">
                                     <ul className="p-2 flex flex-col gap-1 font-serif text-black">
-                                        <li className="p-2 hover:bg-gray-200 rounded-md flex"><Link href="/profile" className="w-full ">Profile</Link>
+                                        <li className="p-2 hover:bg-gray-200 rounded-md flex">
+                                            <Link href="/profile" className="w-full ">Profile</Link>
                                         </li>
                                         <li className="p-2 hover:bg-gray-200 rounded-md cursor-pointer"
                                             onClick={handleLogout}>
@@ -103,6 +121,6 @@ export default function Header() {
                         </div>)}
                 </div>
             </div>
-        </div>
+        </div >
     );
 }

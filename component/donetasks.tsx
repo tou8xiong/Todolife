@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/lib/firebase"
+import { ConfirmDeleteButton } from "@/components/ui/ConfirmDeleteitems";
 interface Task {
   id: number;
   title: string;
@@ -44,7 +45,6 @@ export default function DonePage() {
     });
     return () => unsubscribe();
   }, []);
-
   const handleTypeToggle = () => setShowType((s) => !s);
   const chooseType = (t: "work" | "study" | "activities") => {
     setSelectedType(t);
@@ -183,7 +183,7 @@ export default function DonePage() {
                     <label className="text-sm ">tasks: </label><span className="mr-3 font-bold">
                       {doneTasks.filter(t => (t.type) === "work").length}</span></p>
                   {doneTasks.filter(t => (t.type) === "work").length === 0 ? <p className="text-center text-white">No completed work tasks yet.</p> :
-                    <ul className="w-full border-0 border-amber-500 h-[500px] overflow-y-auto p-2  bg-gray-500 hide-scrollbar">
+                    <ul className="w-full border-0 border-amber-500 h-[500px] overflow-y-auto p-2  bg-gray-500 hide-scrollbar flex gap-2 flex-col">
                       {doneTasks
                         .filter(t => (t.type) === "work")
                         .map((task, index) => (
@@ -211,20 +211,18 @@ export default function DonePage() {
                                   ⏰ Time: <span className="text-gray-700 font-medium font-sans">{task.time}</span>
                                 </span>
                               )}
-                              <button
-                                onClick={() => {
-                                  if (window.confirm("Are you sure you want to delete this completed task?")) {
-                                    handleDelete(task.id);
-                                  }
-                                }}
-                                className="ml-auto cursor-pointer px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600"
-                              >
-                                Delete
-                              </button>
+
                             </div>
                             <p className="text-sm text-gray-400 mt-2">
                               ✅ Done at: <span className="text-gray-700 font-medium font-sans">{formatCompletedAt(task.completedAt)}</span>
                             </p>
+                            <div className="float-end">
+                              <ConfirmDeleteButton
+                                itemId={task.id}
+                                itemName={user ? task.title : task.title}
+                                onDelete={() => { handleDelete(task.id); }}
+                              />
+                            </div>
                           </li>
                         ))}
                     </ul>}
@@ -236,8 +234,9 @@ export default function DonePage() {
                 <h1 className="text-white m-0 text-center font-bold text-shadow-md text-shadow-amber-600">study tasks</h1>
                 <p className="text-white text-end font-bold text-xl m-0  rounded-t-md bg-orange-400"><label className="text-sm">tasks: </label><span className="mr-3">{doneTasks.filter(t => (t.type) === "study").length}</span></p>
                 {doneTasks.filter(t => (t.type) === "study").length === 0 ? <p className="text-center text-white">No completed activity tasks yet.</p> :
-                  <ul className="w-full sm:gap-2 h-[500px] overflow-y-auto hide-scrollbar bg-gray-500 p-2 " >
+                  <ul className="w-full sm:gap-2 h-[500px] overflow-y-auto hide-scrollbar bg-gray-500 p-2 flex flex-col gap-2" >
                     {doneTasks
+
                       .filter(t => (t.type) === "study")
                       .map((task, index) => (
                         <li key={task.id} className="p-5 sm:p-6 bg-white shadow-md rounded-xl 
@@ -264,20 +263,18 @@ export default function DonePage() {
                                 ⏰ Time: <span className="text-gray-700 font-medium font-sans">{task.time}</span>
                               </span>
                             )}
-                            <button
-                              onClick={() => {
-                                if (window.confirm("Are you sure you want to delete this completed task?")) {
-                                  handleDelete(task.id);
-                                }
-                              }}
-                              className="ml-auto cursor-pointer px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600"
-                            >
-                              Delete
-                            </button>
+
                           </div>
                           <p className="text-sm text-gray-400 mt-2">
                             ✅ Done at: <span className="text-gray-700 font-medium font-sans">{formatCompletedAt(task.completedAt)}</span>
                           </p>
+                          <div className="float-end">
+                            <ConfirmDeleteButton
+                              itemId={task.id}
+                              itemName={user ? task.title : task.title}
+                              onDelete={() => { handleDelete(task.id); }}
+                            />
+                          </div>
                         </li>
                       ))}
                   </ul>}
@@ -289,7 +286,7 @@ export default function DonePage() {
                   <label className="text-sm ">tasks: </label><span className="mr-3 font-bold">
                     {doneTasks.filter(t => (t.type) === "activities").length}</span></p>
                 {doneTasks.filter(t => (t.type) === "activities").length === 0 ? <p className="text-center text-white">No completed activity tasks yet.</p> :
-                  <ul className="w-full sm:gap-2 h-[500px] overflow-y-auto hide-scrollbar bg-gray-500 p-2">
+                  <ul className="w-full sm:gap-2 h-125 overflow-y-auto hide-scrollbar bg-gray-500 p-2 flex flex-col gap-2">
                     {doneTasks
                       .filter(t => (t.type) === "activities")
                       .map((task, index) => (
@@ -317,20 +314,18 @@ export default function DonePage() {
                                 ⏰ Time: <span className="text-gray-700 font-medium font-sans">{task.time}</span>
                               </span>
                             )}
-                            <button
-                              onClick={() => {
-                                if (window.confirm("Are you sure you want to delete this completed task?")) {
-                                  handleDelete(task.id);
-                                }
-                              }}
-                              className="ml-auto cursor-pointer px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600"
-                            >
-                              Delete
-                            </button>
+
                           </div>
                           <p className="text-sm text-gray-400 mt-2">
                             ✅ Done at: <span className="text-gray-700 font-medium font-sans">{formatCompletedAt(task.completedAt)}</span>
                           </p>
+                          <div className="float-end">
+                            <ConfirmDeleteButton
+                              itemId={task.id}
+                              itemName={user ? task.title : task.title}
+                              onDelete={() => { handleDelete(task.id); }}
+                            />
+                          </div>
                         </li>
                       ))}
                   </ul>
