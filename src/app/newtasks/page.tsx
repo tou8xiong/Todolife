@@ -1,4 +1,4 @@
-import AddTasks from "../../../component/addtasks"
+import AddTasks from "@/components/tasks/AddTasks"
 
 
 export default function Newtasks() {

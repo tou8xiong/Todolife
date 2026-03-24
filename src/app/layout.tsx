@@ -2,10 +2,10 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Header from "../../component/header";
-import Sidebar from "../../component/sidebar";
-import TimerPopup from "@/component/timerpopup";
-import AosClientWrapper from "@/component/Aosanimation";
+import Header from "@/components/layout/Header";
+import Sidebar from "@/components/layout/Sidebar";
+import TimerPopup from "@/components/timer/TimerPopup";
+import AosClientWrapper from "@/components/layout/AosAnimation";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",

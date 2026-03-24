@@ -1,6 +1,6 @@
 "use client";
-import AddTasks from "../../component/addtasks";
-import Footer from "../../component/Footer";
+import AddTasks from "@/components/tasks/AddTasks";
+import Footer from "@/components/layout/Footer";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useState, useEffect } from "react";
