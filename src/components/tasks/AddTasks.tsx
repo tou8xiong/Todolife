@@ -67,6 +67,7 @@ export default function AddTasks() {
         const storedTasks = JSON.parse(localStorage.getItem(`tasks_${user.email}`) || "[]");
         const updatedTasks = [...storedTasks, { id: Date.now(), ...task }];
         localStorage.setItem(`tasks_${user.email}`, JSON.stringify(updatedTasks));
+        window.dispatchEvent(new Event("tasksUpdated"));
 
         toast.success("Task added!");
         setTask({ title: "", description: "", date: "", time: "", type: "", priority: "" });

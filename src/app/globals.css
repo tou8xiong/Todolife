@@ -1,17 +1,42 @@
 @import "tailwindcss";
+
+/* ─── Project Design Tokens ─────────────────────────────────── */
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* Fonts */
+  --font-sans: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+  --font-mono: var(--font-geist-mono), monospace;
+
+  /* Brand colors */
+  --color-primary: #16a34a;        /* green-600 */
+  --color-primary-light: #dcfce7;  /* green-100 */
+  --color-danger: #dc2626;         /* red-600 */
+  --color-danger-light: #fee2e2;   /* red-100 */
+  --color-danger-hover: #b91c1c;   /* red-700 */
+  --color-surface: #ffffff;
+  --color-surface-muted: #f9fafb;  /* gray-50 */
+  --color-border: #e5e7eb;         /* gray-200 */
+  --color-text: #111827;           /* gray-900 */
+  --color-text-muted: #6b7280;     /* gray-500 */
+  --color-cancel: #374151;         /* gray-700 */
+  --color-cancel-hover: #1f2937;   /* gray-800 */
 }
 
 .dark {
   --background: #0a0a0a;
   --foreground: #ededed;
+
+  --color-surface: #1f2937;
+  --color-surface-muted: #111827;
+  --color-border: #374151;
+  --color-text: #f9fafb;
+  --color-text-muted: #9ca3af;
 }
 
-
 body {
-  font-family: Arial, Helvetica, sans-serif,'Times New Roman', Times, serif ,;
+  font-family: var(--font-sans);
 }
 /* Hide scrollbar but still allow scrolling */
 .hide-scrollbar::-webkit-scrollbar {

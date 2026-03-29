@@ -98,28 +98,7 @@ export default function Profile() {
           </button>
         </div>
 
-        {/* Account Details Card */}
-        <div className="bg-white rounded-2xl shadow-md p-5 space-y-3">
-          <h3 className="text-sm font-semibold text-gray-400 uppercase tracking-wide">Account Details</h3>
-          <div className="flex items-center gap-3 p-3 bg-sky-50 rounded-xl">
-            <div className="w-9 h-9 rounded-full bg-sky-200 flex items-center justify-center">
-              <FaUser size={14} className="text-sky-600" />
-            </div>
-            <div>
-              <p className="text-xs text-gray-400">Display Name</p>
-              <p className="text-sm font-semibold text-gray-700">{user.displayName || "Not set"}</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3 p-3 bg-amber-50 rounded-xl">
-            <div className="w-9 h-9 rounded-full bg-amber-200 flex items-center justify-center">
-              <FaEnvelope size={14} className="text-amber-600" />
-            </div>
-            <div>
-              <p className="text-xs text-gray-400">Email</p>
-              <p className="text-sm font-semibold text-gray-700">{user.email}</p>
-            </div>
-          </div>
-        </div>
+   
 
         {/* Edit Panel */}
         {changename && (
