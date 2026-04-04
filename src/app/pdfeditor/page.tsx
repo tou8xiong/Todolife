@@ -6,6 +6,8 @@ import AnnotationItem from "@/components/pdf/AnnotationItem";
 import DownloadModal from "@/components/pdf/DownloadModal";
 
 // ── Drag / resize ref type ───────────────────────────────────────────────────
+
+// ── Drag / resize ref type ───────────────────────────────────────────────────
 interface DragState {
     mode: "drag" | "resize";
     id: number;
@@ -25,7 +27,9 @@ interface Placing {
     y: number;
 }
 
-type FileType = "pdf" | "docx" | "txt" | null;
+type FileType = "pdf" | "docx" | "txt" | "image" | null;
+
+type Mode = "annotator" | "converter";
 
 export default function PdfEditor() {
     const [pdfBytes, setPdfBytes] = useState<ArrayBuffer | null>(null);
@@ -34,6 +38,8 @@ export default function PdfEditor() {
 
     const [fileType, setFileType] = useState<FileType>(null);
     const [docContent, setDocContent] = useState<string>("");
+    const [imageData, setImageData] = useState<string>("");
+    const [mode, setMode] = useState<Mode>("annotator");
 
     const [annotations, setAnnotations] = useState<Annotation[]>([]);
     const [selectedId, setSelectedId] = useState<number | null>(null);
@@ -48,6 +54,7 @@ export default function PdfEditor() {
 
     const [downloadModal, setDownloadModal] = useState(false);
     const [fileName, setFileName] = useState("annotated");
+    const [downloadFormat, setDownloadFormat] = useState<"pdf" | "docx">("pdf");
 
     const canvasRefs = useRef<(HTMLCanvasElement | null)[]>([]);
     const containerRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -94,41 +101,54 @@ export default function PdfEditor() {
         setNumPages(0);
         setPdfBytes(null);
         setDocContent("");
+        setImageData("");
         setFileType(null);
         setPendingImage(null);
         setPlacing(null);
 
-        if (name.endsWith(".pdf")) {
-            const reader = new FileReader();
-            reader.onload = (ev) => {
-                setPdfBytes(ev.target?.result as ArrayBuffer);
-                setFileType("pdf");
-            };
-            reader.readAsArrayBuffer(file);
+        if (mode === "annotator") {
+            if (name.endsWith(".pdf")) {
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    setPdfBytes(ev.target?.result as ArrayBuffer);
+                    setFileType("pdf");
+                };
+                reader.readAsArrayBuffer(file);
 
-        } else if (name.endsWith(".docx")) {
-            setLoading(true);
-            try {
-                const mammoth = await import("mammoth");
-                const arrayBuffer = await file.arrayBuffer();
-                const result = await mammoth.convertToHtml({ arrayBuffer });
-                setDocContent(result.value);
-                setFileType("docx");
-                setNumPages(1);
-            } catch (err) {
-                console.error("Failed to convert DOCX:", err);
-            } finally {
-                setLoading(false);
+            } else if (name.endsWith(".docx")) {
+                setLoading(true);
+                try {
+                    const mammoth = await import("mammoth");
+                    const arrayBuffer = await file.arrayBuffer();
+                    const result = await mammoth.convertToHtml({ arrayBuffer });
+                    setDocContent(result.value);
+                    setFileType("docx");
+                    setNumPages(1);
+                } catch (err) {
+                    console.error("Failed to convert DOCX:", err);
+                } finally {
+                    setLoading(false);
+                }
+
+            } else if (name.endsWith(".txt")) {
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    setDocContent(ev.target?.result as string);
+                    setFileType("txt");
+                    setNumPages(1);
+                };
+                reader.readAsText(file);
             }
-
-        } else if (name.endsWith(".txt")) {
-            const reader = new FileReader();
-            reader.onload = (ev) => {
-                setDocContent(ev.target?.result as string);
-                setFileType("txt");
-                setNumPages(1);
-            };
-            reader.readAsText(file);
+        } else if (mode === "converter") {
+            if (name.endsWith(".png") || name.endsWith(".jpg") || name.endsWith(".jpeg")) {
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    setImageData(ev.target?.result as string);
+                    setFileType("image");
+                    setNumPages(1);
+                };
+                reader.readAsDataURL(file);
+            }
         }
     };
 
@@ -229,41 +249,106 @@ export default function PdfEditor() {
 
     // ── Download ───────────────────────────────────────────────────────────
     const handleDownload = async () => {
-        if (fileType === "pdf" && pdfBytes) {
-            await downloadAnnotatedPdf(pdfBytes, annotations, fileName);
+        if (mode === "annotator") {
+            if (fileType === "pdf" && pdfBytes) {
+                await downloadAnnotatedPdf(pdfBytes, annotations, fileName);
 
-        } else if ((fileType === "docx" || fileType === "txt") && containerRefs.current[0]) {
-            setLoading(true);
-            try {
-                const html2canvas = (await import("html2canvas")).default;
-                const container = containerRefs.current[0]!;
-                const capturedCanvas = await html2canvas(container, { scale: 2, useCORS: true });
-                const imgDataUrl = capturedCanvas.toDataURL("image/png");
+            } else if ((fileType === "docx" || fileType === "txt") && containerRefs.current[0]) {
+                setLoading(true);
+                try {
+                    const html2canvas = (await import("html2canvas")).default;
+                    const container = containerRefs.current[0]!;
+                    const capturedCanvas = await html2canvas(container, { scale: 2, useCORS: true });
+                    const imgDataUrl = capturedCanvas.toDataURL("image/png");
 
-                const { PDFDocument } = await import("pdf-lib");
-                const pdfDoc = await PDFDocument.create();
-                const response = await fetch(imgDataUrl);
-                const pngBytes = await response.arrayBuffer();
-                const pngImage = await pdfDoc.embedPng(pngBytes);
-                const { width, height } = pngImage.scale(1);
-                const page = pdfDoc.addPage([width, height]);
-                page.drawImage(pngImage, { x: 0, y: 0, width, height });
+                    const { PDFDocument } = await import("pdf-lib");
+                    const pdfDoc = await PDFDocument.create();
+                    const response = await fetch(imgDataUrl);
+                    const pngBytes = await response.arrayBuffer();
+                    const pngImage = await pdfDoc.embedPng(pngBytes);
+                    const { width, height } = pngImage.scale(1);
+                    const page = pdfDoc.addPage([width, height]);
+                    page.drawImage(pngImage, { x: 0, y: 0, width, height });
 
-                const saved = await pdfDoc.save();
-                const blob = new Blob(
-                    [new Uint8Array(saved.buffer as ArrayBuffer, saved.byteOffset, saved.byteLength)],
-                    { type: "application/pdf" }
-                );
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement("a");
-                a.href = url;
-                a.download = `${fileName.trim() || "document"}.pdf`;
-                a.click();
-                URL.revokeObjectURL(url);
-            } catch (err) {
-                console.error("Failed to export document:", err);
-            } finally {
-                setLoading(false);
+                    const saved = await pdfDoc.save();
+                    const blob = new Blob(
+                        [new Uint8Array(saved.buffer as ArrayBuffer, saved.byteOffset, saved.byteLength)],
+                        { type: "application/pdf" }
+                    );
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = `${fileName.trim() || "document"}.pdf`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                } catch (err) {
+                    console.error("Failed to export document:", err);
+                } finally {
+                    setLoading(false);
+                }
+            }
+        } else if (mode === "converter") {
+            if (fileType === "image") {
+                setLoading(true);
+                try {
+                    if (downloadFormat === "pdf") {
+                        const { PDFDocument } = await import("pdf-lib");
+                        const pdfDoc = await PDFDocument.create();
+                        const imgResponse = await fetch(imageData);
+                        const imgBytes = await imgResponse.arrayBuffer();
+                        let embeddedImg;
+                        if (imageData.startsWith("data:image/png")) {
+                            embeddedImg = await pdfDoc.embedPng(imgBytes);
+                        } else {
+                            embeddedImg = await pdfDoc.embedJpg(imgBytes);
+                        }
+                        const page = pdfDoc.addPage();
+                        const { width, height } = embeddedImg.scale(0.75);
+                        page.drawImage(embeddedImg, { x: 50, y: 50, width, height });
+                        const saved = await pdfDoc.save();
+                        const blob = new Blob(
+                            [new Uint8Array(saved.buffer as ArrayBuffer, saved.byteOffset, saved.byteLength)],
+                            { type: "application/pdf" }
+                        );
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement("a");
+                        a.href = url;
+                        a.download = `${fileName}.pdf`;
+                        a.click();
+                        URL.revokeObjectURL(url);
+                    } else { // docx
+                        const { Document, Packer, Paragraph, ImageRun } = await import("docx");
+                        const imgBuffer = await fetch(imageData).then(res => res.arrayBuffer());
+                        const isPng = imageData.startsWith("data:image/png");
+                        const doc = new Document({
+                            sections: [{
+                                children: [
+                                    new Paragraph({
+                                        children: [
+                                            new ImageRun({
+                                                data: imgBuffer,
+                                                transformation: { width: 400, height: 300 },
+                                                type: isPng ? "png" : "jpg",
+                                            }),
+                                        ],
+                                    }),
+                                ],
+                            }],
+                        });
+                        const buffer = await Packer.toBuffer(doc);
+                        const blob = new Blob([new Uint8Array(buffer)], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement("a");
+                        a.href = url;
+                        a.download = `${fileName}.docx`;
+                        a.click();
+                        URL.revokeObjectURL(url);
+                    }
+                } catch (err) {
+                    console.error("Failed to convert image:", err);
+                } finally {
+                    setLoading(false);
+                }
             }
         }
         setDownloadModal(false);
@@ -309,8 +394,13 @@ export default function PdfEditor() {
                     </pre>
                 )}
 
+                {/* Image */}
+                {fileType === "image" && (
+                    <img src={imageData} alt="Uploaded" className="w-full h-full object-contain bg-white" />
+                )}
+
                 {/* Annotations overlay */}
-                {annotations.filter((a) => a.page === i + 1).map((ann) => (
+                {mode === "annotator" && annotations.filter((a) => a.page === i + 1).map((ann) => (
                     <AnnotationItem
                         key={ann.id}
                         ann={ann}
@@ -323,7 +413,7 @@ export default function PdfEditor() {
                 ))}
 
                 {/* Text placement input */}
-                {placing && placing.page === i + 1 && (
+                {mode === "annotator" && placing && placing.page === i + 1 && (
                     <div
                         className="absolute z-30"
                         style={{ left: `${placing.x * 100}%`, top: `${placing.y * 100}%`, transform: "translateY(-50%)" }}
@@ -356,51 +446,106 @@ export default function PdfEditor() {
                 onFileNameChange={setFileName}
                 onConfirm={handleDownload}
                 onClose={() => setDownloadModal(false)}
+                fileType={fileType}
+                downloadFormat={downloadFormat}
+                onFormatChange={setDownloadFormat}
+                mode={mode}
             />
 
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-800 dark:text-white">📄 PDF Annotator</h1>
-                    <p className="text-sm text-gray-400 mt-0.5">Upload a PDF, Word (.docx), or text file · add annotations · download as PDF</p>
+                    <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
+                        {mode === "annotator" ? "📄 PDF Annotator" : "🖼️ Image Converter"}
+                    </h1>
+                    <p className="text-sm text-gray-400 mt-0.5">
+                        {mode === "annotator"
+                            ? "Upload a PDF, Word (.docx), or text file · add annotations · download as PDF"
+                            : "Upload an image · convert to PDF or DOCX"
+                        }
+                    </p>
                 </div>
-                {hasFile && (
+                <div className="flex gap-2">
                     <button
-                        onClick={() => setDownloadModal(true)}
-                        className="flex items-center gap-2 px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold rounded-xl shadow transition-colors"
-                    >⬇ Download as PDF</button>
-                )}
+                        onClick={() => {
+                            setMode("annotator");
+                            setPdfBytes(null); setAnnotations([]); setNumPages(0);
+                            setSelectedId(null); setPendingImage(null);
+                            setFileType(null); setDocContent(""); setImageData("");
+                        }}
+                        className={`px-4 py-2 text-sm font-semibold rounded-xl transition-colors ${mode === "annotator"
+                            ? "bg-amber-500 text-white"
+                            : "bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-300"
+                            }`}
+                    >
+                        Annotator
+                    </button>
+                    <button
+                        onClick={() => {
+                            setMode("converter");
+                            setPdfBytes(null); setAnnotations([]); setNumPages(0);
+                            setSelectedId(null); setPendingImage(null);
+                            setFileType(null); setDocContent(""); setImageData("");
+                        }}
+                        className={`px-4 py-2 text-sm font-semibold rounded-xl transition-colors ${mode === "converter"
+                            ? "bg-amber-500 text-white"
+                            : "bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-300"
+                            }`}
+                    >
+                        Converter
+                    </button>
+                    {hasFile && (
+                        <button
+                            onClick={() => setDownloadModal(true)}
+                            className="flex items-center gap-2 px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold rounded-xl shadow transition-colors"
+                        >
+                            ⬇ Download {mode === "converter" ? "as File" : "as PDF"}
+                        </button>
+                    )}
+                </div>
             </div>
 
             {/* Upload zone */}
             {!hasFile ? (
                 <label className="flex flex-col items-center justify-center border-2 border-dashed border-amber-300 rounded-2xl p-16 cursor-pointer hover:bg-amber-50 dark:hover:bg-amber-900/10 transition-colors max-w-2xl mx-auto">
-                    <span className="text-6xl mb-4">📂</span>
+                    <span className="text-6xl mb-4">{mode === "annotator" ? "📂" : "🖼️"}</span>
                     <p className="text-gray-700 dark:text-gray-200 font-semibold text-lg">Click to upload a file</p>
-                    <p className="text-xs text-gray-400 mt-1">Supports PDF, Word (.docx), and text (.txt) files</p>
-                    <input type="file" accept=".pdf,.docx,.txt" onChange={handleFileUpload} className="hidden" />
+                    <p className="text-xs text-gray-400 mt-1">
+                        {mode === "annotator"
+                            ? "Supports PDF, Word (.docx), and text (.txt) files"
+                            : "Supports PNG, JPG, and JPEG images"
+                        }
+                    </p>
+                    <input
+                        type="file"
+                        accept={mode === "annotator" ? ".pdf,.docx,.txt" : ".png,.jpg,.jpeg"}
+                        onChange={handleFileUpload}
+                        className="hidden"
+                    />
                 </label>
             ) : (
                 <div className="flex flex-col gap-4">
-                    <Toolbar
-                        activeTool={activeTool}
-                        onToolChange={(t) => { setActiveTool(t); setPendingImage(null); setPlacing(null); setSelectedId(null); }}
-                        fontSize={fontSize}
-                        color={color}
-                        onFontSizeChange={setFontSize}
-                        onColorChange={setColor}
-                        onImageFileSelected={(dataUrl, mimeType) => { setPendingImage({ dataUrl, mimeType }); setActiveTool("image"); }}
-                        selectedAnnotation={selectedAnnotation}
-                        onUpdateAnnotation={updateAnnotation}
-                        onDeleteAnnotation={deleteAnnotation}
-                        annotationCount={annotations.length}
-                        onChangeFile={() => {
-                            setPdfBytes(null); setAnnotations([]); setNumPages(0);
-                            setSelectedId(null); setPendingImage(null);
-                            setFileType(null); setDocContent("");
-                        }}
-                        pendingImage={!!pendingImage}
-                    />
+                    {mode === "annotator" && (
+                        <Toolbar
+                            activeTool={activeTool}
+                            onToolChange={(t) => { setActiveTool(t); setPendingImage(null); setPlacing(null); setSelectedId(null); }}
+                            fontSize={fontSize}
+                            color={color}
+                            onFontSizeChange={setFontSize}
+                            onColorChange={setColor}
+                            onImageFileSelected={(dataUrl, mimeType) => { setPendingImage({ dataUrl, mimeType }); setActiveTool("image"); }}
+                            selectedAnnotation={selectedAnnotation}
+                            onUpdateAnnotation={updateAnnotation}
+                            onDeleteAnnotation={deleteAnnotation}
+                            annotationCount={annotations.length}
+                            onChangeFile={() => {
+                                setPdfBytes(null); setAnnotations([]); setNumPages(0);
+                                setSelectedId(null); setPendingImage(null);
+                                setFileType(null); setDocContent(""); setImageData("");
+                            }}
+                            pendingImage={!!pendingImage}
+                        />
+                    )}
 
                     {loading && (
                         <div className="flex justify-center py-16">
@@ -414,6 +559,9 @@ export default function PdfEditor() {
 
                         {/* DOCX / TXT: single page container */}
                         {(fileType === "docx" || fileType === "txt") && !loading && renderPageContainer(0)}
+
+                        {/* Image */}
+                        {fileType === "image" && renderPageContainer(0)}
                     </div>
                 </div>
             )}
