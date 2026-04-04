@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useTaskCounts } from "@/hooks/useTaskCounts";
 import { useState, useEffect } from "react";
 import { FaList } from "react-icons/fa";
+import { MdDashboard, MdTimer } from "react-icons/md";
+import { GiNotebook } from "react-icons/gi";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 
@@ -72,10 +74,11 @@ export default function Header() {
                         <button onClick={() => setShowMenu(!showMenu)}
                             className=" md:hidden ml-5 rounded hover:bg-gray-500 mt-2"><FaList size={26} /></button>
                         {showMenu &&
-                            <div className="md:hidden border-none  absolute mt-0  ml-2 w-40 bg-white rounded-sm shadow-lg">
-                                <ul className="p-2 flex flex-col gap-1">
-                                    <li className="border border-gray-400 rounded p-0.5 active:bg-gray-400"><a href="/settimepage">Timer</a></li>
-                                    <li className="border border-gray-400 rounded p-0.5 active:bg-gray-400"><a href="/noteidea">NoteIdea</a></li>
+                            <div className="md:hidden absolute mt-1 ml-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 z-50">
+                                <ul className="p-2 flex flex-col gap-1 font-serif">
+                                    <li><a href="/dashboard" className="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 transition-colors"><MdDashboard size={16} className="text-amber-400 shrink-0" />Dashboard</a></li>
+                                    <li><a href="/settimepage" className="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 transition-colors"><MdTimer size={16} className="text-amber-400 shrink-0" />Set Timer</a></li>
+                                    <li><a href="/noteidea" className="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 transition-colors"><GiNotebook size={16} className="text-amber-400 shrink-0" />Idea Notes</a></li>
                                 </ul>
                             </div>}
                     </div>

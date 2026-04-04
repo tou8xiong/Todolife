@@ -266,57 +266,57 @@ export default function TaskList() {
                     {tasks.map((task) => {
                         const urgency = getDeadlineUrgency(task.date, task.time);
                         return (
-                        <li
-                            key={task.id}
-                            className={`w-full p-5 sm:p-7 shadow-md rounded-xl border-l-4 hover:shadow-xl transition-all duration-200
+                            <li
+                                key={task.id}
+                                className={`w-full p-5 sm:p-7 shadow-md rounded-xl border-l-4 hover:shadow-xl transition-all duration-200
                                 ${urgency === "missed"
-                                    ? "bg-gray-100 border-gray-400"
-                                    : urgency === "critical"
-                                    ? "bg-red-50 border-red-500"
-                                    : urgency === "warning"
-                                    ? "bg-orange-50 border-orange-400"
-                                    : "bg-white border-amber-400"}`}>
-                            <div className="flex items-start gap-2">
-                                <h2 className={`text-lg sm:text-xl font-bold break-words flex-1 min-w-0
+                                        ? "bg-gray-100 border-gray-400"
+                                        : urgency === "critical"
+                                            ? "bg-red-50 border-red-500"
+                                            : urgency === "warning"
+                                                ? "bg-orange-50 border-orange-400"
+                                                : "bg-white border-amber-400"}`}>
+                                <div className="flex items-start gap-2">
+                                    <h2 className={`text-lg sm:text-xl font-bold break-words flex-1 min-w-0
                                     ${urgency === "missed" ? "text-gray-400 line-through" : urgency === "critical" ? "text-red-700" : urgency === "warning" ? "text-orange-600" : "text-gray-800"}`}>
-                                    {task.title}
-                                </h2>
-                                <span className={`px-3 py-1 rounded-full text-xs sm:text-sm font-semibold border shrink-0 ${getPriorityColor(task.priority || "")}`}>
-                                    {task.priority}
-                                </span>
-                            </div>
-                            <p className={`mt-2 break-words whitespace-normal
-                                ${urgency === "missed" ? "text-gray-400" : urgency === "critical" ? "text-red-500" : urgency === "warning" ? "text-orange-500" : "text-gray-600"}`}>
-                                {task.description}
-                            </p>
-                            {urgency === "missed" && (
-                                <p className="mt-1 text-sm font-semibold text-red-500 tracking-wide">⚠ Missed</p>
-                            )}
-                            <div className="flex flex-wrap items-center gap-3 mt-3">
-                                <p className={`text-sm ${urgency === "missed" ? "text-gray-300" : urgency === "critical" ? "text-red-400" : urgency === "warning" ? "text-orange-400" : "text-gray-400"}`}>
-                                    📅 Due Date:{" "}
-                                    <span className={`font-medium font-sans ${urgency === "missed" ? "text-gray-400" : urgency === "critical" ? "text-red-600" : urgency === "warning" ? "text-orange-600" : "text-gray-700"}`}>
-                                        {task.date}
+                                        {task.title}
+                                    </h2>
+                                    <span className={`px-3 py-1 rounded-full text-xs sm:text-sm font-semibold border shrink-0 ${getPriorityColor(task.priority || "")}`}>
+                                        {task.priority}
                                     </span>
-                                </p>
-                                <p className="flex text-sm border-l-2 pl-3">
-                                    Time: <span className="text-sm font-sans ml-1">{task.time}</span>
-                                </p>
-                                <div className="ml-auto flex gap-2">
-                                    <button
-                                        onClick={() => handleEditClick(task)}
-                                        className="cursor-pointer px-3 py-1 bg-sky-500 text-white rounded-md hover:bg-sky-600">update</button>
-                                    <button
-                                        onClick={() => handleMarkDone(task.id)}
-                                        className="cursor-pointer px-3 py-1 bg-green-500 text-white rounded-md hover:bg-green-600">Done</button>
-                                    <ConfirmDeleteButton
-                                        itemName={task.title}
-                                        itemId={task.id}
-                                        onDelete={(id) => handleDelete(id as number)}
-                                    />
                                 </div>
-                            </div>
-                        </li>
+                                <p className={`mt-2 break-words whitespace-normal
+                                ${urgency === "missed" ? "text-gray-400" : urgency === "critical" ? "text-red-500" : urgency === "warning" ? "text-orange-500" : "text-gray-600"}`}>
+                                    {task.description}
+                                </p>
+                                {urgency === "missed" && (
+                                    <p className="mt-1 text-sm font-semibold text-red-500 tracking-wide">⚠ Missed</p>
+                                )}
+                                <div className="flex flex-wrap items-center gap-3 mt-3">
+                                    <p className={`text-sm ${urgency === "missed" ? "text-gray-300" : urgency === "critical" ? "text-red-400" : urgency === "warning" ? "text-orange-400" : "text-gray-400"}`}>
+                                        📅 Due Date:{" "}
+                                        <span className={`font-medium font-sans ${urgency === "missed" ? "text-gray-400" : urgency === "critical" ? "text-red-600" : urgency === "warning" ? "text-orange-600" : "text-gray-700"}`}>
+                                            {task.date}
+                                        </span>
+                                    </p>
+                                    <p className="flex text-sm border-l-2 pl-3">
+                                        Time: <span className="text-sm font-sans ml-1">{task.time}</span>
+                                    </p>
+                                    <div className="ml-auto flex gap-2">
+                                        <button
+                                            onClick={() => handleEditClick(task)}
+                                            className="cursor-pointer px-3 py-1 bg-sky-500 text-white rounded-md hover:bg-sky-600">update</button>
+                                        <button
+                                            onClick={() => handleMarkDone(task.id)}
+                                            className="cursor-pointer px-3 py-1 bg-green-500 text-white rounded-md hover:bg-green-600">Done</button>
+                                        <ConfirmDeleteButton
+                                            itemName={task.title}
+                                            itemId={task.id}
+                                            onDelete={(id) => handleDelete(id as number)}
+                                        />
+                                    </div>
+                                </div>
+                            </li>
                         );
                     })}
                 </ul>
