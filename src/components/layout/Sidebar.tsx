@@ -15,7 +15,7 @@ export default function Sidebar() {
     const pathname = usePathname();
 
     return (
-        <aside className="hidden md:flex fixed left-0 top-0 h-screen w-45 bg-gray-900 z-40 mt-[80px] border-r border-amber-400/20 flex-col">
+        <aside className="hidden md:flex fixed left-0 top-16 h-[calc(100vh-4rem)] w-45 bg-gray-900 z-40 border-r border-amber-400/20 flex-col">
 
             {/* Top icon */}
             <div className="flex justify-center items-center py-5 border-b border-gray-700/50">

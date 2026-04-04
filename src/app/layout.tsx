@@ -48,14 +48,16 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content="TodoLife" />
-        <link rel="apple-touch-icon" href="/logotodolist-01.png" />
+        <link rel="apple-touch-icon" href="/icon-192.png" />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <AosClientWrapper>
           <Header />
           <Sidebar />
-          {children}
+          <main className="md:ml-45 min-h-screen">
+            {children}
+          </main>
           <Toaster richColors position="top-right" />
           <TimerPopup />
         </AosClientWrapper>

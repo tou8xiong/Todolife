@@ -189,7 +189,7 @@ export default function Dashboard() {
     const displayName = user?.displayName || user?.email?.split("@")[0] || "there";
 
     return (
-        <div className="sm:ml-45 min-h-screen bg-gray-50 dark:bg-gray-900 p-4 sm:p-6 font-serif">
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 sm:p-6 font-serif">
 
             {/* 1 — Greeting + Quick Add */}
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow p-5 mb-5 flex flex-col sm:flex-row sm:items-center gap-4">

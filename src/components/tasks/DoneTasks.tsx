@@ -25,7 +25,7 @@ interface TaskTypeColumnProps {
 function TaskTypeColumn({ tasks, type, title, selectedType, onDelete }: TaskTypeColumnProps) {
   const filtered = tasks.filter((t) => t.type === type);
   return (
-    <div className={`${selectedType !== type ? "hidden" : "block"} sm:block sm:w-full w-full flex flex-col gap-0 px-2`}>
+    <div className={`${selectedType !== type ? "hidden" : "flex"} sm:flex flex-col flex-1 min-w-0 px-2 gap-0`}>
       <h1 className="text-white m-0 text-center font-bold text-shadow-md text-shadow-amber-600">{title}</h1>
       <p className="text-end text-white text-xl m-0 bg-orange-400 rounded-t-md">
         <label className="text-sm">tasks: </label>
@@ -129,8 +129,7 @@ export default function DoneTasks() {
   };
 
   return (
-    <div className="w-full max-h-[100%] overflow-y-auto font-serif sm:border-0
-     border-red-900 relative bg-sky-950 flex flex-col sm:ml-44 ">
+    <div className="w-full max-h-[100%] overflow-y-auto font-serif border-0 relative bg-sky-950 flex flex-col">
       <div className="flex flex-wrap sm:items-center sm:flex-col justify-between gap-3 mb-5 sm:flex sm:justify-center
                 border-0 border-amber-700 sm:p-4 p-4 ">
         <h1 className="text-2xl sm:text-3xl font-bold text-green-600">✅ Completed Tasks</h1>

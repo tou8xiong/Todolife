@@ -17,9 +17,7 @@ export default function Home() {
   return (
     <>
       <div className="bg-white sm:w-full w-full flex flex-col justify-center overflow-x-hidden">
-        <div className="min-h-screen border-0 border-amber-300  sm:py-4 sm:w-[auto] flex flex-col
-         lg:flex-row justify-center gap-2 lg:gap-2 md:w-auto md:flex md:justify-center dark:text-white
-         md:ml-36 ">
+        <div className="min-h-screen border-0 border-amber-300 sm:py-4 w-full flex flex-col lg:flex-row justify-center gap-2 dark:text-white">
           <div
             data-aos="fade-down-right"
             className="w-full max-w-xl flex flex-col gap-2 border-0 border-red-500">

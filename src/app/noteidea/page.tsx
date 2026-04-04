@@ -63,7 +63,7 @@ export default function NooteBook() {
     };
 
     return (
-        <div className="sm:ml-45 min-h-screen bg-gradient-to-br from-sky-50 to-indigo-50 dark:from-gray-900 dark:to-gray-800 p-4 sm:p-8 font-serif">
+        <div className="min-h-screen bg-linear-to-br from-sky-50 to-indigo-50 dark:from-gray-900 dark:to-gray-800 p-4 sm:p-8 font-serif">
 
             {/* Header */}
             <div className="flex flex-col items-center mb-8" data-aos="fade-down">

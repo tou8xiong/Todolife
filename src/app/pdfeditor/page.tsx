@@ -441,7 +441,7 @@ export default function PdfEditor() {
     );
 
     return (
-        <div className="sm:ml-45 min-h-screen bg-gray-50 dark:bg-gray-900 p-4 sm:p-6 font-serif">
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 sm:p-6 font-serif">
 
             <DownloadModal
                 open={downloadModal}

@@ -130,7 +130,7 @@ export default function FormLogIN() {
 
     return (
         <div className="flex justify-center">
-            <div className="sm:ml-45 font-serif text-xl h-full w-full flex justify-center border-0 border-amber-950">
+            <div className="font-serif text-xl h-full w-full flex justify-center border-0 border-amber-950">
                 <form id="form"
                     className="mt-2 sm:w-[450px] sm:h-[600px] w-[600px] border-1 border-amber-400 sm:rounded-md rounded-md sm:shadow-lg shadow-md shadow-gray-900"
                     onSubmit={onSubmit}>
