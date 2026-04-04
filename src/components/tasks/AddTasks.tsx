@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { toast } from "sonner";
+import AlertDialog from "@/components/ui/AlertDialog";
 
 const VALID_TYPES = ["work", "study", "activities"];
 const VALID_PRIORITIES = ["high", "medium", "low"];
@@ -26,6 +27,7 @@ export default function AddTasks() {
     });
     const [errors, setErrors] = useState<TaskErrors>({});
     const [user, setUser] = useState<any>(null);
+    const [alertOpen, setAlertOpen] = useState(false);
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -49,6 +51,18 @@ export default function AddTasks() {
         if (!VALID_PRIORITIES.includes(task.priority)) newErrors.priority = "Please select a priority.";
         if (!task.date) newErrors.date = "Please pick a date.";
         if (!task.time) newErrors.time = "Please pick a time.";
+
+        if (task.date) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const selected = new Date(task.date);
+            selected.setHours(0, 0, 0, 0);
+            if (selected < today) {
+                setAlertOpen(true);
+                newErrors.date = "Must be a future date.";
+            }
+        }
+
         return newErrors;
     };
 
@@ -81,6 +95,12 @@ export default function AddTasks() {
 
     return (
         <div className="sm:flex sm:justify-center flex justify-center ">
+            <AlertDialog
+                open={alertOpen}
+                title="Invalid Deadline"
+                message="The date and time you selected is already in the past. Please choose a future date and time."
+                onClose={() => setAlertOpen(false)}
+            />
             <div className="bg-sky-100 dark:bg-gray-900 sm:w-[700px] sm:flex items-center flex-col
                rounded-2xl max-w-full w-full mx-1 my-4 sm:h-[700px] whitespace-nowrap justify-center">
                 <h1 data-aos="flip-left"

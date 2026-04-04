@@ -1,9 +1,20 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { Task } from "@/types/task";
 import { ConfirmDeleteButton } from "@/components/ui/ConfirmDeleteitems";
+import { saveTasksToDB } from "@/lib/taskDB";
+
+const getDeadlineUrgency = (date?: string, time?: string) => {
+    if (!date) return null;
+    const deadline = new Date(`${date}T${time || "23:59"}`).getTime();
+    const hoursLeft = (deadline - Date.now()) / (1000 * 60 * 60);
+    if (hoursLeft <= 0) return "missed";
+    if (hoursLeft <= 1) return "critical";   // ~red
+    if (hoursLeft <= 24) return "warning";   // ~orange
+    return null;
+};
 
 const getPriorityColor = (priority: string) => {
     switch (priority) {
@@ -23,6 +34,94 @@ export default function TaskList() {
     const [editPopup, setEditPopup] = useState(false);
     const [selectedTask, setSelectedTask] = useState<Task | null>(null);
     const [user, setUser] = useState<any>(null);
+    const notifiedRef = useRef<Set<string>>(new Set());
+
+    // Register service worker + request periodic background sync
+    useEffect(() => {
+        if (!("serviceWorker" in navigator)) return;
+
+        const setup = async () => {
+            try {
+                const reg = await navigator.serviceWorker.register("/sw.js");
+
+                // Ask for notification permission
+                const permission = await Notification.requestPermission();
+                if (permission !== "granted") return;
+
+                // Register periodic background sync (Chrome/Edge only)
+                if ("periodicSync" in reg) {
+                    const status = await navigator.permissions.query({
+                        name: "periodic-background-sync" as PermissionName,
+                    });
+                    if (status.state === "granted") {
+                        await (reg as any).periodicSync.register("check-task-deadlines", {
+                            minInterval: 60 * 60 * 1000, // minimum 1 hour
+                        });
+                    }
+                }
+            } catch (err) {
+                console.error("SW setup failed:", err);
+            }
+        };
+
+        setup();
+    }, []);
+
+    // Mirror tasks to IndexedDB so the service worker can read them when the tab is closed
+    useEffect(() => {
+        if (!user?.email || tasks.length === 0) return;
+        saveTasksToDB(user.email, tasks).catch(console.error);
+    }, [tasks, user]);
+
+    // Check deadlines and fire notifications
+    useEffect(() => {
+        if (!user || tasks.length === 0) return;
+
+        const checkDeadlines = () => {
+            if (!("Notification" in window) || Notification.permission !== "granted") return;
+
+            const now = Date.now();
+
+            tasks.forEach((task) => {
+                if (!task.date || task.completed) return;
+
+                const deadlineStr = `${task.date}T${task.time || "23:59"}`;
+                const deadline = new Date(deadlineStr).getTime();
+                const msLeft = deadline - now;
+                if (msLeft <= 0) return;
+
+                const hoursLeft = msLeft / (1000 * 60 * 60);
+                const daysLeft = hoursLeft / 24;
+
+                // Deadline tomorrow or within today → alert 1 hour before
+                // Deadline more than 3 days away → alert 1 day before
+                let thresholdHours: number;
+                let notifyKey: string;
+
+                if (daysLeft <= 1) {
+                    thresholdHours = 1;
+                    notifyKey = `${task.id}_1h`;
+                } else if (daysLeft > 3) {
+                    thresholdHours = 24;
+                    notifyKey = `${task.id}_1d`;
+                } else {
+                    return;
+                }
+
+                if (hoursLeft <= thresholdHours && !notifiedRef.current.has(notifyKey)) {
+                    notifiedRef.current.add(notifyKey);
+                    new Notification("Task Deadline Approaching", {
+                        body: `"${task.title}" is due in less than ${thresholdHours === 1 ? "1 hour" : "24 hours"}!`,
+                        icon: "/favicon.ico",
+                    });
+                }
+            });
+        };
+
+        checkDeadlines();
+        const interval = setInterval(checkDeadlines, 60 * 1000);
+        return () => clearInterval(interval);
+    }, [tasks, user]);
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -66,6 +165,8 @@ export default function TaskList() {
 
     const handleMarkDone = (id: number) => {
         const storedTasks: Task[] = JSON.parse(localStorage.getItem(`tasks_${user.email}`) || "[]");
+        const task = storedTasks.find((t) => t.id === id);
+
         const updatedTasks = storedTasks.map((t) =>
             t.id === id ? { ...t, completed: true, completedAt: new Date().toISOString() } : t
         );
@@ -74,6 +175,22 @@ export default function TaskList() {
             window.dispatchEvent(new Event("tasksUpdated"));
         }
         setTasks(updatedTasks.filter((t) => !t.completed));
+
+        // Notify if the task was completed before its deadline
+        if (
+            task?.date &&
+            "Notification" in window &&
+            Notification.permission === "granted"
+        ) {
+            const deadlineStr = `${task.date}T${task.time || "23:59"}`;
+            const deadline = new Date(deadlineStr).getTime();
+            if (deadline > Date.now()) {
+                new Notification("Task Completed Early!", {
+                    body: `Great job! You finished "${task.title}" before the deadline.`,
+                    icon: "/Webicon.png",
+                });
+            }
+        }
     };
 
     const handleUpdate = (id: number) => {
@@ -146,21 +263,41 @@ export default function TaskList() {
                 <p className="text-center text-gray-500">No tasks yet. Add one!</p>
             ) : (
                 <ul data-aos="zoom-in-up" className="space-y-4 md:mx-auto md:max-w-3xl">
-                    {tasks.map((task) => (
+                    {tasks.map((task) => {
+                        const urgency = getDeadlineUrgency(task.date, task.time);
+                        return (
                         <li
                             key={task.id}
-                            className="w-full p-5 sm:p-7 bg-white shadow-md rounded-xl border-l-4 border-amber-400 hover:shadow-xl transition-all duration-200">
+                            className={`w-full p-5 sm:p-7 shadow-md rounded-xl border-l-4 hover:shadow-xl transition-all duration-200
+                                ${urgency === "missed"
+                                    ? "bg-gray-100 border-gray-400"
+                                    : urgency === "critical"
+                                    ? "bg-red-50 border-red-500"
+                                    : urgency === "warning"
+                                    ? "bg-orange-50 border-orange-400"
+                                    : "bg-white border-amber-400"}`}>
                             <div className="flex items-start gap-2">
-                                <h2 className="text-lg sm:text-xl font-bold text-gray-800 break-words flex-1 min-w-0">{task.title}</h2>
+                                <h2 className={`text-lg sm:text-xl font-bold break-words flex-1 min-w-0
+                                    ${urgency === "missed" ? "text-gray-400 line-through" : urgency === "critical" ? "text-red-700" : urgency === "warning" ? "text-orange-600" : "text-gray-800"}`}>
+                                    {task.title}
+                                </h2>
                                 <span className={`px-3 py-1 rounded-full text-xs sm:text-sm font-semibold border shrink-0 ${getPriorityColor(task.priority || "")}`}>
                                     {task.priority}
                                 </span>
                             </div>
-                            <p className="text-gray-600 mt-2 break-words whitespace-normal">{task.description}</p>
+                            <p className={`mt-2 break-words whitespace-normal
+                                ${urgency === "missed" ? "text-gray-400" : urgency === "critical" ? "text-red-500" : urgency === "warning" ? "text-orange-500" : "text-gray-600"}`}>
+                                {task.description}
+                            </p>
+                            {urgency === "missed" && (
+                                <p className="mt-1 text-sm font-semibold text-red-500 tracking-wide">⚠ Missed</p>
+                            )}
                             <div className="flex flex-wrap items-center gap-3 mt-3">
-                                <p className="text-sm text-gray-400">
+                                <p className={`text-sm ${urgency === "missed" ? "text-gray-300" : urgency === "critical" ? "text-red-400" : urgency === "warning" ? "text-orange-400" : "text-gray-400"}`}>
                                     📅 Due Date:{" "}
-                                    <span className="text-gray-700 font-medium font-sans">{task.date}</span>
+                                    <span className={`font-medium font-sans ${urgency === "missed" ? "text-gray-400" : urgency === "critical" ? "text-red-600" : urgency === "warning" ? "text-orange-600" : "text-gray-700"}`}>
+                                        {task.date}
+                                    </span>
                                 </p>
                                 <p className="flex text-sm border-l-2 pl-3">
                                     Time: <span className="text-sm font-sans ml-1">{task.time}</span>
@@ -180,7 +317,8 @@ export default function TaskList() {
                                 </div>
                             </div>
                         </li>
-                    ))}
+                        );
+                    })}
                 </ul>
             )}
         </div>
