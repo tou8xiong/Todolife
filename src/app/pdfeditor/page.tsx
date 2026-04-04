@@ -362,9 +362,9 @@ export default function PdfEditor() {
             </p>
             <div
                 ref={(el) => { containerRefs.current[i] = el; }}
-                className="relative shadow-xl rounded-xl overflow-hidden"
+                className="relative shadow-xl rounded-xl overflow-hidden w-full"
                 style={{
-                    width: fileType === "pdf" ? "fit-content" : "816px",
+                    maxWidth: fileType === "pdf" ? "fit-content" : "816px",
                     minHeight: fileType !== "pdf" ? "1056px" : undefined,
                     cursor: activeTool === "image" && pendingImage ? "crosshair" : activeTool === "text" ? "text" : "default",
                 }}
@@ -375,7 +375,10 @@ export default function PdfEditor() {
             >
                 {/* PDF canvas */}
                 {fileType === "pdf" && (
-                    <canvas ref={(el) => { canvasRefs.current[i] = el; }} />
+                    <canvas
+                        ref={(el) => { canvasRefs.current[i] = el; }}
+                        style={{ display: "block", maxWidth: "100%", height: "auto" }}
+                    />
                 )}
 
                 {/* DOCX rendered HTML */}
@@ -507,7 +510,7 @@ export default function PdfEditor() {
 
             {/* Upload zone */}
             {!hasFile ? (
-                <label className="flex flex-col items-center justify-center border-2 border-dashed border-amber-300 rounded-2xl p-16 cursor-pointer hover:bg-amber-50 dark:hover:bg-amber-900/10 transition-colors max-w-2xl mx-auto">
+                <label className="flex flex-col items-center justify-center border-2 border-dashed border-amber-300 rounded-2xl p-8 sm:p-16 cursor-pointer hover:bg-amber-50 dark:hover:bg-amber-900/10 transition-colors max-w-2xl mx-auto">
                     <span className="text-6xl mb-4">{mode === "annotator" ? "📂" : "🖼️"}</span>
                     <p className="text-gray-700 dark:text-gray-200 font-semibold text-lg">Click to upload a file</p>
                     <p className="text-xs text-gray-400 mt-1">
