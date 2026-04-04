@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useTaskCounts } from "@/hooks/useTaskCounts";
 import { useState, useEffect } from "react";
 import { FaList } from "react-icons/fa";
-import { MdDashboard, MdTimer } from "react-icons/md";
+import { MdDashboard, MdTimer, MdPictureAsPdf } from "react-icons/md";
 import { GiNotebook } from "react-icons/gi";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
@@ -17,11 +17,13 @@ export default function Header() {
     const [hideform, setHideForm] = useState(true);
     const [showProfileMenu, setShowProfileMenu] = useState(false);
     const [userEmoji, setUserEmoji] = useState<string | null>(null);
+    const [authLoading, setAuthLoading] = useState(true);
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
             setUser(currentUser);
             setHideForm(!currentUser);
+            setAuthLoading(false);
         });
         return () => unsubscribe();
     }, []);
@@ -79,12 +81,15 @@ export default function Header() {
                                     <li><a href="/dashboard" className="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 transition-colors"><MdDashboard size={16} className="text-amber-400 shrink-0" />Dashboard</a></li>
                                     <li><a href="/settimepage" className="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 transition-colors"><MdTimer size={16} className="text-amber-400 shrink-0" />Set Timer</a></li>
                                     <li><a href="/noteidea" className="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 transition-colors"><GiNotebook size={16} className="text-amber-400 shrink-0" />Idea Notes</a></li>
+                                    <li><a href="/pdfeditor" className="flex items-center gap-2.5 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-sm text-gray-700 dark:text-gray-200 transition-colors"><MdPictureAsPdf size={16} className="text-amber-400 shrink-0" />PDF Annotator</a></li>
                                 </ul>
                             </div>}
                     </div>
                 </div>
                 <div className="sm:p-2 flex sm:gap-2 sm:flex sm:w-[auto] w-fit ml-auto sm:m-0 border-0 border-amber-700 mt-2">
-                    {hideform ? (
+                    {authLoading ? (
+                        <div className="w-8 h-8 rounded-full border-2 border-blue-400 border-t-transparent animate-spin mx-3 mt-1" />
+                    ) : hideform ? (
                         <div className="sm:m-0 ml-auto sm:gap-3">
                             <button
                                 className=" px-4 sm:px-7 py-2 rounded-md font-serif text-sm sm:text-lg bg-amber-100 hover:bg-amber-200 shadow-lg">
@@ -125,6 +130,7 @@ export default function Header() {
                             )}
                         </div>)}
                 </div>
+
             </div>
         </div>
     );
