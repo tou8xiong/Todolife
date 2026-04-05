@@ -4,7 +4,7 @@ import Logo from "@/public/Logo1.png";
 import Link from "next/link";
 import { useTaskCounts } from "@/hooks/useTaskCounts";
 import { useState, useEffect } from "react";
-import { Menu, X, LayoutDashboard, Timer, FileText, BookOpen, CheckSquare, ListTodo, PlusSquare } from "lucide-react";
+import { Menu, X, LayoutDashboard, Timer, FileText, BookOpen, CheckSquare, ListTodo, PlusSquare, ImageIcon } from "lucide-react";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 
@@ -24,6 +24,7 @@ const drawerNav = [
             { href: "/settimepage", label: "Set Timer", icon: Timer },
             { href: "/noteidea", label: "Idea Notes", icon: BookOpen },
             { href: "/pdfeditor", label: "PDF Annotator", icon: FileText },
+            { href: "/background-removal", label: "Remove BG", icon: ImageIcon },
         ],
     },
 ];
@@ -36,6 +37,7 @@ export default function Header() {
     const [showProfileMenu, setShowProfileMenu] = useState(false);
     const [userEmoji, setUserEmoji] = useState<string | null>(null);
     const [authLoading, setAuthLoading] = useState(true);
+    const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -51,6 +53,13 @@ export default function Header() {
         loadEmoji();
         window.addEventListener("storage", loadEmoji);
         return () => window.removeEventListener("storage", loadEmoji);
+    }, []);
+
+    useEffect(() => {
+        const loadProfileImage = () => setProfileImageUrl(localStorage.getItem("profileImage"));
+        loadProfileImage();
+        window.addEventListener("storage", loadProfileImage);
+        return () => window.removeEventListener("storage", loadProfileImage);
     }, []);
 
     // Close drawer on resize to desktop
@@ -121,7 +130,9 @@ export default function Header() {
                                     className="flex items-center gap-2 px-2 py-1 rounded-xl hover:bg-blue-400/40 transition-colors cursor-pointer"
                                 >
                                     <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-white shadow-sm flex items-center justify-center bg-amber-100 shrink-0">
-                                        {userEmoji ? (
+                                        {profileImageUrl ? (
+                                            <Image src={profileImageUrl} alt="profile" width={32} height={32} className="object-cover w-full h-full" />
+                                        ) : userEmoji ? (
                                             <Image src={userEmoji} alt="avatar" width={32} height={32} className="object-cover w-full h-full" />
                                         ) : (
                                             <span className="text-sm font-bold text-blue-600">

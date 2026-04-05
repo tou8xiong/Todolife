@@ -291,11 +291,29 @@ export default function PdfEditor() {
             if (fileType === "image") {
                 setLoading(true);
                 try {
+                    // Helper: decode base64 data URL to Uint8Array (works reliably on mobile)
+                    const dataUrlToBytes = (dataUrl: string): Uint8Array => {
+                        const base64 = dataUrl.split(",")[1];
+                        const binary = atob(base64);
+                        const bytes = new Uint8Array(binary.length);
+                        for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+                        return bytes;
+                    };
+                    // Helper: trigger download on mobile (requires anchor in DOM)
+                    const triggerDownload = (blob: Blob, name: string) => {
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement("a");
+                        a.href = url;
+                        a.download = name;
+                        document.body.appendChild(a);
+                        a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                    };
                     if (downloadFormat === "pdf") {
                         const { PDFDocument } = await import("pdf-lib");
                         const pdfDoc = await PDFDocument.create();
-                        const imgResponse = await fetch(imageData);
-                        const imgBytes = await imgResponse.arrayBuffer();
+                        const imgBytes = dataUrlToBytes(imageData);
                         let embeddedImg;
                         if (imageData.startsWith("data:image/png")) {
                             embeddedImg = await pdfDoc.embedPng(imgBytes);
@@ -310,15 +328,10 @@ export default function PdfEditor() {
                             [new Uint8Array(saved.buffer as ArrayBuffer, saved.byteOffset, saved.byteLength)],
                             { type: "application/pdf" }
                         );
-                        const url = URL.createObjectURL(blob);
-                        const a = document.createElement("a");
-                        a.href = url;
-                        a.download = `${fileName}.pdf`;
-                        a.click();
-                        URL.revokeObjectURL(url);
+                        triggerDownload(blob, `${fileName}.pdf`);
                     } else { // docx
                         const { Document, Packer, Paragraph, ImageRun } = await import("docx");
-                        const imgBuffer = await fetch(imageData).then(res => res.arrayBuffer());
+                        const imgBytes = dataUrlToBytes(imageData);
                         const isPng = imageData.startsWith("data:image/png");
                         const doc = new Document({
                             sections: [{
@@ -326,7 +339,7 @@ export default function PdfEditor() {
                                     new Paragraph({
                                         children: [
                                             new ImageRun({
-                                                data: imgBuffer,
+                                                data: imgBytes,
                                                 transformation: { width: 400, height: 300 },
                                                 type: isPng ? "png" : "jpg",
                                             }),
@@ -337,12 +350,7 @@ export default function PdfEditor() {
                         });
                         const buffer = await Packer.toBuffer(doc);
                         const blob = new Blob([new Uint8Array(buffer)], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
-                        const url = URL.createObjectURL(blob);
-                        const a = document.createElement("a");
-                        a.href = url;
-                        a.download = `${fileName}.docx`;
-                        a.click();
-                        URL.revokeObjectURL(url);
+                        triggerDownload(blob, `${fileName}.docx`);
                     }
                 } catch (err) {
                     console.error("Failed to convert image:", err);

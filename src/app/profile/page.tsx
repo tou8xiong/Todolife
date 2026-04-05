@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { auth } from "@/lib/firebase";
 import { onAuthStateChanged, signOut, updateProfile } from "firebase/auth";
 import { toast } from "sonner";
-import { FaEdit, FaSignOutAlt, FaEnvelope, FaUser } from "react-icons/fa";
+import { FaEdit, FaSignOutAlt, FaEnvelope, FaUser, FaCamera } from "react-icons/fa";
 import EmojiProfiles from "@/component/foldercetor/cartoonvector";
 import Image from "next/image";
 
@@ -12,6 +12,8 @@ export default function Profile() {
   const [displayName, setDisplayName] = useState("");
   const [changename, setChangeName] = useState(false);
   const [userEmoji, setUserEmoji] = useState<string | null>(null);
+  const [profileImage, setProfileImage] = useState<File | null>(null);
+  const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const saved = localStorage.getItem("emoji");
@@ -23,6 +25,11 @@ export default function Profile() {
       localStorage.setItem("emoji", userEmoji);
     }
   }, [userEmoji]);
+
+  useEffect(() => {
+    const savedImage = localStorage.getItem("profileImage");
+    if (savedImage) setProfileImageUrl(savedImage);
+  }, []);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -39,14 +46,26 @@ export default function Profile() {
       return;
     }
     try {
+      if (profileImage) {
+        toast.info("Processing image...");
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const dataUrl = e.target?.result as string;
+          localStorage.setItem("profileImage", dataUrl);
+          setProfileImageUrl(dataUrl);
+          toast.success("Image saved!");
+        };
+        reader.readAsDataURL(profileImage);
+      }
       await updateProfile(user, { displayName });
       await user.reload();
-      setUser(auth.currentUser);
+      setUser({ ...auth.currentUser });
       setChangeName(false);
+      setProfileImage(null);
       toast.success("Profile updated!");
-    } catch (error) {
+    } catch (error: any) {
       console.error("Update error:", error);
-      toast.error("Update failed! Try again later");
+      toast.error("Update failed! " + error.message);
     }
   };
 
@@ -69,7 +88,9 @@ export default function Profile() {
       <div className="relative h-44 bg-gradient-to-r from-blue-500 to-sky-400 rounded-b-3xl shadow-lg">
         <div className="absolute -bottom-14 left-1/2 -translate-x-1/2">
           <div className="w-28 h-28 rounded-full border-4 border-white shadow-xl overflow-hidden bg-amber-100 flex items-center justify-center">
-            {userEmoji ? (
+            {profileImageUrl ? (
+              <Image src={profileImageUrl} alt="profile" width={112} height={112} className="object-cover" priority />
+            ) : userEmoji ? (
               <Image src={userEmoji} alt="avatar" width={112} height={112} className="object-cover" priority />
             ) : (
               <span className="text-5xl font-bold text-blue-600">
@@ -98,7 +119,7 @@ export default function Profile() {
           </button>
         </div>
 
-   
+
 
         {/* Edit Panel */}
         {changename && (
@@ -114,6 +135,46 @@ export default function Profile() {
                 className="w-full border-2 border-sky-200 focus:border-sky-400 rounded-xl p-2.5 outline-none text-gray-800 transition"
                 placeholder="Your name"
               />
+            </div>
+
+            <div>
+              <label className="text-sm font-medium text-gray-600 block mb-1">Profile Image</label>
+              <div className="flex items-center gap-3">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setProfileImage(e.target.files?.[0] || null)}
+                  className="hidden"
+                  id="profile-image"
+                />
+                <label
+                  htmlFor="profile-image"
+                  className="flex items-center gap-2 px-4 py-2 bg-sky-100 hover:bg-sky-200 text-sky-700 rounded-xl cursor-pointer transition"
+                >
+                  <FaCamera size={14} />
+                  {profileImage ? profileImage.name : "Choose Image"}
+                </label>
+                {profileImage && (
+                  <button
+                    onClick={() => setProfileImage(null)}
+                    className="text-red-500 hover:text-red-700 text-sm"
+                  >
+                    Remove
+                  </button>
+                )}
+                {profileImageUrl && !profileImage && (
+                  <button
+                    onClick={() => {
+                      localStorage.removeItem("profileImage");
+                      setProfileImageUrl(null);
+                      toast.success("Profile image removed!");
+                    }}
+                    className="text-red-500 hover:text-red-700 text-sm"
+                  >
+                    Remove Current Image
+                  </button>
+                )}
+              </div>
             </div>
 
             <div>

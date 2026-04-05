@@ -1,7 +1,7 @@
 "use client";
 import { usePathname } from "next/navigation";
 import { BsLayoutSidebarInset } from "react-icons/bs";
-import { MdDashboard, MdTimer, MdPictureAsPdf } from "react-icons/md";
+import { MdDashboard, MdTimer, MdPictureAsPdf, MdPhotoSizeSelectActual } from "react-icons/md";
 import { GiNotebook } from "react-icons/gi";
 
 const navItems = [
@@ -9,6 +9,7 @@ const navItems = [
     { href: "/settimepage", label: "Set Timer", icon: MdTimer },
     { href: "/noteidea", label: "Idea Notes", icon: GiNotebook },
     { href: "/pdfeditor", label: "PDF Annotator", icon: MdPictureAsPdf },
+    { href: "/background-removal", label: "Remove BG", icon: MdPhotoSizeSelectActual },
 ];
 
 export default function Sidebar() {

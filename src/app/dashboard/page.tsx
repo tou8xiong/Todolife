@@ -3,10 +3,18 @@ import { useEffect, useRef, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { Task } from "@/types/task";
+import { BookOpen, Clock, Zap, Target, CheckCircle } from "lucide-react";
 
 interface Idea {
     id: number;
     ideatext: string;
+}
+
+interface StudySession {
+    id: number;
+    duration: number; // in centiseconds
+    timestamp: string;
+    videoName: string;
 }
 
 function getGreeting() {
@@ -15,6 +23,59 @@ function getGreeting() {
     if (h < 17) return "Good afternoon";
     if (h < 21) return "Good evening";
     return "Good night";
+}
+
+function formatDuration(centis: number) {
+    const totalSeconds = Math.floor(centis / 100);
+    const h = Math.floor(totalSeconds / 3600);
+    const m = Math.floor((totalSeconds % 3600) / 60);
+    const s = totalSeconds % 60;
+
+    if (h > 0) return `${h}h ${m}m`;
+    if (m > 0) return `${m}m ${s}s`;
+    return `${s}s`;
+}
+
+// ── Study Stats ──────────────────────────────────────────────────────────────
+function StudyStats({ sessions }: { sessions: StudySession[] }) {
+    const totalCentis = sessions.reduce((acc, s) => acc + s.duration, 0);
+    const recent = [...sessions].reverse().slice(0, 3);
+
+    return (
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow p-5 flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+                <h2 className="text-lg font-bold text-gray-700 dark:text-white flex items-center gap-2">
+                    <BookOpen size={20} className="text-blue-500" /> Study Stats
+                </h2>
+                <div className="px-3 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full text-xs font-bold">
+                    Total: {formatDuration(totalCentis)}
+                </div>
+            </div>
+
+            {sessions.length === 0 ? (
+                <p className="text-gray-400 text-sm italic">No study sessions recorded yet. Head to Study Hub to start!</p>
+            ) : (
+                <div className="space-y-3">
+                    <p className="text-xs text-gray-400 uppercase font-bold tracking-wider">Recent Sessions</p>
+                    {recent.map((s) => (
+                        <div key={s.id} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-xl border border-gray-100 dark:border-gray-700">
+                            <div className="p-2 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+                                <Clock size={16} className="text-amber-500" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <p className="text-sm font-semibold text-gray-800 dark:text-white truncate">{s.videoName}</p>
+                                <p className="text-xs text-gray-400">{new Date(s.timestamp).toLocaleDateString()}</p>
+                            </div>
+                            <span className="text-sm font-mono font-bold text-amber-600">{formatDuration(s.duration)}</span>
+                        </div>
+                    ))}
+                </div>
+            )}
+            <a href="/settimepage" className="text-xs text-blue-500 hover:underline mt-1 block">
+                Open Study Hub →
+            </a>
+        </div>
+    );
 }
 
 // ── Pomodoro Timer ──────────────────────────────────────────────────────────
@@ -136,20 +197,23 @@ export default function Dashboard() {
     const [user, setUser] = useState<any>(null);
     const [tasks, setTasks] = useState<Task[]>([]);
     const [ideas, setIdeas] = useState<Idea[]>([]);
+    const [studySessions, setStudySessions] = useState<StudySession[]>([]);
     const [streak, setStreak] = useState(0);
 
     const todayStr = new Date().toISOString().split("T")[0];
 
     const loadData = (email: string) => {
-        const stored: Task[] = JSON.parse(localStorage.getItem(`tasks_${email}`) || "[]");
-        setTasks(stored);
+        const storedTasks: Task[] = JSON.parse(localStorage.getItem(`tasks_${email}`) || "[]");
+        setTasks(storedTasks);
         setIdeas(JSON.parse(localStorage.getItem(`Ideas_${email}`) || "[]"));
+        setStudySessions(JSON.parse(localStorage.getItem(`study_sessions_${email}`) || "[]"));
+        
         // Compute streak
         let s = 0;
         const d = new Date();
         while (true) {
             const ds = d.toISOString().split("T")[0];
-            if (!stored.some((t) => t.completedAt?.startsWith(ds))) break;
+            if (!storedTasks.some((t) => t.completedAt?.startsWith(ds))) break;
             s++;
             d.setDate(d.getDate() - 1);
         }
@@ -212,12 +276,12 @@ export default function Dashboard() {
             {/* 2 — Overview Cards */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-5">
                 {[
-                    { icon: "✅", label: "Completed Today", value: completedToday.length, color: "text-green-500" },
-                    { icon: "⏳", label: "Pending", value: pendingTasks.length, color: "text-amber-500" },
-                    { icon: "🔥", label: "Day Streak", value: streak, color: "text-orange-500" },
-                    { icon: "📅", label: "Due Today", value: todayTasks.length, color: "text-blue-500" },
-                ].map((card) => (
-                    <div key={card.label} className="bg-white dark:bg-gray-800 rounded-2xl shadow p-4 flex flex-col gap-1">
+                    { icon: <CheckCircle size={20} className="text-green-500" />, label: "Completed Today", value: completedToday.length, color: "text-green-500" },
+                    { icon: <Clock size={20} className="text-amber-500" />, label: "Pending", value: pendingTasks.length, color: "text-amber-500" },
+                    { icon: <Zap size={20} className="text-orange-500" />, label: "Day Streak", value: streak, color: "text-orange-500" },
+                    { icon: <Target size={20} className="text-blue-500" />, label: "Due Today", value: todayTasks.length, color: "text-blue-500" },
+                ].map((card, idx) => (
+                    <div key={idx} className="bg-white dark:bg-gray-800 rounded-2xl shadow p-4 flex flex-col gap-1">
                         <span className="text-2xl">{card.icon}</span>
                         <span className={`text-3xl font-bold ${card.color}`}>{card.value}</span>
                         <span className="text-xs text-gray-400">{card.label}</span>
@@ -225,9 +289,9 @@ export default function Dashboard() {
                 ))}
             </div>
 
-            {/* 3 — Today's Tasks + Pomodoro */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-5">
-                <div className="sm:col-span-2 bg-white dark:bg-gray-800 rounded-2xl shadow p-5">
+            {/* 3 — Today's Tasks + Study Stats */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-5">
+                <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-2xl shadow p-5">
                     <h2 className="text-lg font-bold text-gray-700 dark:text-white mb-3">📅 Today's Tasks</h2>
                     {todayTasks.length === 0 ? (
                         <p className="text-gray-400 text-sm">No tasks due today. Enjoy your day!</p>
@@ -253,11 +317,17 @@ export default function Dashboard() {
                         </ul>
                     )}
                 </div>
-                <PomodoroTimer tasks={pendingTasks} />
+                <StudyStats sessions={studySessions} />
             </div>
 
-            {/* 4 — Notes Preview + Weekly Chart */}
+            {/* 4 — Pomodoro + Weekly Chart */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
+                <PomodoroTimer tasks={pendingTasks} />
+                <WeeklyChart tasks={tasks} />
+            </div>
+
+            {/* 5 — Notes Preview */}
+            <div className="grid grid-cols-1 gap-4 mb-5">
                 <div className="bg-white dark:bg-gray-800 rounded-2xl shadow p-5">
                     <h2 className="text-lg font-bold text-gray-700 dark:text-white mb-3">💡 Recent Notes</h2>
                     {ideas.length === 0 ? (
@@ -275,10 +345,9 @@ export default function Dashboard() {
                         View all notes →
                     </a>
                 </div>
-                <WeeklyChart tasks={tasks} />
             </div>
 
-            {/* 5 — Overdue Tasks */}
+            {/* 6 — Overdue Tasks */}
             {overdueTasks.length > 0 && (
                 <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl shadow p-5">
                     <h2 className="text-lg font-bold text-red-600 mb-3">⚠️ Overdue Tasks</h2>
