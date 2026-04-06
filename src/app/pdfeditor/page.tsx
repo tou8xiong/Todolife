@@ -4,6 +4,7 @@ import { Annotation, ActiveTool, ImageAnnotation, TextAnnotation, downloadAnnota
 import Toolbar from "@/components/pdf/Toolbar";
 import AnnotationItem from "@/components/pdf/AnnotationItem";
 import DownloadModal from "@/components/pdf/DownloadModal";
+import { UploadCloud, FileText, FileImage, FileType2 } from "lucide-react";
 
 // ── Drag / resize ref type ───────────────────────────────────────────────────
 
@@ -55,6 +56,7 @@ export default function PdfEditor() {
     const [downloadModal, setDownloadModal] = useState(false);
     const [fileName, setFileName] = useState("annotated");
     const [downloadFormat, setDownloadFormat] = useState<"pdf" | "docx">("pdf");
+    const [dragOver, setDragOver] = useState(false);
 
     const canvasRefs = useRef<(HTMLCanvasElement | null)[]>([]);
     const containerRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -150,6 +152,16 @@ export default function PdfEditor() {
                 reader.readAsDataURL(file);
             }
         }
+    };
+
+    // ── Drag-and-drop upload ───────────────────────────────────────────────
+    const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        setDragOver(false);
+        const file = e.dataTransfer.files?.[0];
+        if (!file) return;
+        const fakeEvent = { target: { files: e.dataTransfer.files } } as unknown as React.ChangeEvent<HTMLInputElement>;
+        handleFileUpload(fakeEvent);
     };
 
     // ── Canvas click ───────────────────────────────────────────────────────
@@ -369,9 +381,10 @@ export default function PdfEditor() {
                         const pngBytes = await response.arrayBuffer();
                         const pngImage = await pdfDoc.embedPng(pngBytes);
 
-                        const { width, height } = pngImage.scale(0.5);
-                        const page = pdfDoc.addPage([width, height]);
-                        page.drawImage(pngImage, { x: 0, y: 0, width, height });
+                        // Always use A4 so the downloaded PDF opens at full, readable size
+                        const A4_W = 595.28, A4_H = 841.89;
+                        const page = pdfDoc.addPage([A4_W, A4_H]);
+                        page.drawImage(pngImage, { x: 0, y: 0, width: A4_W, height: A4_H });
 
                         const saved = await pdfDoc.save();
                         triggerDownload(new Blob([saved as any], { type: "application/pdf" }), `${fileName}.pdf`);
@@ -442,9 +455,19 @@ export default function PdfEditor() {
                     const embeddedImg = imageData.startsWith("data:image/png")
                         ? await pdfDoc.embedPng(imgBytes)
                         : await pdfDoc.embedJpg(imgBytes);
-                    const page = pdfDoc.addPage();
-                    const { width, height } = embeddedImg.scale(0.75);
-                    page.drawImage(embeddedImg, { x: 50, y: 50, width, height });
+
+                    // Fit image inside A4 with margin, centred
+                    const A4_W = 595.28, A4_H = 841.89;
+                    const margin = 40;
+                    const maxW = A4_W - margin * 2;
+                    const maxH = A4_H - margin * 2;
+                    const imgRatio = embeddedImg.width / embeddedImg.height;
+                    let drawW = maxW, drawH = maxW / imgRatio;
+                    if (drawH > maxH) { drawH = maxH; drawW = maxH * imgRatio; }
+                    const drawX = (A4_W - drawW) / 2;
+                    const drawY = (A4_H - drawH) / 2;
+                    const page = pdfDoc.addPage([A4_W, A4_H]);
+                    page.drawImage(embeddedImg, { x: drawX, y: drawY, width: drawW, height: drawH });
                     const saved = await pdfDoc.save();
                     triggerDownload(new Blob([saved as any], { type: "application/pdf" }), `${fileName}.pdf`);
                 } else {
@@ -487,19 +510,18 @@ export default function PdfEditor() {
     // ── Page renderer (shared for PDF pages and doc pages) ────────────────
     const renderPageContainer = (i: number) => (
         <div key={i} className="w-full flex flex-col items-center px-2 sm:px-4">
-            <div className="flex items-center justify-between w-full max-w-[816px] px-1 mb-1">
-                <span className="text-[9px] sm:text-[10px] font-mono text-gray-400 uppercase tracking-widest">
-                    {fileType === "pdf" ? `P. ${i + 1} / ${numPages}` : "Page Preview"}
-                </span>
-                <span className="text-[9px] sm:text-[10px] font-mono text-gray-400">A4 Layout</span>
-            </div>
+            {fileType === "pdf" && (
+                <div className="flex items-center w-full max-w-[816px] px-1 mb-1">
+                    <span className="text-[9px] sm:text-[10px] font-mono text-gray-400 uppercase tracking-widest">
+                        {`Page ${i + 1} / ${numPages}`}
+                    </span>
+                </div>
+            )}
             <div
                 ref={(el) => { containerRefs.current[i] = el; }}
                 className="relative bg-white shadow-2xl rounded-sm ring-1 ring-gray-200 dark:ring-gray-700 overflow-hidden w-full transition-all duration-300 mx-auto"
                 style={{
                     maxWidth: "816px",
-                    aspectRatio: fileType === "pdf" ? undefined : "8.5/11",
-                    minHeight: fileType !== "pdf" ? "min(1056px, 120vw)" : undefined,
                     cursor: activeTool === "image" && pendingImage ? "crosshair" : activeTool === "text" ? "text" : "default",
                 }}
                 onClick={(e) => handleCanvasClick(e, i)}
@@ -644,22 +666,79 @@ export default function PdfEditor() {
 
             {/* Upload zone */}
             {!hasFile ? (
-                <label className="flex flex-col items-center justify-center border-2 border-dashed border-amber-300 rounded-2xl p-8 sm:p-16 cursor-pointer hover:bg-amber-50 dark:hover:bg-amber-900/10 transition-colors max-w-2xl mx-auto">
-                    <span className="text-6xl mb-4">{mode === "annotator" ? "📂" : "🖼️"}</span>
-                    <p className="text-gray-700 dark:text-gray-200 font-semibold text-lg">Click to upload a file</p>
-                    <p className="text-xs text-gray-400 mt-1">
-                        {mode === "annotator"
-                            ? "Supports PDF, Word (.docx), and text (.txt) files"
-                            : "Supports PNG, JPG, and JPEG images"
-                        }
-                    </p>
-                    <input
-                        type="file"
-                        accept={mode === "annotator" ? ".pdf,.docx,.txt" : ".png,.jpg,.jpeg"}
-                        onChange={handleFileUpload}
-                        className="hidden"
-                    />
-                </label>
+                <div
+                    onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+                    onDragLeave={() => setDragOver(false)}
+                    onDrop={handleDrop}
+                    className={`relative max-w-2xl mx-auto rounded-3xl transition-all duration-300
+                        ${dragOver
+                            ? "bg-amber-500/10 border-2 border-amber-400 shadow-[0_0_40px_rgba(251,191,36,0.15)]"
+                            : "border-2 border-dashed border-gray-600 hover:border-amber-400/70 hover:bg-amber-500/5"
+                        }`}
+                >
+                    <label className="flex flex-col items-center justify-center gap-5 p-10 sm:p-16 cursor-pointer">
+                        {/* Icon ring */}
+                        <div className={`relative flex items-center justify-center w-20 h-20 rounded-2xl transition-all duration-300
+                            ${dragOver ? "bg-amber-400/20 scale-110" : "bg-gray-800"}`}>
+                            <UploadCloud
+                                size={36}
+                                className={`transition-colors duration-300 ${dragOver ? "text-amber-400" : "text-gray-400"}`}
+                            />
+                            {dragOver && (
+                                <span className="absolute inset-0 rounded-2xl border-2 border-amber-400 animate-ping opacity-30" />
+                            )}
+                        </div>
+
+                        {/* Text */}
+                        <div className="text-center space-y-1.5">
+                            <p className="text-lg font-bold text-white">
+                                {dragOver ? "Drop to upload" : "Drop file here or click to browse"}
+                            </p>
+                            <p className="text-sm text-gray-400">
+                                {mode === "annotator"
+                                    ? "Annotate, then download as PDF or DOCX"
+                                    : "Convert your image to PDF or DOCX"
+                                }
+                            </p>
+                        </div>
+
+                        {/* Format badges */}
+                        <div className="flex flex-wrap justify-center gap-2">
+                            {mode === "annotator" ? (
+                                <>
+                                    <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-semibold">
+                                        <FileText size={12} /> PDF
+                                    </span>
+                                    <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold">
+                                        <FileText size={12} /> DOCX
+                                    </span>
+                                    <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-500/10 border border-gray-500/20 text-gray-400 text-xs font-semibold">
+                                        <FileType2 size={12} /> TXT
+                                    </span>
+                                </>
+                            ) : (
+                                <>
+                                    <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-violet-500/10 border border-violet-500/20 text-violet-400 text-xs font-semibold">
+                                        <FileImage size={12} /> PNG
+                                    </span>
+                                    <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-semibold">
+                                        <FileImage size={12} /> JPG
+                                    </span>
+                                    <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-semibold">
+                                        <FileImage size={12} /> JPEG
+                                    </span>
+                                </>
+                            )}
+                        </div>
+
+                        <input
+                            type="file"
+                            accept={mode === "annotator" ? ".pdf,.docx,.txt" : ".png,.jpg,.jpeg"}
+                            onChange={handleFileUpload}
+                            className="hidden"
+                        />
+                    </label>
+                </div>
             ) : (
                 <div className="flex flex-col gap-4">
                     {mode === "annotator" && (
