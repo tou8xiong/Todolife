@@ -92,10 +92,7 @@ export async function downloadAnnotatedPdf(
     }
 
     const saved = await pdfDoc.save();
-    const blob = new Blob(
-        [new Uint8Array(saved.buffer as ArrayBuffer, saved.byteOffset, saved.byteLength)],
-        { type: "application/pdf" }
-    );
+    const blob = new Blob([saved as any], { type: "application/pdf" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;

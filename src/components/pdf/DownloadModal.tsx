@@ -17,34 +17,36 @@ export default function DownloadModal({ open, fileName, onFileNameChange, onConf
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
             <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-[90%] max-w-sm p-6 flex flex-col gap-4">
-                <h2 className="text-lg font-bold text-gray-800 dark:text-white">💾 Save {mode === "annotator" ? "PDF" : "File"} As</h2>
-                {mode === "converter" && (
-                    <div>
-                        <label className="text-xs text-gray-400 mb-2 block">Format</label>
-                        <div className="flex gap-4">
-                            <label className="flex items-center gap-2">
-                                <input
-                                    type="radio"
-                                    name="format"
-                                    value="pdf"
-                                    checked={downloadFormat === "pdf"}
-                                    onChange={() => onFormatChange("pdf")}
-                                />
-                                PDF
-                            </label>
-                            <label className="flex items-center gap-2">
-                                <input
-                                    type="radio"
-                                    name="format"
-                                    value="docx"
-                                    checked={downloadFormat === "docx"}
-                                    onChange={() => onFormatChange("docx")}
-                                />
-                                DOCX
-                            </label>
-                        </div>
+                <h2 className="text-lg font-bold text-gray-800 dark:text-white">💾 Save {mode === "annotator" ? "Annotated File" : "Converted File"}</h2>
+                
+                <div>
+                    <label className="text-xs text-gray-400 mb-2 block">Format</label>
+                    <div className="flex gap-4">
+                        <label className="flex items-center gap-2 cursor-pointer text-sm font-medium text-gray-700 dark:text-gray-200">
+                            <input
+                                type="radio"
+                                name="format"
+                                value="pdf"
+                                checked={downloadFormat === "pdf"}
+                                onChange={() => onFormatChange("pdf")}
+                                className="w-4 h-4 text-amber-500 focus:ring-amber-500 border-gray-300"
+                            />
+                            PDF
+                        </label>
+                        <label className="flex items-center gap-2 cursor-pointer text-sm font-medium text-gray-700 dark:text-gray-200">
+                            <input
+                                type="radio"
+                                name="format"
+                                value="docx"
+                                checked={downloadFormat === "docx"}
+                                onChange={() => onFormatChange("docx")}
+                                className="w-4 h-4 text-amber-500 focus:ring-amber-500 border-gray-300"
+                            />
+                            DOCX
+                        </label>
                     </div>
-                )}
+                </div>
+
                 <div>
                     <label className="text-xs text-gray-400 mb-1 block">File name</label>
                     <div className="flex items-center border-2 border-amber-300 rounded-xl overflow-hidden focus-within:border-amber-500 transition-colors">

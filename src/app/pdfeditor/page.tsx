@@ -249,131 +249,257 @@ export default function PdfEditor() {
 
     // ── Download ───────────────────────────────────────────────────────────
     const handleDownload = async () => {
-        if (mode === "annotator") {
-            if (fileType === "pdf" && pdfBytes) {
-                await downloadAnnotatedPdf(pdfBytes, annotations, fileName);
+        setLoading(true);
+        try {
+            const { PDFDocument } = await import("pdf-lib");
+            const html2canvas = (await import("html2canvas")).default;
+            const { Document, Packer, Paragraph, ImageRun } = await import("docx");
 
-            } else if ((fileType === "docx" || fileType === "txt") && containerRefs.current[0]) {
-                setLoading(true);
-                try {
-                    const html2canvas = (await import("html2canvas")).default;
-                    const container = containerRefs.current[0]!;
-                    const capturedCanvas = await html2canvas(container, { scale: 2, useCORS: true });
-                    const imgDataUrl = capturedCanvas.toDataURL("image/png");
+            const triggerDownload = (blob: Blob, name: string) => {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url;
+                a.download = name;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            };
 
-                    const { PDFDocument } = await import("pdf-lib");
-                    const pdfDoc = await PDFDocument.create();
-                    const response = await fetch(imgDataUrl);
-                    const pngBytes = await response.arrayBuffer();
-                    const pngImage = await pdfDoc.embedPng(pngBytes);
-                    const { width, height } = pngImage.scale(1);
-                    const page = pdfDoc.addPage([width, height]);
-                    page.drawImage(pngImage, { x: 0, y: 0, width, height });
-
-                    const saved = await pdfDoc.save();
-                    const blob = new Blob(
-                        [new Uint8Array(saved.buffer as ArrayBuffer, saved.byteOffset, saved.byteLength)],
-                        { type: "application/pdf" }
-                    );
-                    const url = URL.createObjectURL(blob);
-                    const a = document.createElement("a");
-                    a.href = url;
-                    a.download = `${fileName.trim() || "document"}.pdf`;
-                    a.click();
-                    URL.revokeObjectURL(url);
-                } catch (err) {
-                    console.error("Failed to export document:", err);
-                } finally {
-                    setLoading(false);
+            const capturePage = async (index: number) => {
+                const container = containerRefs.current[index];
+                if (!container) {
+                    console.error("Container ref is null for index", index);
+                    return null;
                 }
-            }
-        } else if (mode === "converter") {
-            if (fileType === "image") {
-                setLoading(true);
+
                 try {
-                    // Helper: decode base64 data URL to Uint8Array (works reliably on mobile)
-                    const dataUrlToBytes = (dataUrl: string): Uint8Array => {
-                        const base64 = dataUrl.split(",")[1];
-                        const binary = atob(base64);
-                        const bytes = new Uint8Array(binary.length);
-                        for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-                        return bytes;
-                    };
-                    // Helper: trigger download on mobile (requires anchor in DOM)
-                    const triggerDownload = (blob: Blob, name: string) => {
-                        const url = URL.createObjectURL(blob);
-                        const a = document.createElement("a");
-                        a.href = url;
-                        a.download = name;
-                        document.body.appendChild(a);
-                        a.click();
-                        document.body.removeChild(a);
-                        URL.revokeObjectURL(url);
-                    };
-                    if (downloadFormat === "pdf") {
-                        const { PDFDocument } = await import("pdf-lib");
-                        const pdfDoc = await PDFDocument.create();
-                        const imgBytes = dataUrlToBytes(imageData);
-                        let embeddedImg;
-                        if (imageData.startsWith("data:image/png")) {
-                            embeddedImg = await pdfDoc.embedPng(imgBytes);
-                        } else {
-                            embeddedImg = await pdfDoc.embedJpg(imgBytes);
+                    const canvas = await html2canvas(container, {
+                        scale: 2,
+                        useCORS: true,
+                        logging: false,
+                        backgroundColor: "#ffffff",
+                        allowTaint: true,
+                        scrollX: 0,
+                        scrollY: -window.scrollY,
+                        onclone: (clonedDoc, element) => {
+                            const el = element as HTMLElement;
+
+                            // Nuclear Option: Remove all style/link tags that might contain modern CSS
+                            // html2canvas crashes if it even SEES 'lab(' in a stylesheet, even if unused.
+                            const styles = clonedDoc.querySelectorAll("style, link[rel='stylesheet']");
+                            styles.forEach(s => {
+                                const content = s.textContent || "";
+                                if (content.includes("lab(") || content.includes("oklch(") || content.includes("hwb(")) {
+                                    s.remove();
+                                }
+                            });
+
+                            // Re-inject essential, safe styles for the editor
+                            const safeStyle = clonedDoc.createElement("style");
+                            safeStyle.innerHTML = `
+                                .bg-white { background-color: #ffffff !important; }
+                                .p-8 { padding: 2rem !important; }
+                                .sm\\:p-16 { padding: 4rem !important; }
+                                .text-gray-900 { color: #111827 !important; }
+                                .font-serif { font-family: Georgia, serif !important; }
+                                .font-mono { font-family: monospace !important; }
+                                .leading-relaxed { line-height: 1.625 !important; }
+                                .min-h-full { min-height: 100% !important; }
+                                .absolute { position: absolute !important; }
+                                .z-20 { z-index: 20 !important; }
+                                .annotation-item { display: block !important; visibility: visible !important; }
+                                * { 
+                                    box-shadow: none !important; 
+                                    text-shadow: none !important; 
+                                    animation: none !important; 
+                                    transition: none !important;
+                                    filter: none !important;
+                                    backdrop-filter: none !important;
+                                }
+                            `;
+                            clonedDoc.head.appendChild(safeStyle);
+
+                            // Force container visibility and layout
+                            el.style.display = "block";
+                            el.style.visibility = "visible";
+                            el.style.position = "relative";
+                            el.style.backgroundColor = "#ffffff";
+                            el.style.left = "0";
+                            el.style.top = "0";
+                            el.style.transform = "none";
+
+                            // Scrub remaining inline styles on all elements
+                            clonedDoc.querySelectorAll("*").forEach((node) => {
+                                if (node instanceof HTMLElement) {
+                                    const style = node.getAttribute("style") || "";
+                                    if (style.includes("lab") || style.includes("oklch") || style.includes("hwb")) {
+                                        node.style.color = "black";
+                                        node.style.backgroundColor = "transparent";
+                                        node.style.borderColor = "black";
+                                        node.style.boxShadow = "none";
+                                    }
+                                }
+                            });
                         }
-                        const page = pdfDoc.addPage();
-                        const { width, height } = embeddedImg.scale(0.75);
-                        page.drawImage(embeddedImg, { x: 50, y: 50, width, height });
+                    });
+
+                    const dataUrl = canvas.toDataURL("image/png");
+                    if (dataUrl.length < 100) return null;
+
+                    return dataUrl;
+                } catch (err) {
+                    console.error("Capture failed for page", index, err);
+                    return null;
+                }
+            }; if (mode === "annotator") {
+                if (downloadFormat === "pdf") {
+                    if (fileType === "pdf" && pdfBytes) {
+                        await downloadAnnotatedPdf(pdfBytes, annotations, fileName);
+                    } else {
+                        // DOCX/TXT to PDF
+                        const imgDataUrl = await capturePage(0);
+                        if (!imgDataUrl) {
+                            setLoading(false);
+                            alert("Failed to capture document content.");
+                            return;
+                        }
+                        const pdfDoc = await PDFDocument.create();
+                        const response = await fetch(imgDataUrl);
+                        const pngBytes = await response.arrayBuffer();
+                        const pngImage = await pdfDoc.embedPng(pngBytes);
+
+                        const { width, height } = pngImage.scale(0.5);
+                        const page = pdfDoc.addPage([width, height]);
+                        page.drawImage(pngImage, { x: 0, y: 0, width, height });
+
                         const saved = await pdfDoc.save();
-                        const blob = new Blob(
-                            [new Uint8Array(saved.buffer as ArrayBuffer, saved.byteOffset, saved.byteLength)],
-                            { type: "application/pdf" }
-                        );
-                        triggerDownload(blob, `${fileName}.pdf`);
-                    } else { // docx
-                        const { Document, Packer, Paragraph, ImageRun } = await import("docx");
-                        const imgBytes = dataUrlToBytes(imageData);
-                        const isPng = imageData.startsWith("data:image/png");
-                        const doc = new Document({
-                            sections: [{
+                        triggerDownload(new Blob([saved as any], { type: "application/pdf" }), `${fileName}.pdf`);
+                    }
+                } else {
+                    // Export to DOCX
+                    const sections = [];
+                    const pagesToCapture = fileType === "pdf" ? numPages : 1;
+
+                    for (let i = 0; i < pagesToCapture; i++) {
+                        const imgDataUrl = await capturePage(i);
+                        if (imgDataUrl) {
+                            const base64 = imgDataUrl.split(",")[1];
+                            const bytes = Uint8Array.from(atob(base64), c => c.charCodeAt(0));
+
+                            // Calculate height based on A4 width (approx 600pt) to maintain aspect ratio
+                            // Container is 816x1056 (approx 1.29 ratio)
+                            const docWidth = 600;
+                            const docHeight = fileType === "pdf" ? 780 : 776; // Match A4 proportions
+
+                            sections.push({
+                                properties: {
+                                    page: {
+                                        margin: { top: 0, right: 0, bottom: 0, left: 0 },
+                                        size: { width: 11906, height: 16838 }, // A4 in TWIPs
+                                    },
+                                },
                                 children: [
                                     new Paragraph({
                                         children: [
                                             new ImageRun({
-                                                data: imgBytes,
-                                                transformation: { width: 400, height: 300 },
-                                                type: isPng ? "png" : "jpg",
+                                                data: bytes,
+                                                transformation: {
+                                                    width: 595, // Full A4 width in points
+                                                    height: 842, // Full A4 height in points
+                                                },
+                                                type: "png",
                                             }),
                                         ],
                                     }),
                                 ],
-                            }],
-                        });
-                        const buffer = await Packer.toBuffer(doc);
-                        const blob = new Blob([new Uint8Array(buffer)], { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
-                        triggerDownload(blob, `${fileName}.docx`);
+                            });
+                        }
                     }
-                } catch (err) {
-                    console.error("Failed to convert image:", err);
-                } finally {
-                    setLoading(false);
+
+                    if (sections.length === 0) {
+                        setLoading(false);
+                        alert("Could not capture any document pages. Please try again.");
+                        return;
+                    }
+
+                    const doc = new Document({ sections });
+                    const blob = await Packer.toBlob(doc);
+                    triggerDownload(blob, `${fileName}.docx`);
+                }
+            } else if (mode === "converter") {
+                const dataUrlToBytes = (dataUrl: string): Uint8Array => {
+                    const base64 = dataUrl.split(",")[1];
+                    const binary = atob(base64);
+                    const bytes = new Uint8Array(binary.length);
+                    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+                    return bytes;
+                };
+
+                if (downloadFormat === "pdf") {
+                    const pdfDoc = await PDFDocument.create();
+                    const imgBytes = dataUrlToBytes(imageData);
+                    const embeddedImg = imageData.startsWith("data:image/png")
+                        ? await pdfDoc.embedPng(imgBytes)
+                        : await pdfDoc.embedJpg(imgBytes);
+                    const page = pdfDoc.addPage();
+                    const { width, height } = embeddedImg.scale(0.75);
+                    page.drawImage(embeddedImg, { x: 50, y: 50, width, height });
+                    const saved = await pdfDoc.save();
+                    triggerDownload(new Blob([saved as any], { type: "application/pdf" }), `${fileName}.pdf`);
+                } else {
+                    const imgBytes = dataUrlToBytes(imageData);
+                    const isPng = imageData.startsWith("data:image/png");
+                    const doc = new Document({
+                        sections: [{
+                            properties: {
+                                page: {
+                                    margin: { top: 0, right: 0, bottom: 0, left: 0 },
+                                },
+                            },
+                            children: [
+                                new Paragraph({
+                                    children: [
+                                        new ImageRun({
+                                            data: imgBytes,
+                                            transformation: {
+                                                width: 595,
+                                                height: 842
+                                            },
+                                            type: isPng ? "png" : "jpg",
+                                        }),
+                                    ],
+                                }),
+                            ],
+                        }],
+                    });
+                    const blob = await Packer.toBlob(doc);
+                    triggerDownload(blob, `${fileName}.docx`);
                 }
             }
+        } catch (err) {
+            console.error("Download failed:", err);
+        } finally {
+            setLoading(false);
+            setDownloadModal(false);
         }
-        setDownloadModal(false);
     };
-
     // ── Page renderer (shared for PDF pages and doc pages) ────────────────
     const renderPageContainer = (i: number) => (
-        <div key={i}>
-            <p className="text-xs text-gray-400 text-center mb-1">
-                {fileType === "pdf" ? `Page ${i + 1} of ${numPages}` : "Document Preview"}
-            </p>
+        <div key={i} className="w-full flex flex-col items-center px-2 sm:px-4">
+            <div className="flex items-center justify-between w-full max-w-[816px] px-1 mb-1">
+                <span className="text-[9px] sm:text-[10px] font-mono text-gray-400 uppercase tracking-widest">
+                    {fileType === "pdf" ? `P. ${i + 1} / ${numPages}` : "Page Preview"}
+                </span>
+                <span className="text-[9px] sm:text-[10px] font-mono text-gray-400">A4 Layout</span>
+            </div>
             <div
                 ref={(el) => { containerRefs.current[i] = el; }}
-                className="relative shadow-xl rounded-xl overflow-hidden w-full"
+                className="relative bg-white shadow-2xl rounded-sm ring-1 ring-gray-200 dark:ring-gray-700 overflow-hidden w-full transition-all duration-300 mx-auto"
                 style={{
-                    maxWidth: fileType === "pdf" ? "fit-content" : "816px",
-                    minHeight: fileType !== "pdf" ? "1056px" : undefined,
+                    maxWidth: "816px",
+                    aspectRatio: fileType === "pdf" ? undefined : "8.5/11",
+                    minHeight: fileType !== "pdf" ? "min(1056px, 120vw)" : undefined,
                     cursor: activeTool === "image" && pendingImage ? "crosshair" : activeTool === "text" ? "text" : "default",
                 }}
                 onClick={(e) => handleCanvasClick(e, i)}
@@ -385,29 +511,29 @@ export default function PdfEditor() {
                 {fileType === "pdf" && (
                     <canvas
                         ref={(el) => { canvasRefs.current[i] = el; }}
-                        style={{ display: "block", maxWidth: "100%", height: "auto" }}
+                        className="w-full h-auto block"
                     />
                 )}
 
                 {/* DOCX rendered HTML */}
                 {fileType === "docx" && (
                     <div
-                        className="bg-white p-12 text-gray-900 font-serif text-base leading-relaxed min-h-full"
-                        style={{ fontFamily: "Georgia, serif" }}
+                        className="bg-white p-6 sm:p-16 text-gray-900 font-serif text-xs sm:text-base leading-relaxed min-h-full"
+                        style={{ fontFamily: "Georgia, serif", wordBreak: "break-word" }}
                         dangerouslySetInnerHTML={{ __html: docContent }}
                     />
                 )}
 
                 {/* TXT plain text */}
                 {fileType === "txt" && (
-                    <pre className="bg-white p-12 text-gray-900 font-mono text-sm leading-relaxed whitespace-pre-wrap min-h-full">
+                    <pre className="bg-white p-6 sm:p-16 text-gray-900 font-mono text-[10px] sm:text-sm leading-relaxed whitespace-pre-wrap min-h-full">
                         {docContent}
                     </pre>
                 )}
 
                 {/* Image */}
                 {fileType === "image" && (
-                    <img src={imageData} alt="Uploaded" className="w-full h-full object-contain bg-white" />
+                    <img src={imageData} alt="Uploaded" className="w-full h-auto object-contain bg-white" />
                 )}
 
                 {/* Annotations overlay */}
@@ -569,7 +695,7 @@ export default function PdfEditor() {
                         {fileType === "pdf" && Array.from({ length: numPages }, (_, i) => renderPageContainer(i))}
 
                         {/* DOCX / TXT: single page container */}
-                        {(fileType === "docx" || fileType === "txt") && !loading && renderPageContainer(0)}
+                        {(fileType === "docx" || fileType === "txt") && renderPageContainer(0)}
 
                         {/* Image */}
                         {fileType === "image" && renderPageContainer(0)}
