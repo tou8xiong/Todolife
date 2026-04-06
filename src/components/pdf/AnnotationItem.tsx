@@ -1,5 +1,5 @@
 "use client";
-import { Annotation, ImageAnnotation } from "@/lib/pdfUtils";
+import { Annotation, DrawAnnotation, ImageAnnotation } from "@/lib/pdfUtils";
 
 interface Props {
     ann: Annotation;
@@ -13,17 +13,6 @@ interface Props {
 export default function AnnotationItem({
     ann, isSelected, onMouseDown, onResizeMouseDown, onClick, onDelete,
 }: Props) {
-    const sharedStyle: React.CSSProperties = {
-        position: "absolute",
-        left: `${ann.x * 100}%`,
-        top: `${ann.y * 100}%`,
-        cursor: "grab",
-        zIndex: isSelected ? 20 : 10,
-        userSelect: "none",
-        outline: isSelected ? "2px dashed #f59e0b" : undefined,
-        borderRadius: 2,
-    };
-
     const deleteBtn = (
         <button
             onMouseDown={(e) => e.stopPropagation()}
@@ -39,6 +28,53 @@ export default function AnnotationItem({
         >✕</button>
     );
 
+    // Draw annotation (pen strokes) — no x/y position, covers full container
+    if (ann.type === "draw") {
+        const pathD = ann.points.map((p, i) => `${i === 0 ? "M" : "L"}${p.x},${p.y}`).join(" ");
+        return (
+            <svg
+                style={{
+                    position: "absolute", left: 0, top: 0,
+                    width: "100%", height: "100%",
+                    zIndex: isSelected ? 20 : 10,
+                    pointerEvents: "none",
+                    overflow: "visible",
+                }}
+                viewBox="0 0 1 1"
+                preserveAspectRatio="none"
+            >
+                <path
+                    d={pathD}
+                    stroke={ann.color}
+                    strokeWidth={ann.strokeWidth}
+                    fill="none"
+                    vectorEffect="non-scaling-stroke"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    style={{ pointerEvents: "stroke", cursor: "pointer" }}
+                    onMouseDown={(e) => onMouseDown(e as unknown as React.MouseEvent, ann)}
+                    onClick={(e) => onClick(e as unknown as React.MouseEvent, ann)}
+                />
+                {isSelected && (
+                    <foreignObject x="0" y="0" width="20" height="20" style={{ overflow: "visible" }}>
+                        {deleteBtn}
+                    </foreignObject>
+                )}
+            </svg>
+        );
+    }
+
+    const sharedStyle: React.CSSProperties = {
+        position: "absolute",
+        left: `${ann.x * 100}%`,
+        top: `${ann.y * 100}%`,
+        cursor: "grab",
+        zIndex: isSelected ? 20 : 10,
+        userSelect: "none",
+        outline: isSelected ? "2px dashed #f59e0b" : undefined,
+        borderRadius: 2,
+    };
+
     if (ann.type === "text") {
         return (
             <div
@@ -47,6 +83,7 @@ export default function AnnotationItem({
                     color: ann.color,
                     fontSize: `${ann.fontSize * 0.75}px`,
                     fontFamily: "Helvetica, sans-serif",
+                    fontWeight: ann.bold ? "bold" : "normal",
                     whiteSpace: "nowrap",
                     transform: "translateY(-50%)",
                     padding: "0 3px",

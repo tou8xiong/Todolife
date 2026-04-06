@@ -17,10 +17,10 @@ const TASK_TYPES: {
   color: string;
   accent: string;
 }[] = [
-  { type: "work",       label: "Work",       short: "Work",  icon: Briefcase, color: "text-blue-400",   accent: "border-blue-400/50 bg-blue-400/10"   },
-  { type: "study",      label: "Study",      short: "Study", icon: BookOpen,  color: "text-violet-400", accent: "border-violet-400/50 bg-violet-400/10" },
-  { type: "activities", label: "Activities", short: "Acts",  icon: Zap,       color: "text-amber-400",  accent: "border-amber-400/50 bg-amber-400/10"  },
-];
+    { type: "work", label: "Work", short: "Work", icon: Briefcase, color: "text-blue-400", accent: "border-blue-400/50 bg-blue-400/10" },
+    { type: "study", label: "Study", short: "Study", icon: BookOpen, color: "text-violet-400", accent: "border-violet-400/50 bg-violet-400/10" },
+    { type: "activities", label: "Activities", short: "Acts", icon: Zap, color: "text-amber-400", accent: "border-amber-400/50 bg-amber-400/10" },
+  ];
 
 interface TaskTypeColumnProps {
   tasks: Task[];

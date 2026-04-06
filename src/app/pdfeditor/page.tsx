@@ -1,6 +1,6 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Annotation, ActiveTool, ImageAnnotation, TextAnnotation, downloadAnnotatedPdf } from "@/lib/pdfUtils";
+import { Annotation, ActiveTool, DrawAnnotation, ImageAnnotation, TextAnnotation, downloadAnnotatedPdf } from "@/lib/pdfUtils";
 import Toolbar from "@/components/pdf/Toolbar";
 import AnnotationItem from "@/components/pdf/AnnotationItem";
 import DownloadModal from "@/components/pdf/DownloadModal";
@@ -48,6 +48,8 @@ export default function PdfEditor() {
     const [activeTool, setActiveTool] = useState<ActiveTool>("text");
     const [fontSize, setFontSize] = useState(14);
     const [color, setColor] = useState("#000000");
+    const [bold, setBold] = useState(false);
+    const [penStrokeWidth, setPenStrokeWidth] = useState(2);
 
     const [pendingImage, setPendingImage] = useState<{ dataUrl: string; mimeType: "image/png" | "image/jpeg" } | null>(null);
     const [placing, setPlacing] = useState<Placing | null>(null);
@@ -58,9 +60,12 @@ export default function PdfEditor() {
     const [downloadFormat, setDownloadFormat] = useState<"pdf" | "docx">("pdf");
     const [dragOver, setDragOver] = useState(false);
 
+    const [liveStroke, setLiveStroke] = useState<{ pageIndex: number; points: { x: number; y: number }[] } | null>(null);
+
     const canvasRefs = useRef<(HTMLCanvasElement | null)[]>([]);
     const containerRefs = useRef<(HTMLDivElement | null)[]>([]);
     const dragRef = useRef<DragState | null>(null);
+    const penDrawRef = useRef<{ pageIndex: number; points: { x: number; y: number }[] } | null>(null);
 
     const selectedAnnotation = annotations.find((a) => a.id === selectedId) ?? null;
     const hasFile = fileType !== null;
@@ -166,6 +171,7 @@ export default function PdfEditor() {
 
     // ── Canvas click ───────────────────────────────────────────────────────
     const handleCanvasClick = (e: React.MouseEvent<HTMLDivElement>, pageIndex: number) => {
+        if (activeTool === "pen") return; // pen uses mousedown/move/up
         if (dragRef.current?.moved) { dragRef.current = null; return; }
         setSelectedId(null);
         const container = containerRefs.current[pageIndex];
@@ -188,11 +194,24 @@ export default function PdfEditor() {
         }
     };
 
+    // ── Pen drawing ────────────────────────────────────────────────────────
+    const handleContainerMouseDown = (e: React.MouseEvent<HTMLDivElement>, pageIndex: number) => {
+        if (activeTool !== "pen") return;
+        e.preventDefault();
+        const container = containerRefs.current[pageIndex];
+        if (!container) return;
+        const rect = container.getBoundingClientRect();
+        const x = (e.clientX - rect.left) / rect.width;
+        const y = (e.clientY - rect.top) / rect.height;
+        penDrawRef.current = { pageIndex, points: [{ x, y }] };
+        setLiveStroke({ pageIndex, points: [{ x, y }] });
+    };
+
     const confirmText = () => {
         if (!placing || !newText.trim()) { setPlacing(null); return; }
         setAnnotations((prev) => [
             ...prev,
-            { id: Date.now(), type: "text", page: placing.page, x: placing.x, y: placing.y, text: newText, fontSize, color } as TextAnnotation,
+            { id: Date.now(), type: "text", page: placing.page, x: placing.x, y: placing.y, text: newText, fontSize, color, bold } as TextAnnotation,
         ]);
         setPlacing(null);
         setNewText("");
@@ -200,6 +219,7 @@ export default function PdfEditor() {
 
     // ── Drag & resize ──────────────────────────────────────────────────────
     const handleAnnotationMouseDown = (e: React.MouseEvent, ann: Annotation, pageIndex: number) => {
+        if (ann.type === "draw") return; // draw annotations don't drag
         e.stopPropagation();
         e.preventDefault();
         dragRef.current = {
@@ -230,6 +250,20 @@ export default function PdfEditor() {
     };
 
     const handleContainerMouseMove = (e: React.MouseEvent<HTMLDivElement>, pageIndex: number) => {
+        // Pen drawing
+        const pen = penDrawRef.current;
+        if (pen && pen.pageIndex === pageIndex) {
+            const container = containerRefs.current[pageIndex];
+            if (container) {
+                const rect = container.getBoundingClientRect();
+                const x = (e.clientX - rect.left) / rect.width;
+                const y = (e.clientY - rect.top) / rect.height;
+                pen.points.push({ x, y });
+                setLiveStroke({ pageIndex, points: [...pen.points] });
+            }
+            return;
+        }
+        // Drag/resize
         const drag = dragRef.current;
         if (!drag || drag.pageIndex !== pageIndex) return;
         const container = containerRefs.current[pageIndex];
@@ -248,7 +282,19 @@ export default function PdfEditor() {
         );
     };
 
-    const handleContainerMouseUp = () => { dragRef.current = null; };
+    const handleContainerMouseUp = (e: React.MouseEvent<HTMLDivElement>, pageIndex: number) => {
+        // Finalize pen stroke
+        const pen = penDrawRef.current;
+        if (pen && pen.pageIndex === pageIndex && pen.points.length >= 2) {
+            setAnnotations((prev) => [
+                ...prev,
+                { id: Date.now(), type: "draw", page: pageIndex + 1, points: pen.points, color, strokeWidth: penStrokeWidth } as DrawAnnotation,
+            ]);
+        }
+        penDrawRef.current = null;
+        setLiveStroke(null);
+        dragRef.current = null;
+    };
 
     // ── Annotation CRUD ────────────────────────────────────────────────────
     const updateAnnotation = (updated: Annotation) =>
@@ -522,12 +568,13 @@ export default function PdfEditor() {
                 className="relative bg-white shadow-2xl rounded-sm ring-1 ring-gray-200 dark:ring-gray-700 overflow-hidden w-full transition-all duration-300 mx-auto"
                 style={{
                     maxWidth: "816px",
-                    cursor: activeTool === "image" && pendingImage ? "crosshair" : activeTool === "text" ? "text" : "default",
+                    cursor: activeTool === "pen" ? "crosshair" : activeTool === "image" && pendingImage ? "crosshair" : activeTool === "text" ? "text" : "default",
                 }}
+                onMouseDown={(e) => handleContainerMouseDown(e, i)}
                 onClick={(e) => handleCanvasClick(e, i)}
                 onMouseMove={(e) => handleContainerMouseMove(e, i)}
-                onMouseUp={handleContainerMouseUp}
-                onMouseLeave={handleContainerMouseUp}
+                onMouseUp={(e) => handleContainerMouseUp(e, i)}
+                onMouseLeave={(e) => handleContainerMouseUp(e, i)}
             >
                 {/* PDF canvas */}
                 {fileType === "pdf" && (
@@ -570,6 +617,25 @@ export default function PdfEditor() {
                         onDelete={deleteAnnotation}
                     />
                 ))}
+
+                {/* Live pen stroke while drawing */}
+                {liveStroke && liveStroke.pageIndex === i && liveStroke.points.length >= 2 && (
+                    <svg
+                        style={{ position: "absolute", left: 0, top: 0, width: "100%", height: "100%", pointerEvents: "none", zIndex: 25, overflow: "visible" }}
+                        viewBox="0 0 1 1"
+                        preserveAspectRatio="none"
+                    >
+                        <path
+                            d={liveStroke.points.map((p, idx) => `${idx === 0 ? "M" : "L"}${p.x},${p.y}`).join(" ")}
+                            stroke={color}
+                            strokeWidth={penStrokeWidth}
+                            fill="none"
+                            vectorEffect="non-scaling-stroke"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                        />
+                    </svg>
+                )}
 
                 {/* Text placement input */}
                 {mode === "annotator" && placing && placing.page === i + 1 && (
@@ -749,6 +815,10 @@ export default function PdfEditor() {
                             color={color}
                             onFontSizeChange={setFontSize}
                             onColorChange={setColor}
+                            bold={bold}
+                            onBoldChange={setBold}
+                            penStrokeWidth={penStrokeWidth}
+                            onPenStrokeWidthChange={setPenStrokeWidth}
                             onImageFileSelected={(dataUrl, mimeType) => { setPendingImage({ dataUrl, mimeType }); setActiveTool("image"); }}
                             selectedAnnotation={selectedAnnotation}
                             onUpdateAnnotation={updateAnnotation}

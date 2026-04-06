@@ -11,6 +11,7 @@ export interface TextAnnotation {
     text: string;
     fontSize: number;
     color: string;   // hex e.g. "#ff0000"
+    bold?: boolean;
 }
 
 export interface ImageAnnotation {
@@ -25,9 +26,18 @@ export interface ImageAnnotation {
     mimeType: "image/png" | "image/jpeg";
 }
 
-export type Annotation = TextAnnotation | ImageAnnotation;
+export interface DrawAnnotation {
+    id: number;
+    type: "draw";
+    page: number;
+    points: { x: number; y: number }[];  // normalized 0–1
+    color: string;
+    strokeWidth: number;  // screen pixels
+}
 
-export type ActiveTool = "text" | "image";
+export type Annotation = TextAnnotation | ImageAnnotation | DrawAnnotation;
+
+export type ActiveTool = "text" | "image" | "pen";
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -57,6 +67,7 @@ export async function downloadAnnotatedPdf(
 ): Promise<void> {
     const pdfDoc = await PDFDocument.load(pdfBytes);
     const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    const fontBold = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
     const pages = pdfDoc.getPages();
 
     for (const ann of annotations) {
@@ -66,14 +77,15 @@ export async function downloadAnnotatedPdf(
 
         if (ann.type === "text") {
             const { r, g, b } = hexToRgb01(ann.color);
+            // Fix: use -fontSize*0.3 so text visually centers at the click point
             page.drawText(ann.text, {
                 x: ann.x * width,
-                y: height - ann.y * height - ann.fontSize,
+                y: height - ann.y * height - ann.fontSize * 0.3,
                 size: ann.fontSize,
-                font,
+                font: ann.bold ? fontBold : font,
                 color: rgb(r, g, b),
             });
-        } else {
+        } else if (ann.type === "image") {
             try {
                 const bytes = dataUrlToUint8Array(ann.dataUrl);
                 const img = ann.mimeType === "image/jpeg"
@@ -87,6 +99,22 @@ export async function downloadAnnotatedPdf(
                 });
             } catch (err) {
                 console.error("Failed to embed image annotation:", err);
+            }
+        } else if (ann.type === "draw" && ann.points.length >= 2) {
+            const { r, g, b } = hexToRgb01(ann.color);
+            // Build SVG path with inverted Y for PDF coordinate space
+            const pathData = ann.points
+                .map((p, i) => `${i === 0 ? "M" : "L"}${(p.x * width).toFixed(2)},${(height - p.y * height).toFixed(2)}`)
+                .join(" ");
+            try {
+                page.drawSvgPath(pathData, {
+                    borderColor: rgb(r, g, b),
+                    borderWidth: ann.strokeWidth * 0.75,
+                    borderOpacity: 1,
+                    opacity: 0,
+                });
+            } catch (err) {
+                console.error("Failed to draw pen stroke:", err);
             }
         }
     }

@@ -9,6 +9,10 @@ interface Props {
     color: string;
     onFontSizeChange: (n: number) => void;
     onColorChange: (c: string) => void;
+    bold: boolean;
+    onBoldChange: (b: boolean) => void;
+    penStrokeWidth: number;
+    onPenStrokeWidthChange: (w: number) => void;
     onImageFileSelected: (dataUrl: string, mimeType: "image/png" | "image/jpeg") => void;
     selectedAnnotation: Annotation | null;
     onUpdateAnnotation: (updated: Annotation) => void;
@@ -20,9 +24,13 @@ interface Props {
 
 const FONT_SIZES = [10, 12, 14, 16, 18, 20, 24, 28, 32];
 
+const PEN_SIZES = [1, 2, 3, 5, 8];
+
 export default function Toolbar({
     activeTool, onToolChange,
     fontSize, color, onFontSizeChange, onColorChange,
+    bold, onBoldChange,
+    penStrokeWidth, onPenStrokeWidthChange,
     onImageFileSelected,
     selectedAnnotation, onUpdateAnnotation, onDeleteAnnotation,
     annotationCount, onChangeFile, pendingImage,
@@ -41,7 +49,7 @@ export default function Toolbar({
         e.target.value = "";
     };
 
-    const updateText = (field: keyof TextAnnotation, value: string | number) => {
+    const updateText = (field: keyof TextAnnotation, value: string | number | boolean) => {
         if (!selectedAnnotation || selectedAnnotation.type !== "text") return;
         onUpdateAnnotation({ ...selectedAnnotation, [field]: value } as TextAnnotation);
     };
@@ -57,6 +65,10 @@ export default function Toolbar({
                         onClick={() => onToolChange("text")}
                         className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${activeTool === "text" ? "bg-amber-400 text-white shadow" : "text-gray-500 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"}`}
                     >✏️ Text</button>
+                    <button
+                        onClick={() => onToolChange("pen")}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${activeTool === "pen" ? "bg-amber-400 text-white shadow" : "text-gray-500 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"}`}
+                    >🖊 Pen</button>
                     <button
                         onClick={() => { onToolChange("image"); fileInputRef.current?.click(); }}
                         className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${activeTool === "image" ? "bg-amber-400 text-white shadow" : "text-gray-500 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"}`}
@@ -82,6 +94,33 @@ export default function Toolbar({
                         >
                             {FONT_SIZES.map((s) => <option key={s}>{s}</option>)}
                         </select>
+                        <button
+                            onClick={() => onBoldChange(!bold)}
+                            className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-colors border ${bold ? "bg-amber-400 text-white border-amber-400" : "border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600"}`}
+                        >B</button>
+                        <span className="text-xs text-gray-400">Color</span>
+                        <input
+                            type="color"
+                            value={color}
+                            onChange={(e) => onColorChange(e.target.value)}
+                            className="w-8 h-8 rounded-lg cursor-pointer border-0"
+                        />
+                    </div>
+                )}
+
+                {/* Pen tool settings — visible inline on desktop only */}
+                {!selectedAnnotation && activeTool === "pen" && (
+                    <div className="hidden sm:flex items-center gap-2 border-l-2 border-gray-200 dark:border-gray-600 pl-3">
+                        <span className="text-xs text-gray-400">Size</span>
+                        <div className="flex gap-1">
+                            {PEN_SIZES.map((s) => (
+                                <button
+                                    key={s}
+                                    onClick={() => onPenStrokeWidthChange(s)}
+                                    className={`w-7 h-7 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center ${penStrokeWidth === s ? "bg-amber-400 text-white" : "bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-500"}`}
+                                >{s}</button>
+                            ))}
+                        </div>
                         <span className="text-xs text-gray-400">Color</span>
                         <input
                             type="color"
@@ -117,6 +156,33 @@ export default function Toolbar({
                     >
                         {FONT_SIZES.map((s) => <option key={s}>{s}</option>)}
                     </select>
+                    <button
+                        onClick={() => onBoldChange(!bold)}
+                        className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-colors border ${bold ? "bg-amber-400 text-white border-amber-400" : "border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-300"}`}
+                    >B</button>
+                    <span className="text-xs text-gray-400">Color</span>
+                    <input
+                        type="color"
+                        value={color}
+                        onChange={(e) => onColorChange(e.target.value)}
+                        className="w-8 h-8 rounded-lg cursor-pointer border-0"
+                    />
+                </div>
+            )}
+
+            {/* Row 2: pen settings on mobile */}
+            {!selectedAnnotation && activeTool === "pen" && (
+                <div className="flex sm:hidden items-center gap-2 pt-2 border-t border-gray-100 dark:border-gray-700">
+                    <span className="text-xs text-gray-400">Size</span>
+                    <div className="flex gap-1">
+                        {PEN_SIZES.map((s) => (
+                            <button
+                                key={s}
+                                onClick={() => onPenStrokeWidthChange(s)}
+                                className={`w-7 h-7 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center ${penStrokeWidth === s ? "bg-amber-400 text-white" : "bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-300"}`}
+                            >{s}</button>
+                        ))}
+                    </div>
                     <span className="text-xs text-gray-400">Color</span>
                     <input
                         type="color"
@@ -144,6 +210,10 @@ export default function Toolbar({
                     >
                         {FONT_SIZES.map((s) => <option key={s}>{s}</option>)}
                     </select>
+                    <button
+                        onClick={() => updateText("bold", selectedAnnotation.bold ? false : true)}
+                        className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-colors border ${selectedAnnotation.bold ? "bg-amber-400 text-white border-amber-400" : "border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600"}`}
+                    >B</button>
                     <input
                         type="color"
                         value={selectedAnnotation.color}
@@ -162,6 +232,17 @@ export default function Toolbar({
                 <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-gray-100 dark:border-gray-700">
                     <span className="text-xs text-gray-400 font-semibold">Image selected</span>
                     <span className="text-xs text-gray-400 hidden sm:inline">— drag to move, corner handle to resize</span>
+                    <button
+                        onClick={() => onDeleteAnnotation(selectedAnnotation.id)}
+                        className="text-xs px-2 py-1 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg transition-colors"
+                    >Delete</button>
+                </div>
+            )}
+
+            {/* Row 2: selected draw annotation editor */}
+            {selectedAnnotation?.type === "draw" && (
+                <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-gray-100 dark:border-gray-700">
+                    <span className="text-xs text-gray-400 font-semibold">Stroke selected</span>
                     <button
                         onClick={() => onDeleteAnnotation(selectedAnnotation.id)}
                         className="text-xs px-2 py-1 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg transition-colors"
