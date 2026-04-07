@@ -1,7 +1,7 @@
 "use client"
 import { GiNotebook } from "react-icons/gi";
 import { useState, useEffect } from "react";
-import { MdDelete } from "react-icons/md";
+import { MdDelete, MdEdit, MdCheck, MdClose } from "react-icons/md";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { toast } from "sonner";
@@ -15,6 +15,8 @@ export default function NooteBook() {
     const [curentideas, setCurentIdeas] = useState({ ideatext: "" });
     const [ideas, setIdeas] = useState<Idea[]>([]);
     const [user, setUser] = useState<any>(null);
+    const [editingId, setEditingId] = useState<number | null>(null);
+    const [editText, setEditText] = useState("");
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -60,6 +62,28 @@ export default function NooteBook() {
             window.dispatchEvent(new Event("updatedIdeas"));
         }
         setIdeas(updatedIdeas);
+    };
+
+    const handleEditStart = (idea: Idea) => {
+        setEditingId(idea.id);
+        setEditText(idea.ideatext);
+    };
+
+    const handleEditSave = (id: number) => {
+        if (!editText.trim()) return;
+        const storeIdeas: Idea[] = JSON.parse(localStorage.getItem(`Ideas_${user.email}`) || "[]");
+        const updatedIdeas = storeIdeas.map((idea) =>
+            idea.id === id ? { ...idea, ideatext: editText } : idea
+        );
+        localStorage.setItem(`Ideas_${user.email}`, JSON.stringify(updatedIdeas));
+        setIdeas(updatedIdeas);
+        setEditingId(null);
+        setEditText("");
+    };
+
+    const handleEditCancel = () => {
+        setEditingId(null);
+        setEditText("");
     };
 
     return (
@@ -122,15 +146,51 @@ export default function NooteBook() {
                                 <span className="mt-0.5 w-7 h-7 flex items-center justify-center rounded-full bg-sky-100 dark:bg-sky-900 text-sky-500 text-xs font-bold shrink-0">
                                     {ideas.length - index}
                                 </span>
-                                <p className="flex-1 text-gray-700 dark:text-gray-200 text-sm leading-relaxed break-words">
-                                    {idea.ideatext}
-                                </p>
-                                <button
-                                    onClick={() => handleDelete(idea.id)}
-                                    className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 shrink-0"
-                                >
-                                    <MdDelete size={20} className="text-red-400" />
-                                </button>
+
+                                {editingId === idea.id ? (
+                                    <div className="flex-1 flex items-center gap-2">
+                                        <input
+                                            autoFocus
+                                            value={editText}
+                                            onChange={(e) => setEditText(e.target.value)}
+                                            onKeyDown={(e) => {
+                                                if (e.key === "Enter") handleEditSave(idea.id);
+                                                if (e.key === "Escape") handleEditCancel();
+                                            }}
+                                            className="flex-1 bg-gray-50 dark:bg-gray-700 dark:text-white border-2 border-sky-400 rounded-xl px-3 py-1.5 text-sm focus:outline-none"
+                                        />
+                                        <button
+                                            onClick={() => handleEditSave(idea.id)}
+                                            className="p-1.5 rounded-lg bg-sky-50 dark:bg-sky-900/30 hover:bg-sky-100 dark:hover:bg-sky-900/50 shrink-0"
+                                        >
+                                            <MdCheck size={18} className="text-sky-500" />
+                                        </button>
+                                        <button
+                                            onClick={handleEditCancel}
+                                            className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 shrink-0"
+                                        >
+                                            <MdClose size={18} className="text-gray-400" />
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <p className="flex-1 text-gray-700 dark:text-gray-200 text-sm leading-relaxed break-words">
+                                            {idea.ideatext}
+                                        </p>
+                                        <button
+                                            onClick={() => handleEditStart(idea)}
+                                            className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-lg hover:bg-sky-50 dark:hover:bg-sky-900/30 shrink-0"
+                                        >
+                                            <MdEdit size={20} className="text-sky-400" />
+                                        </button>
+                                        <button
+                                            onClick={() => handleDelete(idea.id)}
+                                            className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 shrink-0"
+                                        >
+                                            <MdDelete size={20} className="text-red-400" />
+                                        </button>
+                                    </>
+                                )}
                             </li>
                         ))}
                     </ul>

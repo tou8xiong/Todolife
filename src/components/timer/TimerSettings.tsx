@@ -1,22 +1,23 @@
 "use client";
 import React, { useState, useRef, useEffect } from "react";
-import { Coffee, CloudRain, TreePine, Music, Maximize2, Minimize2, Play, Pause, RotateCcw, CheckCircle2 } from "lucide-react";
+import { CloudRain, TreePine, Music, Maximize2, Minimize2, Play, Pause, RotateCcw, CheckCircle2, Search } from "lucide-react";
 import { toast } from "sonner";
 import { auth } from "@/lib/firebase";
 
-const LOFI_VIDEOS = [
-  { id: "jfKfPfyJRdk", name: "Lofi Girl - Chilled Beats" },
-  { id: "bo_uzXpUStY", name: "Coffee Shop Ambience" },
-  { id: "mPZkdNFkNps", name: "Rainy Night in Tokyo" },
-  { id: "4xDzrJKXOOY", name: "Synthwave Radio" },
+const PRESET_VIDEOS = [
+  { id: "jfKfPfyJRdk", name: "Lofi Girl" },
+  { id: "mPZkdNFkNps", name: "Rainy Tokyo" },
+  { id: "4xDzrJKXOOY", name: "Synthwave" },
 ];
 
 export default function TimerSettings() {
   const [centis, setCentis] = useState<number>(0);
   const intervalRef = useRef<number | null>(null);
   const [running, setRunning] = useState<boolean>(false);
-  const [activeVideo, setActiveVideo] = useState(LOFI_VIDEOS[0].id);
+  const [iframeSrc, setIframeSrc] = useState(`https://www.youtube.com/embed/${PRESET_VIDEOS[0].id}?autoplay=0`);
   const [isFocusMode, setIsFocusMode] = useState(false);
+  const [searchInput, setSearchInput] = useState("");
+  const [activeLabel, setActiveLabel] = useState(PRESET_VIDEOS[0].name);
 
   const start = () => {
     if (intervalRef.current !== null) return;
@@ -48,9 +49,9 @@ export default function TimerSettings() {
 
     const session = {
       id: Date.now(),
-      duration: centis, // in centiseconds
+      duration: centis,
       timestamp: new Date().toISOString(),
-      videoName: LOFI_VIDEOS.find(v => v.id === activeVideo)?.name || "Lofi Beats"
+      videoName: activeLabel,
     };
 
     const key = `study_sessions_${user.email}`;
@@ -68,6 +69,15 @@ export default function TimerSettings() {
       }
     };
   }, []);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    const q = searchInput.trim();
+    if (!q) return;
+    setIframeSrc(`https://www.youtube.com/embed?listType=search&list=${encodeURIComponent(q)}`);
+    setActiveLabel(q);
+    setSearchInput("");
+  };
 
   const hours = Math.floor(centis / 360000);
   const minutes = Math.floor((centis % 360000) / 6000);
@@ -150,89 +160,85 @@ export default function TimerSettings() {
           </div>
 
           {/* Music & Ambience Card */}
-          <div className="space-y-6">
-            <div className="bg-white dark:bg-gray-900 p-6 rounded-3xl shadow-xl border border-amber-100 dark:border-amber-900/20">
-              <h2 className="text-lg font-semibold mb-4 text-gray-600 dark:text-gray-300 flex items-center gap-2">
-                <Music size={20} className="text-amber-500" /> Lo-fi Radio
-              </h2>
+          <div className="bg-white dark:bg-gray-900 p-6 rounded-3xl shadow-xl border border-amber-100 dark:border-amber-900/20 space-y-4">
+            <h2 className="text-lg font-semibold text-gray-600 dark:text-gray-300 flex items-center gap-2">
+              <Music size={20} className="text-amber-500" /> Lo-fi Radio
+            </h2>
 
-              {/* YouTube Embed */}
-              <div className="aspect-video w-full rounded-2xl overflow-hidden mb-4 bg-black shadow-inner">
-                <iframe
-                  width="100%"
-                  height="100%"
-                  src={`https://www.youtube.com/embed/${activeVideo}?autoplay=0`}
-                  title="YouTube video player"
-                  frameBorder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                ></iframe>
+            {/* YouTube Search Bar */}
+            <form onSubmit={handleSearch} className="flex gap-2">
+              <div className="relative flex-1">
+                <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                <input
+                  type="text"
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  placeholder="Search YouTube…"
+                  className="w-full pl-9 pr-3 py-2.5 text-sm rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-white focus:outline-none focus:border-amber-400 transition-colors"
+                />
               </div>
+              <button
+                type="submit"
+                className="px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold rounded-xl transition-all active:scale-95"
+              >
+                Search
+              </button>
+            </form>
 
-              {/* Station Selection */}
-              <div className="grid grid-cols-2 gap-2">
-                {LOFI_VIDEOS.map((video) => (
-                  <button
-                    key={video.id}
-                    onClick={() => setActiveVideo(video.id)}
-                    className={`text-xs p-2 rounded-xl transition-all border ${activeVideo === video.id
-                      ? "bg-amber-500 text-white border-amber-500 shadow-md"
-                      : "bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-transparent hover:bg-amber-50 dark:hover:bg-amber-900/20"
-                      }`}
-                  >
-                    {video.name}
-                  </button>
-                ))}
-              </div>
+            {/* YouTube Embed */}
+            <div className="aspect-video w-full rounded-2xl overflow-hidden bg-black shadow-inner">
+              <iframe
+                key={iframeSrc}
+                width="100%"
+                height="100%"
+                src={iframeSrc}
+                title="YouTube video player"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
             </div>
 
-            {/* Quick Ambient Sounds (Visual feedback) */}
-            <div className="flex justify-between gap-4 p-4 bg-amber-50/50 dark:bg-amber-900/10 rounded-3xl border border-amber-200/50 dark:border-amber-800/20">
-              <div className="flex items-center gap-2 text-amber-700 dark:text-amber-400 font-semibold text-sm px-2">
-                Ambient Moods:
-              </div>
-              <div className="flex gap-2">
+            {/* Preset buttons */}
+            <div className="flex gap-2">
+              {PRESET_VIDEOS.map((video) => (
                 <button
-                  onClick={() => setActiveVideo("bo_uzXpUStY")}
-                  className="p-3 rounded-2xl bg-white dark:bg-gray-800 shadow-sm hover:shadow-md hover:scale-110 transition-all text-amber-600"
+                  key={video.id}
+                  onClick={() => {
+                    setIframeSrc(`https://www.youtube.com/embed/${video.id}?autoplay=0`);
+                    setActiveLabel(video.name);
+                  }}
+                  className={`flex-1 text-xs py-2 px-2 rounded-xl transition-all border ${iframeSrc.includes(video.id)
+                    ? "bg-amber-500 text-white border-amber-500 shadow-md"
+                    : "bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-transparent hover:bg-amber-50 dark:hover:bg-amber-900/20"
+                  }`}
                 >
-                  <Coffee size={20} />
+                  {video.name}
                 </button>
-                <button
-                  onClick={() => setActiveVideo("mPZkdNFkNps")}
-                  className="p-3 rounded-2xl bg-white dark:bg-gray-800 shadow-sm hover:shadow-md hover:scale-110 transition-all text-blue-500"
-                >
-                  <CloudRain size={20} />
-                </button>
-                <button
-                  onClick={() => setActiveVideo("jfKfPfyJRdk")}
-                  className="p-3 rounded-2xl bg-white dark:bg-gray-800 shadow-sm hover:shadow-md hover:scale-110 transition-all text-green-500"
-                >
-                  <TreePine size={20} />
-                </button>
-              </div>
+              ))}
+              <button
+                onClick={() => {
+                  setIframeSrc(`https://www.youtube.com/embed/mPZkdNFkNps?autoplay=0`);
+                  setActiveLabel("Rainy Tokyo");
+                }}
+                className="p-2 rounded-xl bg-gray-50 dark:bg-gray-800 hover:bg-blue-50 dark:hover:bg-blue-900/20 text-blue-500 border border-transparent transition-all"
+                title="Rainy Ambience"
+              >
+                <CloudRain size={16} />
+              </button>
+              <button
+                onClick={() => {
+                  setIframeSrc(`https://www.youtube.com/embed/jfKfPfyJRdk?autoplay=0`);
+                  setActiveLabel("Lofi Girl");
+                }}
+                className="p-2 rounded-xl bg-gray-50 dark:bg-gray-800 hover:bg-green-50 dark:hover:bg-green-900/20 text-green-500 border border-transparent transition-all"
+                title="Nature Sounds"
+              >
+                <TreePine size={16} />
+              </button>
             </div>
           </div>
-
         </div>
-
-        {/* Focus Tips for Students */}
-        {!isFocusMode && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="p-4 bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-800/20 rounded-2xl">
-              <h3 className="text-blue-700 dark:text-blue-400 font-bold text-sm mb-1">Pomodoro Tip</h3>
-              <p className="text-xs text-blue-600 dark:text-blue-300/80">Try focusing for 25 mins, then take a 5 min break to keep your brain fresh.</p>
-            </div>
-            <div className="p-4 bg-purple-50 dark:bg-purple-900/10 border border-purple-100 dark:border-purple-800/20 rounded-2xl">
-              <h3 className="text-purple-700 dark:text-purple-400 font-bold text-sm mb-1">Deep Work</h3>
-              <p className="text-xs text-purple-600 dark:text-purple-300/80">Turn off notifications and enter "Focus Mode" to eliminate visual clutter.</p>
-            </div>
-            <div className="p-4 bg-green-50 dark:bg-green-900/10 border border-green-100 dark:border-green-800/20 rounded-2xl">
-              <h3 className="text-green-700 dark:text-green-400 font-bold text-sm mb-1">Hydration</h3>
-              <p className="text-xs text-green-600 dark:text-green-300/80">Don't forget to drink water! Staying hydrated improves concentration.</p>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );

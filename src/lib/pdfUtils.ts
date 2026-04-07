@@ -1,4 +1,4 @@
-import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
+import { PDFDocument, rgb, StandardFonts, LineCapStyle } from "pdf-lib";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -102,19 +102,19 @@ export async function downloadAnnotatedPdf(
             }
         } else if (ann.type === "draw" && ann.points.length >= 2) {
             const { r, g, b } = hexToRgb01(ann.color);
-            // Build SVG path with inverted Y for PDF coordinate space
-            const pathData = ann.points
-                .map((p, i) => `${i === 0 ? "M" : "L"}${(p.x * width).toFixed(2)},${(height - p.y * height).toFixed(2)}`)
-                .join(" ");
-            try {
-                page.drawSvgPath(pathData, {
-                    borderColor: rgb(r, g, b),
-                    borderWidth: ann.strokeWidth * 0.75,
-                    borderOpacity: 1,
-                    opacity: 0,
+            const strokeColor = rgb(r, g, b);
+            const thickness = Math.max(ann.strokeWidth * 0.75, 0.5);
+            for (let i = 1; i < ann.points.length; i++) {
+                const p1 = ann.points[i - 1];
+                const p2 = ann.points[i];
+                page.drawLine({
+                    start: { x: p1.x * width, y: height - p1.y * height },
+                    end:   { x: p2.x * width, y: height - p2.y * height },
+                    thickness,
+                    color: strokeColor,
+                    opacity: 1,
+                    lineCap: LineCapStyle.Round,
                 });
-            } catch (err) {
-                console.error("Failed to draw pen stroke:", err);
             }
         }
     }
