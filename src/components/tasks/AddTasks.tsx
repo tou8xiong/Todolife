@@ -4,6 +4,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { toast } from "sonner";
 import AlertDialog from "@/components/ui/AlertDialog";
+import { Briefcase, BookOpen, Zap, AlertCircle, Minus, ArrowDown, CalendarDays, Clock } from "lucide-react";
 
 const VALID_TYPES = ["work", "study", "activities"];
 const VALID_PRIORITIES = ["high", "medium", "low"];
@@ -154,61 +155,113 @@ export default function AddTasks() {
                         </textarea>
                     </div>
 
-                    {/* Type & Priority */}
-                    <div className="sm:flex font-serif text-sm sm:p-0 p-3 sm:text-md gap-2">
-                        <span>Types :</span>
-                        <div className="flex flex-col">
-                            <select
-                                name="type"
-                                value={task.type}
-                                onChange={handleChange}
-                                id="seclectype"
-                                className={`sm:p-2 p-1.5 rounded-md border-2 ${errors.type ? "border-red-400 bg-red-50" : "bg-amber-200 border-gray-500"}`}>
-                                <option value="">pick type</option>
-                                <option value="work" className="bg-white">Work</option>
-                                <option value="study" className="bg-white">Study</option>
-                                <option value="activities" className="bg-white">Activities</option>
-                            </select>
-                            {errors.type && <p className="text-red-500 text-xs mt-0.5">{errors.type}</p>}
+                    {/* Type */}
+                    <div className="sm:flex sm:justify-center sm:font-serif sm:text-sm sm:p-0 sm:text-md sm:gap-2 w-full px-2">
+                        {/* mobile pill buttons */}
+                        <div className="sm:hidden">
+                            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1.5">Type</p>
+                            <div className="grid grid-cols-3 gap-2">
+                                {[
+                                    { value: "work", label: "Work", icon: <Briefcase size={13} />, active: "bg-amber-100 text-amber-700 border-amber-300" },
+                                    { value: "study", label: "Study", icon: <BookOpen size={13} />, active: "bg-blue-100 text-blue-700 border-blue-300" },
+                                    { value: "activities", label: "Activities", icon: <Zap size={13} />, active: "bg-purple-100 text-purple-700 border-purple-300" },
+                                ].map(({ value, label, icon, active }) => (
+                                    <button
+                                        key={value}
+                                        type="button"
+                                        onClick={() => { setTask(p => ({ ...p, type: value })); setErrors(p => ({ ...p, type: undefined })); }}
+                                        className={`flex items-center justify-center gap-1 py-2 rounded-xl border-2 text-xs font-semibold transition-all ${task.type === value ? active : "border-gray-200 text-gray-400 bg-white"}`}
+                                    >
+                                        {icon}{label}
+                                    </button>
+                                ))}
+                            </div>
+                            {errors.type && <p className="text-red-500 text-xs mt-1">{errors.type}</p>}
                         </div>
-                        <span>Priority :</span>
-                        <div className="flex flex-col">
-                            <select
-                                name="priority"
-                                value={task.priority}
-                                onChange={handleChange}
-                                id="priority"
-                                className={`sm:p-2 p-1.5 rounded-md border-2 ${errors.priority ? "border-red-400 bg-red-50" : "bg-cyan-200 border-gray-500"}`}>
-                                <option value="">pick priority</option>
-                                <option value="high" className="bg-red-400">High</option>
-                                <option value="medium" className="bg-orange-400">Medium</option>
-                                <option value="low" className="bg-green-400">Low</option>
-                            </select>
-                            {errors.priority && <p className="text-red-500 text-xs mt-0.5">{errors.priority}</p>}
+                        {/* desktop selects (original) */}
+                        <div className="hidden sm:flex sm:items-center sm:justify-center sm:gap-2 sm:w-full">
+                            <span>Types :</span>
+                            <div className="flex flex-col">
+                                <select name="type" value={task.type} onChange={handleChange}
+                                    className={`sm:p-2 p-1.5 rounded-md border-2 ${errors.type ? "border-red-400 bg-red-50" : "bg-amber-200 border-gray-500"}`}>
+                                    <option value="">pick type</option>
+                                    <option value="work">Work</option>
+                                    <option value="study">Study</option>
+                                    <option value="activities">Activities</option>
+                                </select>
+                                {errors.type && <p className="text-red-500 text-xs mt-0.5">{errors.type}</p>}
+                            </div>
+                            <span>Priority :</span>
+                            <div className="flex flex-col">
+                                <select name="priority" value={task.priority} onChange={handleChange}
+                                    className={`sm:p-2 p-1.5 rounded-md border-2 ${errors.priority ? "border-red-400 bg-red-50" : "bg-cyan-200 border-gray-500"}`}>
+                                    <option value="">pick priority</option>
+                                    <option value="high">High</option>
+                                    <option value="medium">Medium</option>
+                                    <option value="low">Low</option>
+                                </select>
+                                {errors.priority && <p className="text-red-500 text-xs mt-0.5">{errors.priority}</p>}
+                            </div>
                         </div>
                     </div>
 
-                    {/* Date & Time */}
-                    <div className="sm:flex">
-                        <div>
-                            <span>Date</span>
-                            <input
-                                value={task.date}
-                                onChange={handleChange}
-                                type="date"
-                                name="date"
-                                className={`block w-full rounded-lg border-2 sm:p-3 p-1.5 font-sans ${errors.date ? "border-red-400 bg-red-50" : "border-gray-500"}`}></input>
-                            {errors.date && <p className="text-red-500 text-xs mt-0.5">{errors.date}</p>}
+                    {/* Priority — mobile only */}
+                    <div className="sm:hidden w-full px-2">
+                        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1.5">Priority</p>
+                        <div className="grid grid-cols-3 gap-2">
+                            {[
+                                { value: "high", label: "High", icon: <AlertCircle size={13} />, active: "bg-red-100 text-red-600 border-red-300" },
+                                { value: "medium", label: "Medium", icon: <Minus size={13} />, active: "bg-orange-100 text-orange-600 border-orange-300" },
+                                { value: "low", label: "Low", icon: <ArrowDown size={13} />, active: "bg-green-100 text-green-700 border-green-300" },
+                            ].map(({ value, label, icon, active }) => (
+                                <button
+                                    key={value}
+                                    type="button"
+                                    onClick={() => { setTask(p => ({ ...p, priority: value })); setErrors(p => ({ ...p, priority: undefined })); }}
+                                    className={`flex items-center justify-center gap-1 py-2 rounded-xl border-2 text-xs font-semibold transition-all ${task.priority === value ? active : "border-gray-200 text-gray-400 bg-white"}`}
+                                >
+                                    {icon}{label}
+                                </button>
+                            ))}
                         </div>
-                        <div>
-                            <span>Time</span>
-                            <input
-                                value={task.time}
-                                type="time"
-                                name="time"
-                                onChange={handleChange}
-                                className={`block w-full rounded-lg text-black border-2 sm:p-3 p-1.5 font-sans ${errors.time ? "border-red-400 bg-red-50" : "border-gray-500"}`}></input>
-                            {errors.time && <p className="text-red-500 text-xs mt-0.5">{errors.time}</p>}
+                        {errors.priority && <p className="text-red-500 text-xs mt-1">{errors.priority}</p>}
+                    </div>
+
+                    {/* Date & Time */}
+                    <div className="sm:flex sm:justify-center w-full px-2">
+                        {/* mobile: side-by-side grid */}
+                        <div className="sm:hidden grid grid-cols-2 gap-3 w-full">
+                            <div>
+                                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1.5 flex items-center gap-1">
+                                    <CalendarDays size={11} />Date
+                                </p>
+                                <input value={task.date} onChange={handleChange} type="date" name="date"
+                                    className={`block w-full rounded-xl border-2 p-2 text-sm font-sans bg-white focus:outline-none focus:ring-2 focus:ring-amber-300 ${errors.date ? "border-red-300 bg-red-50" : "border-gray-200"}`} />
+                                {errors.date && <p className="text-red-500 text-xs mt-1">{errors.date}</p>}
+                            </div>
+                            <div>
+                                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1.5 flex items-center gap-1">
+                                    <Clock size={11} />Time
+                                </p>
+                                <input value={task.time} type="time" name="time" onChange={handleChange}
+                                    className={`block w-full rounded-xl border-2 p-2 text-sm font-sans bg-white focus:outline-none focus:ring-2 focus:ring-amber-300 ${errors.time ? "border-red-300 bg-red-50" : "border-gray-200"}`} />
+                                {errors.time && <p className="text-red-500 text-xs mt-1">{errors.time}</p>}
+                            </div>
+                        </div>
+                        {/* desktop: original layout */}
+                        <div className="hidden sm:flex sm:gap-4 sm:justify-center sm:w-full">
+                            <div>
+                                <span>Date</span>
+                                <input value={task.date} onChange={handleChange} type="date" name="date"
+                                    className={`block w-full rounded-lg border-2 sm:p-3 p-1.5 font-sans ${errors.date ? "border-red-400 bg-red-50" : "border-gray-500"}`} />
+                                {errors.date && <p className="text-red-500 text-xs mt-0.5">{errors.date}</p>}
+                            </div>
+                            <div>
+                                <span>Time</span>
+                                <input value={task.time} type="time" name="time" onChange={handleChange}
+                                    className={`block w-full rounded-lg text-black border-2 sm:p-3 p-1.5 font-sans ${errors.time ? "border-red-400 bg-red-50" : "border-gray-500"}`} />
+                                {errors.time && <p className="text-red-500 text-xs mt-0.5">{errors.time}</p>}
+                            </div>
                         </div>
                     </div>
 

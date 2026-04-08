@@ -1,5 +1,6 @@
 "use client";
 import { useRef } from "react";
+import { Type, Pen, Image } from "lucide-react";
 import { ActiveTool, Annotation, TextAnnotation } from "@/lib/pdfUtils";
 
 interface Props {
@@ -64,15 +65,15 @@ export default function Toolbar({
                     <button
                         onClick={() => onToolChange("text")}
                         className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${activeTool === "text" ? "bg-amber-400 text-white shadow" : "text-gray-500 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"}`}
-                    >✏️ Text</button>
+                    ><Type size={13} className="inline-block mr-1 -mt-0.5" />Text</button>
                     <button
                         onClick={() => onToolChange("pen")}
                         className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${activeTool === "pen" ? "bg-amber-400 text-white shadow" : "text-gray-500 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"}`}
-                    >🖊 Pen</button>
+                    ><Pen size={13} className="inline-block mr-1 -mt-0.5" />Pen</button>
                     <button
                         onClick={() => { onToolChange("image"); fileInputRef.current?.click(); }}
                         className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${activeTool === "image" ? "bg-amber-400 text-white shadow" : "text-gray-500 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"}`}
-                    >🖼 Image</button>
+                    ><Image size={13} className="inline-block mr-1 -mt-0.5" />Image</button>
                 </div>
                 <input ref={fileInputRef} type="file" accept="image/png,image/jpeg" className="hidden" onChange={handleImageFile} />
 
