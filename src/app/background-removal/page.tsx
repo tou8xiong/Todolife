@@ -7,7 +7,7 @@ import { removeBackground, preload } from "@imgly/background-removal";
 
 const BG_CONFIG = {
     device: "gpu" as const,
-    model: "medium" as const,
+    model: "isnet" as const,
     output: { format: "image/png" as const },
 };
 
