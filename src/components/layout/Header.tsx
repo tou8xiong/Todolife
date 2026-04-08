@@ -1,4 +1,5 @@
 "use client";
+import React from "react";
 import Image from "next/image";
 import Logo from "@/public/Logo1.png";
 import Link from "next/link";
@@ -9,7 +10,7 @@ import { TbRobot } from "react-icons/tb";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 
-const drawerNav = [
+const drawerNav: { group: string; items: { href: string; label: string; icon: React.ComponentType<{ size?: number; className?: string }>; badge?: string }[] }[] = [
     {
         group: "Tasks",
         items: [
