@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { auth } from "@/lib/firebase";
 import { onAuthStateChanged, signOut, updateProfile } from "firebase/auth";
 import { toast } from "sonner";
-import { FaEdit, FaSignOutAlt, FaEnvelope, FaUser, FaCamera } from "react-icons/fa";
+import { FaEdit, FaSignOutAlt, FaEnvelope, FaCamera } from "react-icons/fa";
 import EmojiProfiles from "@/components/ui/cartoonvector";
 import Image from "next/image";
 
@@ -15,21 +15,17 @@ export default function Profile() {
   const [profileImage, setProfileImage] = useState<File | null>(null);
   const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
 
+  // Load profile from Redis once the user is known
   useEffect(() => {
-    const saved = localStorage.getItem("emoji");
-    if (saved) setUserEmoji(saved);
-  }, []);
-
-  useEffect(() => {
-    if (userEmoji !== null) {
-      localStorage.setItem("emoji", userEmoji);
-    }
-  }, [userEmoji]);
-
-  useEffect(() => {
-    const savedImage = localStorage.getItem("profileImage");
-    if (savedImage) setProfileImageUrl(savedImage);
-  }, []);
+    if (!user?.email) return;
+    fetch(`/api/profile?email=${encodeURIComponent(user.email)}`, { cache: "no-store" })
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.profileImage) setProfileImageUrl(data.profileImage);
+        if (data.emoji) setUserEmoji(data.emoji);
+      })
+      .catch(console.error);
+  }, [user?.email]);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -49,14 +45,29 @@ export default function Profile() {
       if (profileImage) {
         toast.info("Processing image...");
         const reader = new FileReader();
-        reader.onload = (e) => {
+        reader.onload = async (e) => {
           const dataUrl = e.target?.result as string;
-          localStorage.setItem("profileImage", dataUrl);
+          await fetch("/api/profile", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: user.email, profileImage: dataUrl }),
+          });
           setProfileImageUrl(dataUrl);
           toast.success("Image saved!");
+          window.dispatchEvent(new Event("profileUpdated"));
         };
         reader.readAsDataURL(profileImage);
       }
+
+      if (userEmoji !== null) {
+        await fetch("/api/profile", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email: user.email, emoji: userEmoji }),
+        });
+        window.dispatchEvent(new Event("profileUpdated"));
+      }
+
       await updateProfile(user, { displayName });
       await user.reload();
       setUser({ ...auth.currentUser });
@@ -119,8 +130,6 @@ export default function Profile() {
           </button>
         </div>
 
-
-
         {/* Edit Panel */}
         {changename && (
           <div className="bg-white rounded-2xl shadow-md p-6 space-y-4">
@@ -164,9 +173,14 @@ export default function Profile() {
                 )}
                 {profileImageUrl && !profileImage && (
                   <button
-                    onClick={() => {
-                      localStorage.removeItem("profileImage");
+                    onClick={async () => {
+                      await fetch("/api/profile", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ email: user.email, profileImage: null }),
+                      });
                       setProfileImageUrl(null);
+                      window.dispatchEvent(new Event("profileUpdated"));
                       toast.success("Profile image removed!");
                     }}
                     className="text-red-500 hover:text-red-700 text-sm"

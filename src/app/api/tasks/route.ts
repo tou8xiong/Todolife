@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import redis from "@/lib/redis";
 
+export const dynamic = "force-dynamic";
+
 // GET /api/tasks?email=user@example.com
 export async function GET(req: NextRequest) {
   const email = req.nextUrl.searchParams.get("email");

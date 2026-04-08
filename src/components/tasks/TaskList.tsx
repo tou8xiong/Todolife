@@ -125,7 +125,7 @@ export default function TaskList() {
 
     const loadTasks = async (email: string) => {
         try {
-            const res = await fetch(`/api/tasks?email=${encodeURIComponent(email)}`);
+            const res = await fetch(`/api/tasks?email=${encodeURIComponent(email)}`, { cache: "no-store" });
             const data = await res.json();
             const all: Task[] = data.tasks ?? [];
             setTasks(all.filter((t) => !t.completed));
@@ -155,8 +155,13 @@ export default function TaskList() {
         if (!user?.email) return;
         loadTasks(user.email);
         const onUpdated = () => loadTasks(user.email);
+        const onVisible = () => { if (document.visibilityState === "visible") loadTasks(user.email); };
         window.addEventListener("tasksUpdated", onUpdated as EventListener);
-        return () => window.removeEventListener("tasksUpdated", onUpdated as EventListener);
+        document.addEventListener("visibilitychange", onVisible);
+        return () => {
+            window.removeEventListener("tasksUpdated", onUpdated as EventListener);
+            document.removeEventListener("visibilitychange", onVisible);
+        };
     }, [user]);
 
     const handleEditClick = (task: Task) => {

@@ -51,19 +51,22 @@ export default function Header() {
         return () => unsubscribe();
     }, []);
 
+    // Load profile image + emoji from Redis whenever user is known
     useEffect(() => {
-        const loadEmoji = () => setUserEmoji(localStorage.getItem("emoji"));
-        loadEmoji();
-        window.addEventListener("storage", loadEmoji);
-        return () => window.removeEventListener("storage", loadEmoji);
-    }, []);
-
-    useEffect(() => {
-        const loadProfileImage = () => setProfileImageUrl(localStorage.getItem("profileImage"));
-        loadProfileImage();
-        window.addEventListener("storage", loadProfileImage);
-        return () => window.removeEventListener("storage", loadProfileImage);
-    }, []);
+        if (!user?.email) return;
+        const loadProfile = () => {
+            fetch(`/api/profile?email=${encodeURIComponent(user.email)}`, { cache: "no-store" })
+                .then((r) => r.json())
+                .then((data) => {
+                    setProfileImageUrl(data.profileImage ?? null);
+                    setUserEmoji(data.emoji ?? null);
+                })
+                .catch(console.error);
+        };
+        loadProfile();
+        window.addEventListener("profileUpdated", loadProfile);
+        return () => window.removeEventListener("profileUpdated", loadProfile);
+    }, [user?.email]);
 
     // Close drawer on resize to desktop
     useEffect(() => {

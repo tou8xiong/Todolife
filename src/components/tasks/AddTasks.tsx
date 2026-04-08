@@ -80,7 +80,7 @@ export default function AddTasks() {
         }
 
         try {
-            const res = await fetch(`/api/tasks?email=${encodeURIComponent(user.email)}`);
+            const res = await fetch(`/api/tasks?email=${encodeURIComponent(user.email)}`, { cache: "no-store" });
             const data = await res.json();
             const storedTasks = data.tasks ?? [];
             const updatedTasks = [...storedTasks, { id: Date.now(), ...task }];

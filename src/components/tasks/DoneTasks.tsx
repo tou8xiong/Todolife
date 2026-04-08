@@ -74,7 +74,7 @@ export default function DoneTasks() {
 
   const loadDoneTasks = async (userEmail: string) => {
     try {
-      const res = await fetch(`/api/tasks?email=${encodeURIComponent(userEmail)}`);
+      const res = await fetch(`/api/tasks?email=${encodeURIComponent(userEmail)}`, { cache: "no-store" });
       const data = await res.json();
       const all: Task[] = data.tasks ?? [];
       const completedOnly = all
@@ -102,8 +102,13 @@ export default function DoneTasks() {
   useEffect(() => {
     if (loadingUser || !user?.email) return;
     const onUpdated = () => loadDoneTasks(user.email);
+    const onVisible = () => { if (document.visibilityState === "visible") loadDoneTasks(user.email); };
     window.addEventListener("tasksUpdated", onUpdated as EventListener);
-    return () => window.removeEventListener("tasksUpdated", onUpdated as EventListener);
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      window.removeEventListener("tasksUpdated", onUpdated as EventListener);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
   }, [user, loadingUser]);
 
   const handleDelete = async (id: number) => {
