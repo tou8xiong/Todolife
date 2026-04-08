@@ -4,7 +4,7 @@ import { auth } from "@/lib/firebase";
 import { onAuthStateChanged, signOut, updateProfile } from "firebase/auth";
 import { toast } from "sonner";
 import { FaEdit, FaSignOutAlt, FaEnvelope, FaUser, FaCamera } from "react-icons/fa";
-import EmojiProfiles from "@/component/foldercetor/cartoonvector";
+import EmojiProfiles from "@/components/ui/cartoonvector";
 import Image from "next/image";
 
 export default function Profile() {

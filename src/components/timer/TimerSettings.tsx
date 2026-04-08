@@ -88,7 +88,7 @@ export default function TimerSettings() {
   const formattedplushour = `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}.${String(cs).padStart(2, "0")}`;
 
   return (
-    <div className={`relative transition-all duration-500 w-full min-h-screen p-4 flex flex-col items-center ${isFocusMode ? "bg-white dark:bg-gray-950 overflow-y-auto" : "bg-transparent"}`}>
+    <div className={`relative transition-all duration-500 w-full min-h-screen p-4 flex flex-col items-center ${isFocusMode ? "bg-white dark:bg-gray-950 overflow-y-auto" : "bg-linear-to-br from-sky-50 to-indigo-50 dark:from-gray-900 dark:to-gray-800"}`}>
 
       {/* Focus Mode Toggle */}
       <button
@@ -106,10 +106,10 @@ export default function TimerSettings() {
 
         {/* Header Section */}
         <div className="text-center space-y-2">
-          <h1 className={`text-4xl sm:text-5xl font-bold font-serif transition-colors ${isFocusMode ? "text-white" : "text-black"}`}>
+          <h1 className={`text-4xl sm:text-5xl font-bold font-serif transition-colors ${isFocusMode ? "text-white" : "text-gray-800 dark:text-white"}`}>
             {isFocusMode ? "Focusing..." : "Study Hub"}
           </h1>
-          <p className={`font-medium italic transition-colors ${isFocusMode ? "text-white/80" : "text-slate-800"}`}>
+          <p className={`font-medium italic transition-colors ${isFocusMode ? "text-white/80" : "text-gray-500 dark:text-gray-400"}`}>
             "The secret of getting ahead is getting started."
           </p>
         </div>
@@ -117,7 +117,7 @@ export default function TimerSettings() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
 
           {/* Timer Card */}
-          <div className="bg-white dark:bg-gray-900 p-8 rounded-3xl shadow-xl border border-amber-100 dark:border-amber-900/20 flex flex-col items-center">
+          <div className="bg-white dark:bg-gray-900 p-8 rounded-3xl shadow-xl border border-sky-100 dark:border-gray-700 flex flex-col items-center">
             <h2 className="text-xl font-semibold mb-6 text-gray-600 dark:text-gray-300 flex items-center gap-2">
               ⏱ Stopwatch
             </h2>
@@ -160,7 +160,7 @@ export default function TimerSettings() {
           </div>
 
           {/* Music & Ambience Card */}
-          <div className="bg-white dark:bg-gray-900 p-6 rounded-3xl shadow-xl border border-amber-100 dark:border-amber-900/20 space-y-4">
+          <div className="bg-white dark:bg-gray-900 p-6 rounded-3xl shadow-xl border border-sky-100 dark:border-gray-700 space-y-4">
             <h2 className="text-lg font-semibold text-gray-600 dark:text-gray-300 flex items-center gap-2">
               <Music size={20} className="text-amber-500" /> Lo-fi Radio
             </h2>

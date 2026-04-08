@@ -3,7 +3,13 @@
 import { ChangeEvent, useEffect, useRef, useState } from "react";
 import { Download, ImageIcon, Sparkles, Trash2, UploadCloud, X } from "lucide-react";
 import { toast } from "sonner";
-import { removeBackground } from "@imgly/background-removal";
+import { removeBackground, preload } from "@imgly/background-removal";
+
+const BG_CONFIG = {
+    device: "gpu" as const,
+    model: "medium" as const,
+    output: { format: "image/png" as const },
+};
 
 export default function BackgroundRemovalPage() {
     const [sourcePreview, setSourcePreview] = useState<string | null>(null);
@@ -13,8 +19,8 @@ export default function BackgroundRemovalPage() {
     const [progress, setProgress] = useState(0);
     const [fileName, setFileName] = useState<string | null>(null);
     const [dragOver, setDragOver] = useState(false);
-    const resultRef = useRef<HTMLDivElement | null>(null);
-    const fileInputRef = useRef<HTMLInputElement | null>(null);
+    const resultRef = useRef<HTMLDivElement | null>(null); 
+    const fileInputRef = useRef<HTMLInputElement | null>(null);       
 
     useEffect(() => {
         if (resultPreview && resultRef.current) {
@@ -45,6 +51,7 @@ export default function BackgroundRemovalPage() {
         setSourcePreview(url);
         setResultPreview(null);
         setFileName(file.name);
+        preload(BG_CONFIG);
     };
 
     const handleFile = (event: ChangeEvent<HTMLInputElement>) => {
@@ -66,9 +73,7 @@ export default function BackgroundRemovalPage() {
         }
         setLoading(true);
         try {
-            const resultBlob = await removeBackground(selectedFile, {
-                output: { format: "image/png" },
-            });
+            const resultBlob = await removeBackground(selectedFile, BG_CONFIG);
             const resultUrl = URL.createObjectURL(resultBlob as Blob);
             setResultPreview(resultUrl);
             setProgress(100);
@@ -258,8 +263,8 @@ export default function BackgroundRemovalPage() {
                                         key={step}
                                         className={`rounded-2xl px-4 py-4 text-center border transition-all duration-500
                                             ${isActive ? "bg-violet-500/15 border-violet-500/50 scale-[1.03] shadow-lg shadow-violet-900/20"
-                                            : isDone ? "bg-green-500/10 border-green-500/30"
-                                            : "bg-white/[0.03] border-white/[0.07]"}`}
+                                                : isDone ? "bg-green-500/10 border-green-500/30"
+                                                    : "bg-white/[0.03] border-white/[0.07]"}`}
                                     >
                                         <p className={`text-xs font-bold mb-1 transition-colors ${isActive ? "text-violet-400" : isDone ? "text-green-400" : "text-gray-600"}`}>
                                             {isDone ? "✓" : step}
