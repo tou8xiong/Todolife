@@ -1,10 +1,12 @@
 "use client";
+import React from "react";
 import Image from "next/image";
 import Logo from "@/public/Logo1.png";
 import Link from "next/link";
 import { useTaskCounts } from "@/hooks/useTaskCounts";
 import React, { useState, useEffect } from "react";
 import { Menu, X, LayoutDashboard, Timer, FileText, BookOpen, CheckSquare, ListTodo, PlusSquare, ImageIcon } from "lucide-react";
+import { TbRobot } from "react-icons/tb";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 
@@ -27,6 +29,7 @@ const drawerNav: NavGroup[] = [
             { href: "/noteidea", label: "Idea Notes", icon: BookOpen },
             { href: "/pdfeditor", label: "PDF Annotator", icon: FileText },
             { href: "/background-removal", label: "Remove BG", icon: ImageIcon },
+            { href: "/agent", label: "Agent", icon: TbRobot },
         ],
     },
 ];
