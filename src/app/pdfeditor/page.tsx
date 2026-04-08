@@ -4,6 +4,7 @@ import { Annotation, ActiveTool, DrawAnnotation, ImageAnnotation, TextAnnotation
 import Toolbar from "@/components/pdf/Toolbar";
 import AnnotationItem from "@/components/pdf/AnnotationItem";
 import DownloadModal from "@/components/pdf/DownloadModal";
+import ConverterDownloadModal, { ConverterSizeOption } from "@/components/pdf/ConverterDownloadModal";
 import { UploadCloud, FileText, FileImage, FileType2 } from "lucide-react";
 
 // ── Drag / resize ref type ───────────────────────────────────────────────────
@@ -306,7 +307,7 @@ export default function PdfEditor() {
     };
 
     // ── Download ───────────────────────────────────────────────────────────
-    const handleDownload = async () => {
+    const handleDownload = async (converterSize?: ConverterSizeOption) => {
         setLoading(true);
         try {
             const { PDFDocument } = await import("pdf-lib");
@@ -495,6 +496,24 @@ export default function PdfEditor() {
                     return bytes;
                 };
 
+                // Resolve page dimensions in PDF points (1mm = 2.8346pt)
+                const MM_TO_PT = 2.8346;
+                const getPageSize = async (): Promise<{ pageW: number; pageH: number }> => {
+                    if (!converterSize || converterSize.preset === "a4") {
+                        return { pageW: 595.28, pageH: 841.89 };
+                    }
+                    if (converterSize.preset === "original") {
+                        // Use natural image pixel size as points (96dpi → pt: px * 0.75)
+                        return new Promise((resolve) => {
+                            const img = new window.Image();
+                            img.onload = () => resolve({ pageW: img.naturalWidth * 0.75, pageH: img.naturalHeight * 0.75 });
+                            img.src = imageData;
+                        });
+                    }
+                    // custom mm → pt
+                    return { pageW: converterSize.customWidth * MM_TO_PT, pageH: converterSize.customHeight * MM_TO_PT };
+                };
+
                 if (downloadFormat === "pdf") {
                     const pdfDoc = await PDFDocument.create();
                     const imgBytes = dataUrlToBytes(imageData);
@@ -502,39 +521,100 @@ export default function PdfEditor() {
                         ? await pdfDoc.embedPng(imgBytes)
                         : await pdfDoc.embedJpg(imgBytes);
 
-                    // Fit image inside A4 with margin, centred
-                    const A4_W = 595.28, A4_H = 841.89;
-                    const margin = 40;
-                    const maxW = A4_W - margin * 2;
-                    const maxH = A4_H - margin * 2;
-                    const imgRatio = embeddedImg.width / embeddedImg.height;
-                    let drawW = maxW, drawH = maxW / imgRatio;
-                    if (drawH > maxH) { drawH = maxH; drawW = maxH * imgRatio; }
-                    const drawX = (A4_W - drawW) / 2;
-                    const drawY = (A4_H - drawH) / 2;
-                    const page = pdfDoc.addPage([A4_W, A4_H]);
-                    page.drawImage(embeddedImg, { x: drawX, y: drawY, width: drawW, height: drawH });
+                    const { pageW, pageH } = await getPageSize();
+                    const isOriginal = converterSize?.preset === "original";
+                    const page = pdfDoc.addPage([pageW, pageH]);
+
+                    if (isOriginal) {
+                        // Fill page exactly
+                        page.drawImage(embeddedImg, { x: 0, y: 0, width: pageW, height: pageH });
+                    } else {
+                        // Fit image centred with margin
+                        const margin = pageW * 0.067;
+                        const maxW = pageW - margin * 2;
+                        const maxH = pageH - margin * 2;
+                        const imgRatio = embeddedImg.width / embeddedImg.height;
+                        let drawW = maxW, drawH = maxW / imgRatio;
+                        if (drawH > maxH) { drawH = maxH; drawW = maxH * imgRatio; }
+                        page.drawImage(embeddedImg, {
+                            x: (pageW - drawW) / 2,
+                            y: (pageH - drawH) / 2,
+                            width: drawW,
+                            height: drawH,
+                        });
+                    }
                     const saved = await pdfDoc.save();
                     triggerDownload(new Blob([saved as any], { type: "application/pdf" }), `${fileName}.pdf`);
                 } else {
                     const imgBytes = dataUrlToBytes(imageData);
                     const isPng = imageData.startsWith("data:image/png");
+                    const { Document, Packer, Paragraph, ImageRun, AlignmentType } = await import("docx");
+
+                    // Unit helpers
+                    // docx page size = twips  (1 mm = 56.6929 twips)
+                    // ImageRun transformation = pixels at 96 dpi  (1 mm = 3.7795 px)
+                    const mmToTwips = (mm: number) => Math.round(mm * 56.6929);
+                    const mmToPx   = (mm: number) => Math.round(mm * 3.7795);
+                    const pxToMm   = (px: number) => px * 0.2646;
+
+                    // Get natural image dimensions
+                    const { natW, natH } = await new Promise<{ natW: number; natH: number }>((resolve) => {
+                        const img = new window.Image();
+                        img.onload = () => resolve({ natW: img.naturalWidth, natH: img.naturalHeight });
+                        img.src = imageData;
+                    });
+
+                    // Resolve page size in mm
+                    let pageMmW: number, pageMmH: number;
+                    if (!converterSize || converterSize.preset === "a4") {
+                        pageMmW = 210; pageMmH = 297;
+                    } else if (converterSize.preset === "original") {
+                        pageMmW = pxToMm(natW); pageMmH = pxToMm(natH);
+                    } else {
+                        pageMmW = converterSize.customWidth; pageMmH = converterSize.customHeight;
+                    }
+
+                    const isOriginalPreset = converterSize?.preset === "original";
+
+                    // Image display size in pixels
+                    let imgPxW: number, imgPxH: number;
+                    if (isOriginalPreset) {
+                        // Fill the page exactly
+                        imgPxW = mmToPx(pageMmW);
+                        imgPxH = mmToPx(pageMmH);
+                    } else {
+                        // Fit centred with margin (mirrors PDF logic)
+                        const MARGIN_FRAC = 0.067;
+                        const availMmW = pageMmW * (1 - MARGIN_FRAC * 2);
+                        const availMmH = pageMmH * (1 - MARGIN_FRAC * 2);
+                        const imgRatio = natW / natH;
+                        let drawMmW = availMmW, drawMmH = availMmW / imgRatio;
+                        if (drawMmH > availMmH) { drawMmH = availMmH; drawMmW = availMmH * imgRatio; }
+                        imgPxW = mmToPx(drawMmW);
+                        imgPxH = mmToPx(drawMmH);
+                    }
+
+                    // Vertical centering: add spacing-before to push image to vertical centre
+                    // spacing.before is in twentieths of a point (twips)
+                    const topMarginTwips = isOriginalPreset ? 0
+                        : mmToTwips((pageMmH - imgPxH / 3.7795) / 2);
+
                     const doc = new Document({
                         sections: [{
                             properties: {
                                 page: {
                                     margin: { top: 0, right: 0, bottom: 0, left: 0 },
+                                    size: { width: mmToTwips(pageMmW), height: mmToTwips(pageMmH) },
                                 },
                             },
                             children: [
                                 new Paragraph({
+                                    alignment: AlignmentType.CENTER,
+                                    spacing: { before: topMarginTwips },
                                     children: [
                                         new ImageRun({
                                             data: imgBytes,
-                                            transformation: {
-                                                width: 595,
-                                                height: 842
-                                            },
+                                            transformation: { width: imgPxW, height: imgPxH },
                                             type: isPng ? "png" : "jpg",
                                         }),
                                     ],
@@ -665,23 +745,41 @@ export default function PdfEditor() {
     return (
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 sm:p-6 font-serif">
 
-            <DownloadModal
-                open={downloadModal}
-                fileName={fileName}
-                onFileNameChange={setFileName}
-                onConfirm={handleDownload}
-                onClose={() => setDownloadModal(false)}
-                fileType={fileType}
-                downloadFormat={downloadFormat}
-                onFormatChange={setDownloadFormat}
-                mode={mode}
-            />
+            {mode === "annotator" && (
+                <DownloadModal
+                    open={downloadModal}
+                    fileName={fileName}
+                    onFileNameChange={setFileName}
+                    onConfirm={handleDownload}
+                    onClose={() => setDownloadModal(false)}
+                    fileType={fileType}
+                    downloadFormat={downloadFormat}
+                    onFormatChange={setDownloadFormat}
+                    mode={mode}
+                />
+            )}
+
+            {mode === "converter" && (
+                <ConverterDownloadModal
+                    open={downloadModal}
+                    imageData={imageData}
+                    fileName={fileName}
+                    onFileNameChange={setFileName}
+                    downloadFormat={downloadFormat}
+                    onFormatChange={setDownloadFormat}
+                    onConfirm={(sizeOption) => handleDownload(sizeOption)}
+                    onClose={() => setDownloadModal(false)}
+                />
+            )}
 
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
                 <div>
                     <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
-                        {mode === "annotator" ? "📄 PDF Annotator" : "🖼️ Image Converter"}
+                        {mode === "annotator"
+                            ? <><FileText size={22} className="inline-block mr-2 -mt-1 text-amber-500" />PDF Annotator</>
+                            : <><FileImage size={22} className="inline-block mr-2 -mt-1 text-amber-500" />Image Converter</>
+                        }
                     </h1>
                     <p className="text-sm text-gray-400 mt-0.5">
                         {mode === "annotator"
