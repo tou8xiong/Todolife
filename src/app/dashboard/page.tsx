@@ -202,28 +202,39 @@ export default function Dashboard() {
 
     const todayStr = new Date().toISOString().split("T")[0];
 
-    const loadData = (email: string) => {
-        const storedTasks: Task[] = JSON.parse(localStorage.getItem(`tasks_${email}`) || "[]");
-        setTasks(storedTasks);
-        setIdeas(JSON.parse(localStorage.getItem(`Ideas_${email}`) || "[]"));
-        setStudySessions(JSON.parse(localStorage.getItem(`study_sessions_${email}`) || "[]"));
-        
-        // Compute streak
-        let s = 0;
-        const d = new Date();
-        while (true) {
-            const ds = d.toISOString().split("T")[0];
-            if (!storedTasks.some((t) => t.completedAt?.startsWith(ds))) break;
-            s++;
-            d.setDate(d.getDate() - 1);
+    const loadData = async (email: string) => {
+        try {
+            const [tasksRes, ideasRes] = await Promise.all([
+                fetch(`/api/tasks?email=${encodeURIComponent(email)}`),
+                fetch(`/api/ideas?email=${encodeURIComponent(email)}`),
+            ]);
+            const tasksData = await tasksRes.json();
+            const ideasData = await ideasRes.json();
+
+            const storedTasks: Task[] = tasksData.tasks ?? [];
+            setTasks(storedTasks);
+            setIdeas(ideasData.ideas ?? []);
+            setStudySessions(JSON.parse(localStorage.getItem(`study_sessions_${email}`) || "[]"));
+
+            // Compute streak
+            let s = 0;
+            const d = new Date();
+            while (true) {
+                const ds = d.toISOString().split("T")[0];
+                if (!storedTasks.some((t) => t.completedAt?.startsWith(ds))) break;
+                s++;
+                d.setDate(d.getDate() - 1);
+            }
+            setStreak(s);
+        } catch (err) {
+            console.error("Failed to load dashboard data", err);
         }
-        setStreak(s);
     };
 
     useEffect(() => {
         const unsub = onAuthStateChanged(auth, (u) => {
             setUser(u);
-            if (u) loadData(u.email!);
+            if (u?.email) loadData(u.email);
         });
         const onUpdate = () => { if (user?.email) loadData(user.email); };
         window.addEventListener("tasksUpdated", onUpdate);
@@ -240,14 +251,17 @@ export default function Dashboard() {
         return new Date(`${t.date}T${t.time || "23:59"}`).getTime() < Date.now();
     });
 
-    const handleMarkDone = (id: number) => {
-        const stored: Task[] = JSON.parse(localStorage.getItem(`tasks_${user.email}`) || "[]");
-        const updated = stored.map((t) =>
+    const handleMarkDone = async (id: number) => {
+        const updated = tasks.map((t) =>
             t.id === id ? { ...t, completed: true, completedAt: new Date().toISOString() } : t
         );
-        localStorage.setItem(`tasks_${user.email}`, JSON.stringify(updated));
-        window.dispatchEvent(new Event("tasksUpdated"));
         setTasks(updated);
+        await fetch("/api/tasks", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: user.email, tasks: updated }),
+        });
+        window.dispatchEvent(new Event("tasksUpdated"));
     };
 
     const displayName = user?.displayName || user?.email?.split("@")[0] || "there";

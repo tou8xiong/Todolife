@@ -72,67 +72,69 @@ export default function DoneTasks() {
   const [user, setUser] = useState<any>(null);
   const [loadingUser, setLoadingUser] = useState(true);
 
+  const loadDoneTasks = async (userEmail: string) => {
+    try {
+      const res = await fetch(`/api/tasks?email=${encodeURIComponent(userEmail)}`);
+      const data = await res.json();
+      const all: Task[] = data.tasks ?? [];
+      const completedOnly = all
+        .filter((t) => t.completed)
+        .sort((a, b) => {
+          const ta = a.completedAt ? new Date(a.completedAt).getTime() : 0;
+          const tb = b.completedAt ? new Date(b.completedAt).getTime() : 0;
+          return tb - ta;
+        });
+      setDoneTasks(completedOnly);
+    } catch (e) {
+      console.error("Failed to load done tasks", e);
+    }
+  };
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setLoadingUser(false);
-      if (currentUser) {
-        const storedTasks = localStorage.getItem(`tasks_${currentUser.email}`);
-        setDoneTasks(storedTasks ? JSON.parse(storedTasks) : []);
-      }
+      if (currentUser?.email) loadDoneTasks(currentUser.email);
     });
     return () => unsubscribe();
   }, []);
 
-  const loadDoneTasks = (userEmail: string) => {
-    const storedTasks: Task[] = JSON.parse(localStorage.getItem(`tasks_${userEmail}`) || "[]");
-    const completedOnly = storedTasks
-      .filter((t) => t.completed)
-      .sort((a, b) => {
-        const ta = a.completedAt ? new Date(a.completedAt).getTime() : 0;
-        const tb = b.completedAt ? new Date(b.completedAt).getTime() : 0;
-        return tb - ta;
-      });
-    setDoneTasks(completedOnly);
-  };
-
   useEffect(() => {
     if (loadingUser || !user?.email) return;
-
-    loadDoneTasks(user.email);
-
-    const onStorage = (e: StorageEvent) => {
-      if (e.key === "tasks") loadDoneTasks(user.email);
-    };
     const onUpdated = () => loadDoneTasks(user.email);
-
-    window.addEventListener("storage", onStorage);
     window.addEventListener("tasksUpdated", onUpdated as EventListener);
-    return () => {
-      window.removeEventListener("storage", onStorage);
-      window.removeEventListener("tasksUpdated", onUpdated as EventListener);
-    };
+    return () => window.removeEventListener("tasksUpdated", onUpdated as EventListener);
   }, [user, loadingUser]);
 
-  const handleDelete = (id: number) => {
+  const handleDelete = async (id: number) => {
     if (!user?.email) return;
     try {
-      const storedTasks: Task[] = JSON.parse(localStorage.getItem(`tasks_${user.email}`) || "[]");
-      const updatedTasks = storedTasks.filter((t) => t.id !== id);
-      localStorage.setItem(`tasks_${user.email}`, JSON.stringify(updatedTasks));
+      const res = await fetch(`/api/tasks?email=${encodeURIComponent(user.email)}`);
+      const data = await res.json();
+      const updatedTasks = (data.tasks ?? []).filter((t: Task) => t.id !== id);
+      await fetch("/api/tasks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: user.email, tasks: updatedTasks }),
+      });
       window.dispatchEvent(new Event("tasksUpdated"));
-      loadDoneTasks(user.email);
+      setDoneTasks((prev) => prev.filter((t) => t.id !== id));
     } catch (e) {
       console.error("Failed to delete task", e);
     }
   };
 
-  const doClearAll = () => {
+  const doClearAll = async () => {
     if (!user?.email) return;
     try {
-      const storedTasks: Task[] = JSON.parse(localStorage.getItem(`tasks_${user.email}`) || "[]");
-      const updatedTasks = storedTasks.filter((t) => !t.completed);
-      localStorage.setItem(`tasks_${user.email}`, JSON.stringify(updatedTasks));
+      const res = await fetch(`/api/tasks?email=${encodeURIComponent(user.email)}`);
+      const data = await res.json();
+      const updatedTasks = (data.tasks ?? []).filter((t: Task) => !t.completed);
+      await fetch("/api/tasks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: user.email, tasks: updatedTasks }),
+      });
       window.dispatchEvent(new Event("tasksUpdated"));
       setDoneTasks([]);
     } catch (e) {
@@ -174,27 +176,10 @@ export default function DoneTasks() {
           )}
         </div>
 
-        {/* ── Stats strip ── */}
-        <div className="grid grid-cols-3 gap-2">
-          {TASK_TYPES.map(({ type, label, short, icon: Icon, color, accent }) => {
-            const count = doneTasks.filter((t) => t.type === type).length;
-            return (
-              <div key={type} className={`flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-2 sm:py-2.5 rounded-xl border ${accent}`}>
-                <Icon size={14} className={`${color} shrink-0`} />
-                {/* Show short label on mobile, full on sm+ */}
-                <span className="text-[11px] sm:text-xs font-semibold text-gray-300 truncate">
-                  <span className="sm:hidden">{short}</span>
-                  <span className="hidden sm:inline">{label}</span>
-                </span>
-                <span className={`ml-auto text-xs sm:text-sm font-bold ${color} shrink-0`}>{count}</span>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* ── Mobile tab switcher ── */}
+        {/* ── Type tab switcher ── */}
         <div className="flex sm:hidden gap-1 p-1 bg-gray-800/60 rounded-xl border border-gray-700/50">
           {TASK_TYPES.map(({ type, label, icon: Icon, color }) => {
+            const count = doneTasks.filter((t) => t.type === type).length;
             const isActive = selectedType === type;
             return (
               <button
@@ -205,6 +190,7 @@ export default function DoneTasks() {
               >
                 <Icon size={13} className={`shrink-0 ${isActive ? color : ""}`} />
                 <span className="truncate">{label}</span>
+                <span className={`text-xs font-bold ${isActive ? color : "text-gray-500"}`}>{count}</span>
               </button>
             );
           })}
