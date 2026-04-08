@@ -4,13 +4,15 @@ import Image from "next/image";
 import Logo from "@/public/Logo1.png";
 import Link from "next/link";
 import { useTaskCounts } from "@/hooks/useTaskCounts";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Menu, X, LayoutDashboard, Timer, FileText, BookOpen, CheckSquare, ListTodo, PlusSquare, ImageIcon } from "lucide-react";
 import { TbRobot } from "react-icons/tb";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 
-const drawerNav: { group: string; items: { href: string; label: string; icon: React.ComponentType<{ size?: number; className?: string }>; badge?: string }[] }[] = [
+type NavItem = { href: string; label: string; icon: React.ComponentType<{ size?: number; className?: string }>; badge?: string };
+type NavGroup = { group: string; items: NavItem[] };
+const drawerNav: NavGroup[] = [
     {
         group: "Tasks",
         items: [
