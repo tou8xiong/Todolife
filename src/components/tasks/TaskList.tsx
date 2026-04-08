@@ -35,6 +35,8 @@ export default function TaskList() {
     const [selectedTask, setSelectedTask] = useState<Task | null>(null);
     const [user, setUser] = useState<any>(null);
     const notifiedRef = useRef<Set<string>>(new Set());
+    // Holds ALL tasks (pending + completed) so mutations never lose completed tasks
+    const allTasksRef = useRef<Task[]>([]);
 
     // Register service worker + request periodic background sync
     useEffect(() => {
@@ -128,6 +130,7 @@ export default function TaskList() {
             const res = await fetch(`/api/tasks?email=${encodeURIComponent(email)}`, { cache: "no-store" });
             const data = await res.json();
             const all: Task[] = data.tasks ?? [];
+            allTasksRef.current = all;
             setTasks(all.filter((t) => !t.completed));
         } catch (err) {
             console.error("Error loading tasks:", err);
@@ -174,16 +177,18 @@ export default function TaskList() {
     };
 
     const handleDelete = async (id: number) => {
-        const updatedAll = tasks.filter((t) => t.id !== id);
-        setTasks(updatedAll);
+        const updatedAll = allTasksRef.current.filter((t) => t.id !== id);
+        allTasksRef.current = updatedAll;
+        setTasks(updatedAll.filter((t) => !t.completed));
         await saveAndSync(user.email, updatedAll);
     };
 
     const handleMarkDone = async (id: number) => {
-        const task = tasks.find((t) => t.id === id);
-        const updatedAll = tasks.map((t) =>
+        const task = allTasksRef.current.find((t) => t.id === id);
+        const updatedAll = allTasksRef.current.map((t) =>
             t.id === id ? { ...t, completed: true, completedAt: new Date().toISOString() } : t
         );
+        allTasksRef.current = updatedAll;
         setTasks(updatedAll.filter((t) => !t.completed));
         await saveAndSync(user.email, updatedAll);
 
@@ -199,11 +204,12 @@ export default function TaskList() {
     };
 
     const handleUpdate = async (id: number) => {
-        const updatedAll = tasks.map((t) =>
+        const updatedAll = allTasksRef.current.map((t) =>
             t.id === id
                 ? { ...t, title: titledit, description: descritionedit, date: dateedit, time: timeedit }
                 : t
         );
+        allTasksRef.current = updatedAll;
         setTasks(updatedAll.filter((t) => !t.completed));
         setEditPopup(false);
         await saveAndSync(user.email, updatedAll);
