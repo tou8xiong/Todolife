@@ -3,6 +3,7 @@ import { usePathname } from "next/navigation";
 import { BsLayoutSidebarInset } from "react-icons/bs";
 import { MdDashboard, MdTimer, MdPictureAsPdf, MdPhotoSizeSelectActual } from "react-icons/md";
 import { GiNotebook } from "react-icons/gi";
+import { TbRobot } from "react-icons/tb";
 
 const navItems = [
     { href: "/dashboard", label: "Dashboard", icon: MdDashboard },
@@ -10,6 +11,7 @@ const navItems = [
     { href: "/noteidea", label: "Idea Notes", icon: GiNotebook },
     { href: "/pdfeditor", label: "PDF Annotator", icon: MdPictureAsPdf },
     { href: "/background-removal", label: "Remove BG", icon: MdPhotoSizeSelectActual },
+    { href: "/agent", label: "Agent", icon: TbRobot },
 ];
 
 export default function Sidebar() {
