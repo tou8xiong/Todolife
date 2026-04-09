@@ -80,21 +80,25 @@ export default function AddTasks() {
         }
 
         try {
-            const res = await fetch(`/api/tasks?email=${encodeURIComponent(user.email)}`, { cache: "no-store" });
-            const data = await res.json();
-            const storedTasks = data.tasks ?? [];
+            const getRes = await fetch(`/api/tasks?email=${encodeURIComponent(user.email)}`, { cache: "no-store" });
+            const getData = await getRes.json();
+            const storedTasks = getData.tasks ?? [];
             const updatedTasks = [...storedTasks, { id: Date.now(), ...task }];
-            await fetch("/api/tasks", {
+            const postRes = await fetch("/api/tasks", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ email: user.email, tasks: updatedTasks }),
             });
+            if (!postRes.ok) {
+                const err = await postRes.json().catch(() => ({}));
+                throw new Error(err.error ?? "Server error");
+            }
             window.dispatchEvent(new Event("tasksUpdated"));
             toast.success("Task added!");
             setTask({ title: "", description: "", date: "", time: "", type: "", priority: "" });
             setErrors({});
-        } catch {
-            toast.error("Failed to save task. Please try again.");
+        } catch (err: any) {
+            toast.error(err?.message ?? "Failed to save task. Please try again.");
         }
     };
 
