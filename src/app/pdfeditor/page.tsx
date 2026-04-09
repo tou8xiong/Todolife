@@ -554,8 +554,8 @@ export default function PdfEditor() {
                     // docx page size = twips  (1 mm = 56.6929 twips)
                     // ImageRun transformation = pixels at 96 dpi  (1 mm = 3.7795 px)
                     const mmToTwips = (mm: number) => Math.round(mm * 56.6929);
-                    const mmToPx   = (mm: number) => Math.round(mm * 3.7795);
-                    const pxToMm   = (px: number) => px * 0.2646;
+                    const mmToPx = (mm: number) => Math.round(mm * 3.7795);
+                    const pxToMm = (px: number) => px * 0.2646;
 
                     // Get natural image dimensions
                     const { natW, natH } = await new Promise<{ natW: number; natH: number }>((resolve) => {
