@@ -2,13 +2,18 @@ import Redis from "ioredis";
 
 const globalForRedis = global as unknown as { redis: Redis };
 
-const redis =
-  globalForRedis.redis ??
-  new Redis(process.env.REDIS_URL!, {
+if (!globalForRedis.redis) {
+  globalForRedis.redis = new Redis(process.env.REDIS_URL!, {
     maxRetriesPerRequest: 3,
     lazyConnect: false,
+    enableOfflineQueue: false,
   });
 
-if (process.env.NODE_ENV !== "production") globalForRedis.redis = redis;
+  globalForRedis.redis.on("error", (err) => {
+    console.error("[Redis] connection error:", err.message);
+  });
+}
+
+const redis = globalForRedis.redis;
 
 export default redis;
