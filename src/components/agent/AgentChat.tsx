@@ -12,6 +12,7 @@ import {
   FileText,
   ListTodo,
   AlertCircle,
+  ChevronUp,
 } from "lucide-react";
 
 type Mode = "chat" | "summarize" | "tasks";
@@ -83,8 +84,10 @@ export default function AgentChat() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (user) => {
@@ -100,11 +103,22 @@ export default function AgentChat() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
 
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   const handleModeChange = (newMode: Mode) => {
     setMode(newMode);
     setMessages([]);
     setError(null);
     setInput("");
+    setDropdownOpen(false);
     setTimeout(() => textareaRef.current?.focus(), 100);
   };
 
@@ -155,55 +169,31 @@ export default function AgentChat() {
   const currentMode = MODES.find((m) => m.id === mode)!;
 
   return (
-    <div className="w-full min-h-screen bg-sky-950 font-serif flex flex-col">
-      <div className="max-w-4xl mx-auto w-full px-3 sm:px-5 py-4 sm:py-6 flex flex-col gap-4 flex-1">
+    <div className="w-full min-h-screen bg-linear-to-br from-sky-50 to-indigo-50 dark:from-gray-900 dark:to-gray-800 font-serif flex flex-col p-4 sm:p-8">
 
-        {/* Header */}
-        <div className="flex items-center gap-3">
-          <div className="shrink-0 p-2.5 rounded-xl bg-amber-400/10 border border-amber-400/20">
-            <Bot size={20} className="text-amber-400" />
-          </div>
-          <div>
-            <h1 className="text-xl sm:text-2xl font-bold text-white leading-tight">Agent</h1>
-            <p className="text-xs text-gray-400">Free · No API key required</p>
-          </div>
+      {/* Header */}
+      <div className="flex flex-col items-center mb-8">
+        <div className="bg-white dark:bg-gray-800 rounded-full p-4 shadow-md mb-3">
+          <Bot size={36} className="text-sky-400" />
         </div>
-
-        {/* Mode tabs */}
-        <div className="flex gap-1 p-1 bg-gray-800/60 rounded-xl border border-gray-700/50">
-          {MODES.map(({ id, label, icon: Icon }) => {
-            const isActive = mode === id;
-            return (
-              <button
-                key={id}
-                onClick={() => handleModeChange(id)}
-                className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-2 rounded-lg text-xs font-semibold transition-all duration-150
-                  ${isActive
-                    ? "bg-amber-400/15 text-amber-400 border border-amber-400/25 shadow-sm"
-                    : "text-gray-400 hover:bg-gray-800 hover:text-white"
-                  }`}
-              >
-                <Icon size={13} className="shrink-0" />
-                <span className="truncate">{label}</span>
-              </button>
-            );
-          })}
-        </div>
+        <h1 className="text-3xl font-bold text-gray-800 dark:text-white tracking-tight">AI Agent</h1>
+      </div>
+      <div className="w-full flex flex-col gap-4">
 
         {/* Messages */}
-        <div className="flex-1 flex flex-col gap-3 overflow-y-auto hide-scrollbar min-h-[40vh] max-h-[calc(100vh-320px)]">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-sky-100 dark:border-gray-700 flex flex-col gap-3 overflow-y-auto hide-scrollbar min-h-[40vh] max-h-[calc(100vh-320px)] p-4">
           {messages.length === 0 && !loading && (
             <div className="flex flex-col items-center justify-center h-full py-16 gap-3 text-center">
-              <div className="p-4 rounded-full bg-gray-800/60 border border-gray-700">
-                <currentMode.icon size={28} className="text-amber-400" />
+              <div className="p-4 rounded-full bg-sky-100 dark:bg-sky-900/30 border border-sky-200 dark:border-sky-700">
+                <currentMode.icon size={28} className="text-sky-400" />
               </div>
-              <p className="text-gray-300 font-semibold text-sm">{currentMode.label} mode</p>
-              <p className="text-gray-500 text-xs max-w-xs">{currentMode.hint}</p>
+              <p className="text-gray-700 dark:text-gray-300 font-semibold text-sm">{currentMode.label} mode</p>
+              <p className="text-gray-400 text-xs max-w-xs">{currentMode.hint}</p>
               {mode === "chat" && tasks.filter((t) => !t.completed).length > 0 && (
-                <p className="text-xs text-amber-400/70">
+                <span className="text-xs bg-sky-50 dark:bg-sky-900/30 text-sky-500 border border-sky-100 dark:border-sky-800 px-3 py-1 rounded-full">
                   {tasks.filter((t) => !t.completed).length} pending task
                   {tasks.filter((t) => !t.completed).length !== 1 ? "s" : ""} loaded as context
-                </p>
+                </span>
               )}
             </div>
           )}
@@ -214,14 +204,14 @@ export default function AgentChat() {
               className={`flex gap-3 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
             >
               {msg.role === "assistant" && (
-                <div className="shrink-0 w-7 h-7 rounded-full bg-amber-400/15 border border-amber-400/30 flex items-center justify-center mt-0.5">
-                  <Bot size={14} className="text-amber-400" />
+                <div className="shrink-0 w-7 h-7 rounded-full bg-sky-100 dark:bg-sky-900/30 border border-sky-200 dark:border-sky-700 flex items-center justify-center mt-0.5">
+                  <Bot size={14} className="text-sky-500" />
                 </div>
               )}
               <div
-                className={`max-w-[80%] px-4 py-3 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap ${msg.role === "user"
-                  ? "bg-amber-400/15 text-white border border-amber-400/20 rounded-br-sm"
-                  : "bg-gray-800 text-gray-100 border border-gray-700 rounded-bl-sm"
+                className={`max-w-[80%] px-4 py-3 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap shadow-sm ${msg.role === "user"
+                  ? "bg-sky-500 text-white rounded-br-sm"
+                  : "bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-100 border border-sky-100 dark:border-gray-600 rounded-bl-sm"
                   }`}
               >
                 {msg.content}
@@ -231,18 +221,18 @@ export default function AgentChat() {
 
           {loading && (
             <div className="flex gap-3 justify-start">
-              <div className="shrink-0 w-7 h-7 rounded-full bg-amber-400/15 border border-amber-400/30 flex items-center justify-center">
-                <Bot size={14} className="text-amber-400" />
+              <div className="shrink-0 w-7 h-7 rounded-full bg-sky-100 dark:bg-sky-900/30 border border-sky-200 dark:border-sky-700 flex items-center justify-center">
+                <Bot size={14} className="text-sky-500" />
               </div>
-              <div className="px-4 py-3 rounded-2xl rounded-bl-sm bg-gray-800 border border-gray-700 flex items-center gap-2">
-                <Loader2 size={14} className="text-amber-400 animate-spin" />
+              <div className="px-4 py-3 rounded-2xl rounded-bl-sm bg-gray-50 dark:bg-gray-700 border border-sky-100 dark:border-gray-600 flex items-center gap-2 shadow-sm">
+                <Loader2 size={14} className="text-sky-400 animate-spin" />
                 <span className="text-xs text-gray-400">Thinking...</span>
               </div>
             </div>
           )}
 
           {error && (
-            <div className="flex items-start gap-2.5 px-4 py-3 rounded-xl bg-red-500/10 border border-red-500/25 text-red-400 text-xs">
+            <div className="flex items-start gap-2.5 px-4 py-3 rounded-xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/25 text-red-500 dark:text-red-400 text-xs">
               <AlertCircle size={15} className="shrink-0 mt-0.5" />
               <span>{error}</span>
             </div>
@@ -252,7 +242,7 @@ export default function AgentChat() {
         </div>
 
         {/* Input */}
-        <div className="flex gap-2 items-end p-2 bg-gray-800/60 rounded-2xl border border-gray-700/50 focus-within:border-amber-400/40 transition-colors">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-sky-100 dark:border-gray-700 focus-within:border-sky-400 dark:focus-within:border-sky-500 transition-colors p-2 flex gap-2 items-end">
           <textarea
             ref={textareaRef}
             value={input}
@@ -260,18 +250,57 @@ export default function AgentChat() {
             onKeyDown={handleKeyDown}
             placeholder={currentMode.placeholder}
             rows={2}
-            className="flex-1 resize-none bg-transparent text-sm text-white placeholder-gray-500 outline-none px-2 py-1 max-h-36 hide-scrollbar"
+            className="flex-1 resize-none bg-transparent text-sm text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none px-2 py-1 max-h-36 hide-scrollbar"
           />
+
+          {/* Mode dropdown */}
+          <div className="relative shrink-0" ref={dropdownRef}>
+            <button
+              onClick={() => setDropdownOpen((v) => !v)}
+              className="flex items-center gap-1.5 px-3 py-2.5 rounded-xl border border-sky-200 dark:border-gray-600 bg-sky-50 dark:bg-gray-700 text-sky-600 dark:text-sky-400 hover:bg-sky-100 dark:hover:bg-gray-600 transition-all text-xs font-semibold"
+            >
+              <currentMode.icon size={13} className="shrink-0" />
+              <span className="hidden sm:inline">{currentMode.label}</span>
+              <ChevronUp
+                size={12}
+                className={`transition-transform duration-150 ${dropdownOpen ? "" : "rotate-180"}`}
+              />
+            </button>
+
+            {dropdownOpen && (
+              <div className="absolute bottom-full right-0 mb-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-sky-100 dark:border-gray-700 overflow-hidden z-50">
+                {MODES.map(({ id, label, icon: Icon, hint }) => (
+                  <button
+                    key={id}
+                    onClick={() => handleModeChange(id)}
+                    className={`w-full flex items-start gap-3 px-3 py-2.5 text-left transition-colors
+                      ${mode === id
+                        ? "bg-sky-50 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400"
+                        : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                      }`}
+                  >
+                    <Icon size={15} className="shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-xs font-semibold leading-tight">{label}</p>
+                      <p className="text-[10px] text-gray-400 leading-tight mt-0.5">{hint}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Send button */}
           <button
             onClick={send}
             disabled={!input.trim() || loading}
-            className="shrink-0 p-2.5 rounded-xl bg-amber-400 text-gray-900 hover:bg-amber-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            className="shrink-0 p-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 active:scale-95 text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow"
           >
             <Send size={16} />
           </button>
         </div>
 
-        <p className="text-center text-[10px] text-gray-600">
+        <p className="text-center text-[10px] text-gray-400">
           Enter to send · Shift+Enter for new line
         </p>
       </div>
