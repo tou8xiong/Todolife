@@ -137,10 +137,12 @@ export default function AddTasks() {
                                 type="text"
                                 placeholder="title"
                                 name="title"
+                                autoComplete="off"
                                 value={task.title}
                                 onChange={handleChange}
-                                className={`font-[20px] font-serif w-full border-2 rounded-sm text-xl p-1 mr-2 ${errors.title ? "border-red-400 bg-red-50" : "border-gray-400"}`}>
-                            </input>
+                                suppressHydrationWarning
+                                className={`font-[20px] font-serif w-full border-2 rounded-sm text-xl p-1 mr-2 ${errors.title ? "border-red-400 bg-red-50" : "border-gray-400"}`}
+                            />
                             {errors.title && <p className="text-red-500 text-xs mt-0.5">{errors.title}</p>}
                         </div>
                     </div>
@@ -154,6 +156,7 @@ export default function AddTasks() {
                             value={task.description}
                             onChange={handleChange}
                             placeholder="Tasks Detail"
+                            suppressHydrationWarning
                             className=" font-[20px] font-serif sm:w-[310px] w-full border-2
                      border-gray-400 rounded-sm text-xl p-1 mr-2 flex flex-wrap">
                         </textarea>
@@ -272,7 +275,7 @@ export default function AddTasks() {
                     {/* Buttons */}
                     <div className="sm:flex mt-7 sm:gap-45 sm:font-serif sm:mt-[20px] sm:mb-[70px] flex gap-10 justify-center mb-3">
                         <button type="button" onClick={handleCancel} className="px-7 py-2 rounded-lg bg-slate-400 text-white font-semibold hover:bg-slate-500">chancel</button>
-                        <button type="button" onClick={handleAdd} className="px-11 py-2 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700">save</button>
+                        <button type="button" onClick={handleAdd} className="px-11 py-2 rounded-lg bg-sky-500 text-white font-semibold hover:bg-sky-600">save</button>
                     </div>
                 </form >
             </div >

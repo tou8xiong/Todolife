@@ -1,5 +1,6 @@
 "use client";
 import { usePathname } from "next/navigation";
+import Link from "next/link";
 import { BsLayoutSidebarInset } from "react-icons/bs";
 import { MdDashboard, MdTimer, MdPictureAsPdf, MdPhotoSizeSelectActual } from "react-icons/md";
 import { GiNotebook } from "react-icons/gi";
@@ -30,7 +31,7 @@ export default function Sidebar() {
                 {navItems.map(({ href, label, icon: Icon }) => {
                     const isActive = pathname === href;
                     return (
-                        <a
+                        <Link
                             key={href}
                             href={href}
                             className={`flex items-center gap-3 px-3 py-2.5 rounded-xl font-serif text-sm transition-all duration-150
@@ -41,7 +42,7 @@ export default function Sidebar() {
                         >
                             <Icon size={18} className="shrink-0" />
                             <span className="truncate">{label}</span>
-                        </a>
+                        </Link>
                     );
                 })}
             </nav>

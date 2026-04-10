@@ -13,6 +13,7 @@ import {
   ListTodo,
   AlertCircle,
   ChevronUp,
+  CheckCircle2,
 } from "lucide-react";
 
 type Mode = "chat" | "summarize" | "tasks";
@@ -20,7 +21,10 @@ type Mode = "chat" | "summarize" | "tasks";
 interface Message {
   role: "user" | "assistant";
   content: string;
+  taskCreated?: Task;
 }
+
+const TASK_CREATE_REGEX = /\[TASK_CREATE\]([\s\S]*?)\[\/TASK_CREATE\]/;
 
 const MODES: {
   id: Mode;
@@ -33,8 +37,8 @@ const MODES: {
       id: "chat",
       label: "Chat",
       icon: MessageSquare,
-      placeholder: "Ask me anything about your tasks or productivity...",
-      hint: "I'll use your task data as context.",
+      placeholder: "Ask about tasks, or say 'create a task: buy groceries'...",
+      hint: "I can read your tasks, show done tasks, and create new ones.",
     },
     {
       id: "summarize",
@@ -52,29 +56,68 @@ const MODES: {
     },
   ];
 
-function buildSystemPrompt(mode: Mode, tasks: Task[]): string {
+function buildSystemPrompt(mode: Mode, tasks: Task[], today: string): string {
   if (mode === "chat") {
     const pending = tasks.filter((t) => !t.completed);
-    const done = tasks.filter((t) => t.completed).slice(0, 5);
+    const done = tasks.filter((t) => t.completed);
+
     const pendingCtx =
       pending.length > 0
-        ? `Pending tasks:\n${pending
+        ? `Pending tasks (${pending.length}):\n${pending
           .map(
-            (t) =>
-              `- [${t.type ?? "general"}] ${t.title}${t.priority ? ` (${t.priority} priority)` : ""}${t.date ? `, due ${t.date}` : ""}`
+            (t, i) =>
+              `${i + 1}. [${t.type ?? "general"}] ${t.title}${t.priority ? ` (${t.priority} priority)` : ""}${t.date ? `, due ${t.date}` : ""}${t.description ? ` — ${t.description}` : ""}`
           )
           .join("\n")}`
         : "No pending tasks.";
+
     const doneCtx =
       done.length > 0
-        ? `\nRecently completed:\n${done.map((t) => `- ${t.title}`).join("\n")}`
-        : "";
-    return `You are a helpful productivity assistant. Be concise and practical.\n\nUser task data:\n${pendingCtx}${doneCtx}`;
+        ? `\n\nCompleted tasks (${done.length}):\n${done
+          .slice(0, 15)
+          .map(
+            (t, i) =>
+              `${i + 1}. ${t.title}${t.completedAt ? ` (completed ${t.completedAt})` : ""}`
+          )
+          .join("\n")}`
+        : "\n\nNo completed tasks.";
+
+    return `You are a helpful productivity assistant for a todo app. Be concise and practical. Today is ${today}.
+
+You have access to the user's full task data below. When asked about tasks or done tasks, use this data to answer clearly.
+
+When the user asks to CREATE or ADD a task, respond with a short confirmation AND append a task creation block at the very END of your response in EXACTLY this format (nothing else after it):
+[TASK_CREATE]{"title":"Task title here","priority":"medium","type":"work","date":"","description":""}[/TASK_CREATE]
+
+Task creation field rules:
+- title: required, clear and concise task title
+- priority: "high", "medium", or "low" (default: "medium")
+- type: "work", "study", or "activities" (default: "work")
+- date: YYYY-MM-DD format, or empty string if no date mentioned
+- description: brief description or empty string
+
+User task data:
+${pendingCtx}${doneCtx}`;
   }
   if (mode === "summarize") {
     return "You are a summarization assistant. When given text, return 3 to 5 clear bullet points in plain language. Output only the bullet points, no introduction.";
   }
   return "You are a productivity coach. When given a goal, break it into numbered actionable tasks. Label each with a priority: High, Medium, or Low. Be concise.";
+}
+
+function parseTaskFromResponse(response: string): {
+  cleanText: string;
+  taskData: Partial<Task> | null;
+} {
+  const match = response.match(TASK_CREATE_REGEX);
+  if (!match) return { cleanText: response, taskData: null };
+  try {
+    const taskData = JSON.parse(match[1]);
+    const cleanText = response.replace(TASK_CREATE_REGEX, "").trim();
+    return { cleanText, taskData };
+  } catch {
+    return { cleanText: response, taskData: null };
+  }
 }
 
 export default function AgentChat() {
@@ -84,16 +127,28 @@ export default function AgentChat() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  // Load tasks from API when user logs in
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (user) => {
+    const unsub = onAuthStateChanged(auth, async (user) => {
       if (user?.email) {
-        const stored = localStorage.getItem(`tasks_${user.email}`);
-        setTasks(stored ? JSON.parse(stored) : []);
+        setUserEmail(user.email);
+        try {
+          const res = await fetch(`/api/tasks?email=${encodeURIComponent(user.email)}`);
+          const data = await res.json();
+          if (data.tasks) {
+            setTasks(data.tasks);
+          }
+        } catch {
+          // Fallback to localStorage
+          const stored = localStorage.getItem(`tasks_${user.email}`);
+          setTasks(stored ? JSON.parse(stored) : []);
+        }
       }
     });
     return () => unsub();
@@ -122,6 +177,37 @@ export default function AgentChat() {
     setTimeout(() => textareaRef.current?.focus(), 100);
   };
 
+  const createTask = async (taskData: Partial<Task>): Promise<Task> => {
+    if (!userEmail) throw new Error("Not logged in");
+
+    const newTask: Task = {
+      id: Date.now(),
+      title: taskData.title || "New Task",
+      description: taskData.description || undefined,
+      priority: taskData.priority || "medium",
+      type: taskData.type || "work",
+      date: taskData.date || undefined,
+      completed: false,
+      completedAt: null,
+    };
+
+    const updatedTasks = [...tasks, newTask];
+
+    const res = await fetch("/api/tasks", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: userEmail, tasks: updatedTasks }),
+    });
+
+    if (!res.ok) throw new Error("Failed to save task");
+
+    setTasks(updatedTasks);
+    localStorage.setItem(`tasks_${userEmail}`, JSON.stringify(updatedTasks));
+    window.dispatchEvent(new Event("tasksUpdated"));
+
+    return newTask;
+  };
+
   const send = async () => {
     const trimmed = input.trim();
     if (!trimmed || loading) return;
@@ -133,7 +219,8 @@ export default function AgentChat() {
     setError(null);
 
     try {
-      const systemPrompt = buildSystemPrompt(mode, tasks);
+      const today = new Date().toISOString().split("T")[0];
+      const systemPrompt = buildSystemPrompt(mode, tasks, today);
       const history = [...messages, userMessage];
 
       const res = await fetch("/api/agent", {
@@ -151,7 +238,21 @@ export default function AgentChat() {
       const data = await res.json();
       if (!res.ok || data.error) throw new Error(data.error ?? `Error ${res.status}`);
 
-      setMessages((prev) => [...prev, { role: "assistant", content: data.result }]);
+      const { cleanText, taskData } = parseTaskFromResponse(data.result);
+
+      let createdTask: Task | undefined;
+      if (taskData?.title && mode === "chat") {
+        try {
+          createdTask = await createTask(taskData);
+        } catch (err: any) {
+          setError(`Task saved in chat but failed to persist: ${err.message}`);
+        }
+      }
+
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: cleanText, taskCreated: createdTask },
+      ]);
     } catch (err: any) {
       setError(err.message ?? "Something went wrong. Please try again.");
     } finally {
@@ -167,6 +268,8 @@ export default function AgentChat() {
   };
 
   const currentMode = MODES.find((m) => m.id === mode)!;
+  const pendingCount = tasks.filter((t) => !t.completed).length;
+  const doneCount = tasks.filter((t) => t.completed).length;
 
   return (
     <div className="w-full min-h-screen bg-linear-to-br from-sky-50 to-indigo-50 dark:from-gray-900 dark:to-gray-800 font-serif flex flex-col p-4 sm:p-8">
@@ -178,6 +281,7 @@ export default function AgentChat() {
         </div>
         <h1 className="text-3xl font-bold text-gray-800 dark:text-white tracking-tight">AI Agent</h1>
       </div>
+
       <div className="w-full flex flex-col gap-4">
 
         {/* Messages */}
@@ -189,10 +293,9 @@ export default function AgentChat() {
               </div>
               <p className="text-gray-700 dark:text-gray-300 font-semibold text-sm">{currentMode.label} mode</p>
               <p className="text-gray-400 text-xs max-w-xs">{currentMode.hint}</p>
-              {mode === "chat" && tasks.filter((t) => !t.completed).length > 0 && (
+              {mode === "chat" && (
                 <span className="text-xs bg-sky-50 dark:bg-sky-900/30 text-sky-500 border border-sky-100 dark:border-sky-800 px-3 py-1 rounded-full">
-                  {tasks.filter((t) => !t.completed).length} pending task
-                  {tasks.filter((t) => !t.completed).length !== 1 ? "s" : ""} loaded as context
+                  {pendingCount} pending · {doneCount} done
                 </span>
               )}
             </div>
@@ -201,21 +304,39 @@ export default function AgentChat() {
           {messages.map((msg, i) => (
             <div
               key={i}
-              className={`flex gap-3 ${msg.role === "user" ? "justify-end" : "justify-start"}`}
+              className={`flex flex-col gap-1.5 ${msg.role === "user" ? "items-end" : "items-start"}`}
             >
-              {msg.role === "assistant" && (
-                <div className="shrink-0 w-7 h-7 rounded-full bg-sky-100 dark:bg-sky-900/30 border border-sky-200 dark:border-sky-700 flex items-center justify-center mt-0.5">
-                  <Bot size={14} className="text-sky-500" />
+              <div className={`flex gap-3 w-full ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+                {msg.role === "assistant" && (
+                  <div className="shrink-0 w-7 h-7 rounded-full bg-sky-100 dark:bg-sky-900/30 border border-sky-200 dark:border-sky-700 flex items-center justify-center mt-0.5">
+                    <Bot size={14} className="text-sky-500" />
+                  </div>
+                )}
+                <div
+                  className={`max-w-[80%] px-4 py-3 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap shadow-sm ${msg.role === "user"
+                    ? "bg-sky-500 text-white rounded-br-sm"
+                    : "bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-100 border border-sky-100 dark:border-gray-600 rounded-bl-sm"
+                    }`}
+                >
+                  {msg.content}
+                </div>
+              </div>
+
+              {/* Task created badge */}
+              {msg.taskCreated && (
+                <div className="flex items-center gap-2 ml-10 px-3 py-1.5 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-600 dark:text-green-400 text-xs">
+                  <CheckCircle2 size={13} className="shrink-0" />
+                  <span>
+                    Task created: <strong>{msg.taskCreated.title}</strong>
+                  </span>
+                  {msg.taskCreated.priority && (
+                    <span className="capitalize opacity-70">· {msg.taskCreated.priority}</span>
+                  )}
+                  {msg.taskCreated.type && (
+                    <span className="capitalize opacity-70">· {msg.taskCreated.type}</span>
+                  )}
                 </div>
               )}
-              <div
-                className={`max-w-[80%] px-4 py-3 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap shadow-sm ${msg.role === "user"
-                  ? "bg-sky-500 text-white rounded-br-sm"
-                  : "bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-100 border border-sky-100 dark:border-gray-600 rounded-bl-sm"
-                  }`}
-              >
-                {msg.content}
-              </div>
             </div>
           ))}
 

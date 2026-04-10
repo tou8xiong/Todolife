@@ -123,7 +123,7 @@ export default function Profile() {
           </div>
           <button
             onClick={() => setChangeName(!changename)}
-            className="mt-4 px-5 py-1.5 text-sm bg-sky-100 hover:bg-sky-200 text-sky-700 rounded-full inline-flex items-center gap-1.5 transition"
+            className="mt-4 px-5 py-1.5 text-sm bg-sky-500 hover:bg-sky-600 text-white rounded-full inline-flex items-center gap-1.5 transition"
           >
             <FaEdit size={12} />
             {changename ? "Close Editor" : "Edit Profile"}
@@ -205,7 +205,7 @@ export default function Profile() {
               </button>
               <button
                 onClick={handleUpdate}
-                className="flex-1 py-2.5 rounded-xl bg-blue-500 hover:bg-blue-600 text-white font-semibold transition"
+                className="flex-1 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-semibold transition"
               >
                 Save Changes
               </button>

@@ -97,7 +97,7 @@ export default function TimerPopup() {
         <>
             <button
                 onClick={() => setIsOpen((s) => !s)}
-                className="fixed bottom-6 right-6 z-50 p-3 rounded-full bg-blue-600 dark:bg-blue-500 text-white shadow-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors"
+                className="fixed bottom-6 right-6 z-50 p-3 rounded-full bg-sky-500 text-white shadow-lg hover:bg-sky-600 transition-colors"
                 aria-label="Toggle timer"
             >
                 {isOpen ? "✖" : "⏱"}

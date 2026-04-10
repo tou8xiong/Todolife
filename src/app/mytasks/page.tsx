@@ -1,4 +1,10 @@
+import type { Metadata } from "next";
 import ListsPage from "@/components/tasks/TaskList"
+
+export const metadata: Metadata = {
+  title: "My Tasks",
+  description: "View and manage all your pending tasks. Mark tasks as done, edit details, and stay on top of your deadlines with TodoLife.",
+};
 
 export default function MyTasks(){
     return(

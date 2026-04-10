@@ -148,7 +148,7 @@ export default function DoneTasks() {
   };
 
   return (
-    <div className="w-full min-h-screen bg-sky-950 font-serif">
+    <div className="w-full min-h-screen bg-gray-900 font-serif">
       <div className="max-w-6xl mx-auto px-3 sm:px-5 lg:px-6 py-4 sm:py-6 flex flex-col gap-4 sm:gap-5">
 
         {/* ── Header ── */}

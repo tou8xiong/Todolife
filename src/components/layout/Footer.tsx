@@ -1,37 +1,111 @@
-import Image from 'next/image';
-import FooterImage from "@/public/Webicon.png";
+import Image from "next/image";
+import Link from "next/link";
+import Logo from "@/public/Logo1.png";
 import { FaSquarePhone } from "react-icons/fa6";
 import { MdOutlineEmail } from "react-icons/md";
+import {
+  PlusSquare,
+  ListTodo,
+  CheckSquare,
+  LayoutDashboard,
+  Timer,
+  BookOpen,
+  FileText,
+  ImageIcon,
+} from "lucide-react";
+import { TbRobot } from "react-icons/tb";
+
+const taskLinks = [
+  { href: "/", label: "Home" },
+  { href: "/newtasks", label: "New Tasks", icon: PlusSquare },
+  { href: "/mytasks", label: "My Tasks", icon: ListTodo },
+  { href: "/completetasks", label: "Complete Tasks", icon: CheckSquare },
+];
+
+const featureLinks = [
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/settimepage", label: "Set Timer", icon: Timer },
+  { href: "/noteidea", label: "Idea Notes", icon: BookOpen },
+  { href: "/pdfeditor", label: "PDF Annotator", icon: FileText },
+  { href: "/background-removal", label: "Remove BG", icon: ImageIcon },
+  { href: "/agent", label: "AI Agent", icon: TbRobot },
+];
 
 export default function Footer() {
-    return (
-        <div
-            className="bg-gray-900 text-white font-serif flex justify-center items-center flex-col bg-linear-to-b
-                 from-gray-900 to-gray-700 px-4 sm:px-8 py-30" id="footer">
-            <div className=" flex flex-col sm:flex-row gap-8 sm:gap-16 justify-between w-full max-w-4xl border-0 border-amber-600">
-                <div className="bg-white p-2 rounded-md">
-                    <Image src={FooterImage} alt='transparentImage' className='w-[100px] h-full' />
-                </div>
-                <div>
-                    <h1 className='text-bold text-center text-2xl'>Quick Links</h1>
-                    <ul className='mt-3'>
-                        <li><a href='/' className='text-blue-500 hover:text-blue-600 hover:underline underline-offset-2'>Home</a></li>
-                        <li><a href='/newtasks' className='text-blue-500 hover:text-blue-600 hover:underline underline-offset-2'>Newtasks</a></li>
-                        <li><a href='/mytasks' className='text-blue-500 hover:text-blue-600 hover:underline underline-offset-2'>Mytasks</a></li>
-                        <li><a href='/completetasks' className='text-blue-500 hover:text-blue-600 hover:underline underline-offset-2'>Completetasks</a></li>
-                        <li><a href='/noteidea' className='text-blue-500 hover:text-blue-600 hover:underline underline-offset-2'>Noteidea</a></li>
-                        <li><a href='/setimepage' className='text-blue-500 hover:text-blue-600 hover:underline underline-offset-2'>Settimer</a></li>
-                    </ul>
-                </div>
-                <div className="">
-                    <h1 className="text-xl sm:text-2xl text-center sm:text-left mb-3 sm:mb-5">Contact Us</h1>
-                    <h1 className='flex'><FaSquarePhone size={35} color='green' className='mr-3' /> 78292260</h1>
-                    <h1 className='flex'><MdOutlineEmail size={35} color='gold' className='mr-3' /> touxhk@gmail.com</h1>
-                </div>
+  return (
+    <footer className="bg-gray-900 border-t border-gray-700/50 text-gray-300 font-serif" id="footer">
+      <div className="max-w-5xl mx-auto px-6 py-12 flex flex-col gap-10">
+
+        {/* Top row */}
+        <div className="flex flex-col sm:flex-row gap-10 sm:gap-16 justify-between">
+
+          {/* Brand */}
+          <div className="flex flex-col gap-3 min-w-[140px]">
+            <div className="bg-white rounded-xl p-2 w-fit">
+              <Image src={Logo} alt="TodoLife" className="h-10 w-auto" />
             </div>
-            <div className='mt-49'>
-                <p>@Vietiane Laos BY TouXY 2025</p>
-            </div>
+            <p className="text-sm text-gray-400 max-w-[180px] leading-relaxed">
+              Your personal task and life management app.
+            </p>
+          </div>
+
+          {/* Tasks */}
+          <div>
+            <h3 className="text-white font-semibold text-sm uppercase tracking-widest mb-4">Tasks</h3>
+            <ul className="flex flex-col gap-2.5">
+              {taskLinks.map(({ href, label, icon: Icon }) => (
+                <li key={href}>
+                  <Link
+                    href={href}
+                    className="flex items-center gap-2 text-sm text-gray-400 hover:text-amber-400 transition-colors"
+                  >
+                    {Icon && <Icon size={14} className="shrink-0" />}
+                    {label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Features */}
+          <div>
+            <h3 className="text-white font-semibold text-sm uppercase tracking-widest mb-4">Features</h3>
+            <ul className="flex flex-col gap-2.5">
+              {featureLinks.map(({ href, label, icon: Icon }) => (
+                <li key={href}>
+                  <Link
+                    href={href}
+                    className="flex items-center gap-2 text-sm text-gray-400 hover:text-amber-400 transition-colors"
+                  >
+                    <Icon size={14} className="shrink-0" />
+                    {label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Contact */}
+          <div>
+            <h3 className="text-white font-semibold text-sm uppercase tracking-widest mb-4">Contact</h3>
+            <ul className="flex flex-col gap-3">
+              <li className="flex items-center gap-2.5 text-sm text-gray-400">
+                <FaSquarePhone size={18} className="text-green-400 shrink-0" />
+                78292260
+              </li>
+              <li className="flex items-center gap-2.5 text-sm text-gray-400">
+                <MdOutlineEmail size={18} className="text-amber-400 shrink-0" />
+                touxhk@gmail.com
+              </li>
+            </ul>
+          </div>
         </div>
-    )
+
+        {/* Divider + copyright */}
+        <div className="border-t border-gray-700/50 pt-6 text-center text-xs text-gray-600">
+          © 2025 TodoLife · Vientiane, Laos · Built by TouXY
+        </div>
+      </div>
+    </footer>
+  );
 }

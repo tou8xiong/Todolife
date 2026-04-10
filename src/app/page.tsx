@@ -1,35 +1,18 @@
-"use client";
-import AddTasks from "@/components/tasks/AddTasks";
-import Footer from "@/components/layout/Footer";
-import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "@/lib/firebase";
-import { useState, useEffect } from "react";
+import type { Metadata } from "next";
+import HomeClient from "@/components/home/HomeClient";
+
+export const metadata: Metadata = {
+  title: "TodoLife — Manage Your Tasks & Life",
+  description:
+    "TodoLife is your free all-in-one productivity app. Add tasks, track progress, study with timers, annotate PDFs, capture ideas, and remove image backgrounds — all in one place.",
+  openGraph: {
+    title: "TodoLife — Manage Your Tasks & Life",
+    description:
+      "Your free all-in-one productivity app. Tasks, timers, PDF annotations, idea notes, AI assistant, and more.",
+    url: "https://todolife.vercel.app",
+  },
+};
 
 export default function Home() {
-  const [user, setUser] = useState<any>(null);
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-    });
-    return () => unsubscribe();
-  }, []);
-  return (
-    <>
-      <div className="bg-white sm:w-full w-full flex flex-col justify-center overflow-x-hidden">
-        <div className="min-h-screen border-0 border-amber-300 sm:py-4 w-full flex flex-col lg:flex-row justify-center gap-2 dark:text-white">
-          <div
-            data-aos="fade-down-right"
-            className="w-full max-w-xl flex flex-col gap-2 border-0 border-red-500">
-            <h1 className=" dark:text-white text-2xl sm:text-4xl font-serif font-bold text-center textanimated">
-              <p className=" text-2xl mb-5">Hi <span className="text-5xl">{ user?.displayName ||  user?.email?.split('@')[0] || "Guest"}</span>
-              </p>Welcome To TODOLIFE </h1>
-            <h1 className="font-serif text-center text-base sm:text-lg">TODOLIFE will make your tasks done easier</h1>
-          </div>
-          <AddTasks />
-        </div>
-        <Footer />
-      </div>
-    </>
-  );
+  return <HomeClient />;
 }

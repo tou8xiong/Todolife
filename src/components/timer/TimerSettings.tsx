@@ -151,7 +151,7 @@ export default function TimerSettings() {
               {centis > 100 && (
                 <button
                   onClick={handleFinish}
-                  className="flex items-center gap-2 px-8 py-3 bg-blue-500 hover:bg-blue-600 text-white rounded-2xl font-bold transition-all hover:shadow-lg active:scale-95 w-full sm:w-auto"
+                  className="flex items-center gap-2 px-8 py-3 bg-sky-500 hover:bg-sky-600 text-white rounded-2xl font-bold transition-all hover:shadow-lg active:scale-95 w-full sm:w-auto"
                 >
                   <CheckCircle2 size={20} /> Finish Session
                 </button>
