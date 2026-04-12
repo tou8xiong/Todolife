@@ -141,7 +141,7 @@ export default function RootLayout({
           <AppProvider>
             <Header />
             <Sidebar />
-            <main className="md:ml-45 min-h-screen">
+            <main className="md:ml-45 min-h-[calc(100vh-4rem)]">
               {children}
             </main>
             <Toaster richColors position="top-right" />

@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 
+// Whitelist allowed models — prevents URL injection via the model param
+const ALLOWED_MODELS = new Set(["openai", "mistral", "claude", "llama", "gemini"]);
+
 export async function POST(req: NextRequest) {
   const { messages, model = "openai" } = await req.json();
+  const safeModel = ALLOWED_MODELS.has(model) ? (model as string) : "openai";
 
   if (!messages?.length) {
     return NextResponse.json({ error: "Messages are required" }, { status: 400 });
@@ -25,7 +29,7 @@ export async function POST(req: NextRequest) {
     const prompt = encodeURIComponent(lastUser.content);
     const seed = Math.floor(Math.random() * 9999);
 
-    const url = `https://text.pollinations.ai/${prompt}?model=${model}&seed=${seed}&system=${fullSystem}`;
+    const url = `https://text.pollinations.ai/${prompt}?model=${safeModel}&seed=${seed}&system=${fullSystem}`;
 
     const response = await fetch(url);
 
