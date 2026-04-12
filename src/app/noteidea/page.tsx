@@ -1,10 +1,11 @@
 "use client"
 import { GiNotebook } from "react-icons/gi";
 import { useState, useEffect } from "react";
-import { MdDelete, MdEdit, MdCheck, MdClose } from "react-icons/md";
+import { MdDelete, MdEdit, MdCheck, MdClose, MdDescription } from "react-icons/md";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { toast } from "sonner";
+import Link from "next/link";
 
 interface Idea {
     id: number;
@@ -98,6 +99,13 @@ export default function NooteBook() {
                 </div>
                 <h1 className="text-3xl font-bold text-gray-800 dark:text-white tracking-tight">Idea Notes</h1>
                 <p className="text-sm text-gray-400 mt-1">Capture every thought before it slips away</p>
+                <Link
+                    href="/notetext"
+                    className="mt-4 flex items-center gap-2 px-4 py-2 bg-sky-500 hover:bg-sky-600 active:scale-95 text-white text-sm font-semibold rounded-xl shadow transition-all"
+                >
+                    <MdDescription size={18} />
+                    Note Text
+                </Link>
             </div>
 
             {/* Input Card */}
