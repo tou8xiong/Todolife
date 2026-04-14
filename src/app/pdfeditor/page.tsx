@@ -638,7 +638,7 @@ export default function PdfEditor() {
         <div key={i} className="w-full flex flex-col items-center px-2 sm:px-4">
             {fileType === "pdf" && (
                 <div className="flex items-center w-full max-w-[816px] px-1 mb-1">
-                    <span className="text-[9px] sm:text-[10px] font-mono text-gray-400 uppercase tracking-widest">
+                    <span className="text-[9px] sm:text-[10px] font-mono text-gray-200 uppercase tracking-widest">
                         {`Page ${i + 1} / ${numPages}`}
                     </span>
                 </div>
@@ -734,7 +734,7 @@ export default function PdfEditor() {
                                 className="border border-gray-200 rounded-lg px-2 py-1 text-sm w-36 focus:outline-none focus:border-amber-400 dark:bg-gray-700 dark:text-white"
                             />
                             <button onClick={confirmText} className="px-2.5 py-1 bg-amber-400 hover:bg-amber-500 text-white rounded-lg text-xs font-semibold">Add</button>
-                            <button onClick={() => setPlacing(null)} className="px-2 py-1 bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-white rounded-lg text-xs">✕</button>
+                            <button onClick={() => setPlacing(null)} className="px-2 py-1 bg-gray-100 dark:bg-gray-600 text-gray-200 dark:text-white rounded-lg text-xs">✕</button>
                         </div>
                     </div>
                 )}
@@ -743,7 +743,7 @@ export default function PdfEditor() {
     );
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 sm:p-6 font-serif">
+        <div className="min-h-screen bg-linear-to-b from-gray-900 to-gray-600 p-4 sm:p-6 font-serif text-white">
 
             {mode === "annotator" && (
                 <DownloadModal
@@ -775,13 +775,13 @@ export default function PdfEditor() {
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
+                    <h1 className="text-2xl font-bold text-white">
                         {mode === "annotator"
                             ? <><FileText size={22} className="inline-block mr-2 -mt-1 text-amber-500" />PDF Annotator</>
                             : <><FileImage size={22} className="inline-block mr-2 -mt-1 text-amber-500" />Image Converter</>
                         }
                     </h1>
-                    <p className="text-sm text-gray-400 mt-0.5">
+                    <p className="text-sm text-gray-200 mt-0.5">
                         {mode === "annotator"
                             ? "Upload a PDF, Word (.docx), or text file · add annotations · download as PDF"
                             : "Upload an image · convert to PDF or DOCX"
@@ -798,7 +798,7 @@ export default function PdfEditor() {
                         }}
                         className={`px-4 py-2 text-sm font-semibold rounded-xl transition-colors ${mode === "annotator"
                             ? "bg-amber-500 text-white"
-                            : "bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-300"
+                            : "bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-200 dark:text-gray-300"
                             }`}
                     >
                         Annotator
@@ -812,7 +812,7 @@ export default function PdfEditor() {
                         }}
                         className={`px-4 py-2 text-sm font-semibold rounded-xl transition-colors ${mode === "converter"
                             ? "bg-amber-500 text-white"
-                            : "bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-300"
+                            : "bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-200 dark:text-gray-300"
                             }`}
                     >
                         Converter
@@ -837,7 +837,7 @@ export default function PdfEditor() {
                     className={`relative max-w-2xl mx-auto rounded-3xl transition-all duration-300
                         ${dragOver
                             ? "bg-amber-500/10 border-2 border-amber-400 shadow-[0_0_40px_rgba(251,191,36,0.15)]"
-                            : "border-2 border-dashed border-gray-600 hover:border-amber-400/70 hover:bg-amber-500/5"
+                            : "border-2 border-dashed border-gray-500 hover:border-amber-400/70 hover:bg-amber-500/5"
                         }`}
                 >
                     <label className="flex flex-col items-center justify-center gap-5 p-10 sm:p-16 cursor-pointer">
@@ -846,7 +846,7 @@ export default function PdfEditor() {
                             ${dragOver ? "bg-amber-400/20 scale-110" : "bg-gray-800"}`}>
                             <UploadCloud
                                 size={36}
-                                className={`transition-colors duration-300 ${dragOver ? "text-amber-400" : "text-gray-400"}`}
+                                className={`transition-colors duration-300 ${dragOver ? "text-amber-400" : "text-gray-200"}`}
                             />
                             {dragOver && (
                                 <span className="absolute inset-0 rounded-2xl border-2 border-amber-400 animate-ping opacity-30" />
@@ -858,7 +858,7 @@ export default function PdfEditor() {
                             <p className="text-lg font-bold text-white">
                                 {dragOver ? "Drop to upload" : "Drop file here or click to browse"}
                             </p>
-                            <p className="text-sm text-gray-400">
+                            <p className="text-sm text-gray-200">
                                 {mode === "annotator"
                                     ? "Annotate, then download as PDF or DOCX"
                                     : "Convert your image to PDF or DOCX"
@@ -876,7 +876,7 @@ export default function PdfEditor() {
                                     <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold">
                                         <FileText size={12} /> DOCX
                                     </span>
-                                    <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-500/10 border border-gray-500/20 text-gray-400 text-xs font-semibold">
+                                    <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-500/10 border border-gray-500/20 text-gray-200 text-xs font-semibold">
                                         <FileType2 size={12} /> TXT
                                     </span>
                                 </>

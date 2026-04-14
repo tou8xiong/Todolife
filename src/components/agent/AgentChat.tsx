@@ -31,9 +31,9 @@ interface ConvMeta {
 const TASK_CREATE_REGEX = /\[TASK_CREATE\]([\s\S]*?)\[\/TASK_CREATE\]/;
 
 const MODES: { id: Mode; label: string; icon: React.ElementType; placeholder: string; hint: string }[] = [
-  { id: "chat",      label: "Chat",          icon: MessageSquare, placeholder: "Ask about tasks, or say 'create a task: buy groceries'...", hint: "I can read your tasks, show done tasks, and create new ones." },
-  { id: "summarize", label: "Summarize",     icon: FileText,      placeholder: "Paste any text here and I'll summarize it...",              hint: "I'll return 3–5 concise bullet points." },
-  { id: "tasks",     label: "Suggest Tasks", icon: ListTodo,      placeholder: "Describe your goal (e.g. 'finish my project this week')...", hint: "I'll break it into actionable tasks with priorities." },
+  { id: "chat", label: "Chat", icon: MessageSquare, placeholder: "Ask about tasks, or say 'create a task: buy groceries'...", hint: "I can read your tasks, show done tasks, and create new ones." },
+  { id: "summarize", label: "Summarize", icon: FileText, placeholder: "Paste any text here and I'll summarize it...", hint: "I'll return 3–5 concise bullet points." },
+  { id: "tasks", label: "Suggest Tasks", icon: ListTodo, placeholder: "Describe your goal (e.g. 'finish my project this week')...", hint: "I'll break it into actionable tasks with priorities." },
 ];
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
@@ -59,9 +59,9 @@ function groupConversations(convs: ConvMeta[]) {
   });
 
   return [
-    { label: "Today",            items: today },
-    { label: "Yesterday",        items: yesterday },
-    { label: "Previous 7 Days",  items: older },
+    { label: "Today", items: today },
+    { label: "Yesterday", items: yesterday },
+    { label: "Previous 7 Days", items: older },
   ].filter((g) => g.items.length > 0);
 }
 
@@ -353,7 +353,7 @@ export default function AgentChat() {
   const doneCount = tasks.filter((t) => t.completed).length;
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] overflow-hidden bg-gray-50 dark:bg-gray-900 font-serif">
+    <div className="flex h-[calc(100vh-4rem)] overflow-hidden bg-linear-to-b from-gray-900 to-gray-600 font-serif">
 
       {/* ── Sidebar backdrop (mobile) ─────────────────────────────────── */}
       {sidebarOpen && (
@@ -366,7 +366,7 @@ export default function AgentChat() {
       {/* ── Sidebar ───────────────────────────────────────────────────── */}
       <aside className={`
         fixed top-16 bottom-0 left-0 z-40 md:static md:top-auto md:bottom-auto
-        w-64 shrink-0 bg-gray-900 border-r border-gray-700 flex flex-col
+        w-64 shrink-0 bg-linear-to-b from-gray-900 to-gray-600 border-r border-gray-700 flex flex-col
         transition-transform duration-300 ease-in-out
         ${sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
       `}>
@@ -401,7 +401,7 @@ export default function AgentChat() {
                         className={`w-full text-left px-3 py-2 rounded-lg text-xs transition-all pr-8 leading-snug
                           ${activeId === conv.id
                             ? "bg-gray-700 text-white"
-                            : "text-gray-400 hover:bg-gray-800 hover:text-gray-200"
+                            : "text-gray-300 hover:bg-gray-800 hover:text-gray-200"
                           }`}
                       >
                         <span className="block truncate">{conv.title}</span>
@@ -426,7 +426,7 @@ export default function AgentChat() {
         </div>
 
         <div className="px-4 py-3 border-t border-gray-700/60">
-          <p className="text-[10px] text-gray-700 text-center tracking-widest uppercase">Chats kept 7 days</p>
+          <p className="text-[10px] text-white text-center tracking-widest uppercase">Chats kept 7 days</p>
         </div>
       </aside>
 
@@ -434,18 +434,18 @@ export default function AgentChat() {
       <div className="flex-1 flex flex-col overflow-hidden">
 
         {/* Top bar */}
-        <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3 flex items-center gap-3 shrink-0">
+        <div className="bg-gray-800 border-b border-gray-700 px-4 py-3 flex items-center gap-3 shrink-0">
           {/* Mobile sidebar toggle */}
           <button
             onClick={() => setSidebarOpen((v) => !v)}
-            className="md:hidden p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400"
+            className="md:hidden p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-300"
           >
             <Menu size={20} />
           </button>
 
           <div className="flex items-center gap-2">
             <Bot size={18} className="text-sky-400 shrink-0" />
-            <span className="font-semibold text-gray-800 dark:text-white text-sm">
+            <span className="font-semibold text-white text-sm">
               {activeId
                 ? (conversations.find((c) => c.id === activeId)?.title ?? "Conversation")
                 : "AI Agent"}
@@ -457,7 +457,7 @@ export default function AgentChat() {
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 flex flex-col gap-4">
 
           {historyLoading && (
-            <div className="flex items-center justify-center py-12 gap-2 text-gray-400 text-xs">
+            <div className="flex items-center justify-center py-12 gap-2 text-gray-300 text-xs">
               <Loader2 size={14} className="animate-spin" />
               Loading conversation...
             </div>
@@ -465,16 +465,16 @@ export default function AgentChat() {
 
           {!historyLoading && !activeId && messages.length === 0 && (
             <div className="flex flex-col items-center justify-center h-full py-20 gap-4 text-center">
-              <div className="p-5 rounded-full bg-white dark:bg-gray-800 shadow-md border border-gray-100 dark:border-gray-700">
+              <div className="p-5 rounded-full bg-gray-800 shadow-md border border-gray-700">
                 <Bot size={36} className="text-sky-400" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-800 dark:text-white">How can I help you?</h2>
+              <h2 className="text-2xl font-bold text-white">How can I help you?</h2>
               {mode === "chat" && (
-                <span className="text-xs bg-sky-50 dark:bg-sky-900/30 text-sky-500 border border-sky-100 dark:border-sky-800 px-3 py-1 rounded-full">
+                <span className="text-xs bg-sky-900/30 text-sky-300 border border-sky-800 px-3 py-1 rounded-full">
                   {pendingCount} pending · {doneCount} done
                 </span>
               )}
-              <p className="text-sm text-gray-400 max-w-sm">{currentMode.hint}</p>
+              <p className="text-sm text-gray-300 max-w-sm">{currentMode.hint}</p>
             </div>
           )}
 
@@ -482,21 +482,21 @@ export default function AgentChat() {
             <div key={i} className={`flex flex-col gap-1.5 ${msg.role === "user" ? "items-end" : "items-start"}`}>
               <div className={`flex gap-3 max-w-[80%] ${msg.role === "user" ? "flex-row-reverse" : "flex-row"}`}>
                 {msg.role === "assistant" && (
-                  <div className="shrink-0 w-7 h-7 rounded-full bg-sky-100 dark:bg-sky-900/30 border border-sky-200 dark:border-sky-700 flex items-center justify-center mt-0.5">
+                  <div className="shrink-0 w-7 h-7 rounded-full bg-sky-900/40 border border-sky-800 flex items-center justify-center mt-0.5">
                     <Bot size={14} className="text-sky-500" />
                   </div>
                 )}
                 <div className={`px-4 py-3 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap shadow-sm
                   ${msg.role === "user"
                     ? "bg-sky-500 text-white rounded-br-sm"
-                    : "bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-100 border border-gray-100 dark:border-gray-700 rounded-bl-sm"
+                    : "bg-gray-700 text-gray-100 border border-gray-600 rounded-bl-sm"
                   }`}>
                   {msg.content}
                 </div>
               </div>
 
               {msg.taskCreated && (
-                <div className="flex items-center gap-2 ml-10 px-3 py-1.5 rounded-xl bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-600 dark:text-green-400 text-xs">
+                <div className="flex items-center gap-2 ml-10 px-3 py-1.5 rounded-xl bg-green-900/30 border border-green-800 text-green-300 text-xs">
                   <CheckCircle2 size={13} className="shrink-0" />
                   Task created: <strong>{msg.taskCreated.title}</strong>
                   {msg.taskCreated.priority && <span className="capitalize opacity-70">· {msg.taskCreated.priority}</span>}
@@ -508,18 +508,18 @@ export default function AgentChat() {
 
           {loading && (
             <div className="flex gap-3">
-              <div className="shrink-0 w-7 h-7 rounded-full bg-sky-100 dark:bg-sky-900/30 border border-sky-200 dark:border-sky-700 flex items-center justify-center">
+              <div className="shrink-0 w-7 h-7 rounded-full bg-sky-900/40 border border-sky-800 flex items-center justify-center">
                 <Bot size={14} className="text-sky-500" />
               </div>
-              <div className="px-4 py-3 rounded-2xl rounded-bl-sm bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 flex items-center gap-2 shadow-sm">
+              <div className="px-4 py-3 rounded-2xl rounded-bl-sm bg-gray-700 border border-gray-600 flex items-center gap-2 shadow-sm">
                 <Loader2 size={14} className="text-sky-400 animate-spin" />
-                <span className="text-xs text-gray-400">Thinking…</span>
+                <span className="text-xs text-gray-300">Thinking…</span>
               </div>
             </div>
           )}
 
           {error && (
-            <div className="flex items-start gap-2.5 px-4 py-3 rounded-xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/25 text-red-500 dark:text-red-400 text-xs">
+            <div className="flex items-start gap-2.5 px-4 py-3 rounded-xl bg-red-900/30 border border-red-800 text-red-300 text-xs">
               <AlertCircle size={15} className="shrink-0 mt-0.5" />
               <span>{error}</span>
             </div>
@@ -529,8 +529,8 @@ export default function AgentChat() {
         </div>
 
         {/* Input area */}
-        <div className="p-4 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
-          <div className="max-w-3xl mx-auto bg-white dark:bg-gray-800 rounded-2xl shadow-md border border-gray-200 dark:border-gray-700 focus-within:border-sky-400 dark:focus-within:border-sky-500 transition-colors p-2 flex gap-2 items-end">
+        <div className="p-4 bg-gray-800 border-t border-gray-700">
+          <div className="max-w-3xl mx-auto bg-gray-700 rounded-2xl shadow-md border border-gray-600 focus-within:border-sky-500 transition-colors p-2 flex gap-2 items-end">
             <textarea
               ref={textareaRef}
               value={input}
@@ -538,7 +538,7 @@ export default function AgentChat() {
               onKeyDown={handleKeyDown}
               placeholder={currentMode.placeholder}
               rows={2}
-              className="flex-1 resize-none bg-transparent text-sm text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 outline-none px-2 py-1 max-h-36"
+              className="flex-1 resize-none bg-transparent text-sm text-white placeholder-gray-400 outline-none px-2 py-1 max-h-36"
             />
 
             {/* Mode dropdown */}
@@ -553,18 +553,18 @@ export default function AgentChat() {
               </button>
 
               {dropdownOpen && (
-                <div className="absolute bottom-full right-0 mb-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden z-50">
+                <div className="absolute bottom-full right-0 mb-2 w-48 bg-gray-700 rounded-xl shadow-xl border border-gray-600 overflow-hidden z-50">
                   {MODES.map(({ id, label, icon: Icon, hint }) => (
                     <button
                       key={id}
                       onClick={() => { setMode(id); setDropdownOpen(false); setTimeout(() => textareaRef.current?.focus(), 100); }}
                       className={`w-full flex items-start gap-3 px-3 py-2.5 text-left transition-colors
-                        ${mode === id ? "bg-sky-50 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400" : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"}`}
+                        ${mode === id ? "bg-sky-800/50 text-sky-300" : "text-gray-300 hover:bg-gray-600"}`}
                     >
                       <Icon size={15} className="shrink-0 mt-0.5" />
                       <div>
                         <p className="text-xs font-semibold leading-tight">{label}</p>
-                        <p className="text-[10px] text-gray-400 leading-tight mt-0.5">{hint}</p>
+                        <p className="text-[10px] text-gray-300 leading-tight mt-0.5">{hint}</p>
                       </div>
                     </button>
                   ))}
@@ -581,7 +581,7 @@ export default function AgentChat() {
               <Send size={16} />
             </button>
           </div>
-          <p className="text-center text-[10px] text-gray-400 mt-2">Enter to send · Shift+Enter for new line</p>
+          <p className="text-center text-[10px] text-gray-300 mt-2">Enter to send · Shift+Enter for new line</p>
         </div>
       </div>
     </div>

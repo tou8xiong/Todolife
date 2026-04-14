@@ -9,7 +9,7 @@ export const metadata: Metadata = {
 
 export default function Completetasks(){
     return(
-        <div className="w-full min-h-screen bg-gray-50 dark:bg-gray-900 font-serif text-base sm:text-lg hide-scrollbar">
+        <div className="w-full min-h-screen bg-linear-to-b from-gray-900 to-gray-600 font-serif text-base sm:text-lg hide-scrollbar">
             <DoneTasks />
         </div>
     )

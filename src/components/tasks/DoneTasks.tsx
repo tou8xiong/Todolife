@@ -148,20 +148,20 @@ export default function DoneTasks() {
   };
 
   return (
-    <div className="w-full min-h-screen bg-gray-900 font-serif">
+    <div className="w-full min-h-screen bg-transparent font-serif">
       <div className="max-w-6xl mx-auto px-3 sm:px-5 lg:px-6 py-4 sm:py-6 flex flex-col gap-4 sm:gap-5">
 
         {/* ── Header ── */}
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-            <div className="shrink-0 p-2 sm:p-2.5 rounded-xl bg-green-500/10 border border-green-500/20">
+            <div className="shrink-0 p-2 sm:p-2.5 rounded-xl bg-green-500/20 border border-green-500/30">
               <CheckCircle2 size={18} className="text-green-400 sm:w-5.5 sm:h-5.5" />
             </div>
             <div className="min-w-0">
               <h1 className="text-xl sm:text-3xl font-bold text-white leading-tight truncate">
                 Completed Tasks
               </h1>
-              <p className="text-xs sm:text-sm text-gray-400">
+              <p className="text-xs sm:text-sm text-gray-300">
                 {doneTasks.length} task{doneTasks.length !== 1 ? "s" : ""} done
               </p>
             </div>
@@ -205,10 +205,10 @@ export default function DoneTasks() {
         {doneTasks.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 sm:py-28 gap-4">
             <div className="p-4 sm:p-5 rounded-full bg-gray-800/60 border border-gray-700">
-              <CheckCircle2 size={36} className="text-gray-600 sm:w-10 sm:h-10" />
+              <CheckCircle2 size={36} className="text-gray-500 sm:w-10 sm:h-10" />
             </div>
-            <p className="text-gray-400 text-base sm:text-lg font-medium">No completed tasks yet</p>
-            <p className="text-gray-600 text-sm">Complete a task and it will appear here</p>
+            <p className="text-gray-300 text-base sm:text-lg font-medium">No completed tasks yet</p>
+            <p className="text-gray-400 text-sm">Complete a task and it will appear here</p>
           </div>
         ) : (
           <section className="flex gap-2 sm:gap-3 lg:gap-4">

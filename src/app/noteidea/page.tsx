@@ -90,15 +90,15 @@ export default function NooteBook() {
     };
 
     return (
-        <div className="min-h-screen bg-linear-to-br from-sky-50 to-indigo-50 dark:from-gray-900 dark:to-gray-800 p-4 sm:p-8 font-serif">
+        <div className="min-h-screen bg-linear-to-b from-gray-900 to-gray-600 p-4 sm:p-8 font-serif text-white">
 
             {/* Header */}
             <div className="flex flex-col items-center mb-8" data-aos="fade-down">
-                <div className="bg-white dark:bg-gray-800 rounded-full p-4 shadow-md mb-3">
+                <div className="bg-gray-800 rounded-full p-4 shadow-md mb-3">
                     <GiNotebook size={48} className="text-sky-400" />
                 </div>
-                <h1 className="text-3xl font-bold text-gray-800 dark:text-white tracking-tight">Idea Notes</h1>
-                <p className="text-sm text-gray-400 mt-1">Capture every thought before it slips away</p>
+                <h1 className="text-3xl font-bold text-white tracking-tight">Idea Notes</h1>
+                <p className="text-sm text-gray-200 mt-1">Capture every thought before it slips away</p>
                 <Link
                     href="/notetext"
                     className="mt-4 flex items-center gap-2 px-4 py-2 bg-sky-500 hover:bg-sky-600 active:scale-95 text-white text-sm font-semibold rounded-xl shadow transition-all"
@@ -110,7 +110,7 @@ export default function NooteBook() {
 
             {/* Input Card */}
             <div className="max-w-2xl mx-auto mb-8" data-aos="zoom-in">
-                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-5 border border-sky-100 dark:border-gray-700">
+                <div className="bg-gray-800 rounded-2xl shadow-lg p-5 border border-sky-100 dark:border-gray-700">
                     <p className="text-xs font-semibold text-sky-500 uppercase tracking-widest mb-3">New Idea</p>
                     <div className="flex gap-3">
                         <input
@@ -135,14 +135,14 @@ export default function NooteBook() {
             {/* Notes List */}
             <div className="max-w-2xl mx-auto">
                 <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-base font-bold text-gray-700 dark:text-white">
+                    <h2 className="text-base font-bold text-white">
                         Your Ideas
-                        <span className="ml-2 text-xs font-normal text-gray-400">({ideas.length})</span>
+                        <span className="ml-2 text-xs font-normal text-gray-200">({ideas.length})</span>
                     </h2>
                 </div>
 
                 {ideas.length === 0 ? (
-                    <div className="flex flex-col items-center py-20 text-gray-300 dark:text-gray-600">
+                    <div className="flex flex-col items-center py-20 text-gray-300 dark:text-gray-200">
                         <GiNotebook size={64} />
                         <p className="mt-3 text-sm">No ideas yet. Add your first one!</p>
                     </div>
@@ -151,7 +151,7 @@ export default function NooteBook() {
                         {[...ideas].reverse().map((idea, index) => (
                             <li
                                 key={idea.id}
-                                className="group bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl px-5 py-4 shadow-sm hover:shadow-md transition-all flex items-start gap-4"
+                                className="group bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl px-5 py-4 shadow-sm hover:shadow-md transition-all flex items-start gap-4"
                             >
                                 <span className="mt-0.5 w-7 h-7 flex items-center justify-center rounded-full bg-sky-100 dark:bg-sky-900 text-sky-500 text-xs font-bold shrink-0">
                                     {ideas.length - index}
@@ -179,12 +179,12 @@ export default function NooteBook() {
                                             onClick={handleEditCancel}
                                             className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 shrink-0"
                                         >
-                                            <MdClose size={18} className="text-gray-400" />
+                                            <MdClose size={18} className="text-gray-200" />
                                         </button>
                                     </div>
                                 ) : (
                                     <>
-                                        <p className="flex-1 text-gray-700 dark:text-gray-200 text-sm leading-relaxed break-words">
+                                        <p className="flex-1 text-white text-sm leading-relaxed break-words">
                                             {idea.ideatext}
                                         </p>
                                         <button

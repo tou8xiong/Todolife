@@ -8,19 +8,19 @@ export default function HomeClient() {
   const username = user?.displayName || user?.email?.split("@")[0] || "Guest";
 
   return (
-    <div className="bg-gray-900 sm:w-full w-full flex flex-col justify-center overflow-x-hidden">
-      <div className="min-h-screen border-0 border-amber-300 sm:py-4 w-full flex flex-col lg:flex-row justify-center gap-2 dark:text-white">
+    <div className="bg-linear-to-b from-gray-900 to-gray-600 sm:w-full w-full flex flex-col justify-center overflow-x-hidden text-white">
+      <div className="min-h-screen sm:py-4 w-full flex flex-col lg:flex-row justify-center gap-2">
         <div
           data-aos="fade-down-right"
-          className="w-full max-w-xl flex flex-col gap-2 border-0 border-red-500"
+          className="w-full max-w-xl flex flex-col gap-2"
         >
-          <h1 className="dark:text-white text-2xl sm:text-4xl font-serif font-bold text-center textanimated">
+          <h1 className="text-2xl sm:text-4xl font-serif font-bold text-center">
             <p className="text-2xl mb-5">
-              Hi <span className="text-5xl">{username}</span>
+              Hi <span className="text-5xl text-amber-400">{username}</span>
             </p>
             Welcome To TODOLIFE
           </h1>
-          <h1 className="font-serif text-center text-base sm:text-lg">
+          <h1 className="font-serif text-center text-base sm:text-lg text-gray-200">
             TODOLIFE will make your tasks done easier
           </h1>
         </div>

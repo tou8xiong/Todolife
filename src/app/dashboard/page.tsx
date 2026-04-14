@@ -42,31 +42,31 @@ function StudyStats({ sessions }: { sessions: StudySession[] }) {
     const recent = [...sessions].reverse().slice(0, 3);
 
     return (
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow p-5 flex flex-col gap-4">
+        <div className="bg-gray-800 rounded-2xl shadow p-5 flex flex-col gap-4">
             <div className="flex items-center justify-between">
-                <h2 className="text-lg font-bold text-gray-700 dark:text-white flex items-center gap-2">
+                <h2 className="text-lg font-bold text-white flex items-center gap-2">
                     <BookOpen size={20} className="text-blue-500" /> Study Stats
                 </h2>
-                <div className="px-3 py-1 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full text-xs font-bold">
+                <div className="px-3 py-1 bg-blue-900/50 text-blue-300 rounded-full text-xs font-bold">
                     Total: {formatDuration(totalCentis)}
                 </div>
             </div>
 
             {sessions.length === 0 ? (
-                <p className="text-gray-400 text-sm italic">No study sessions recorded yet. Head to Study Hub to start!</p>
+                <p className="text-gray-200 text-sm italic">No study sessions recorded yet. Head to Study Hub to start!</p>
             ) : (
                 <div className="space-y-3">
-                    <p className="text-xs text-gray-400 uppercase font-bold tracking-wider">Recent Sessions</p>
+                    <p className="text-xs text-gray-200 uppercase font-bold tracking-wider">Recent Sessions</p>
                     {recent.map((s) => (
-                        <div key={s.id} className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-xl border border-gray-100 dark:border-gray-700">
-                            <div className="p-2 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+                        <div key={s.id} className="flex items-center gap-3 p-3 bg-gray-700/50 rounded-xl border border-gray-600">
+                            <div className="p-2 bg-gray-700 rounded-lg shadow-sm">
                                 <Clock size={16} className="text-amber-500" />
                             </div>
                             <div className="flex-1 min-w-0">
-                                <p className="text-sm font-semibold text-gray-800 dark:text-white truncate">{s.videoName}</p>
-                                <p className="text-xs text-gray-400">{new Date(s.timestamp).toLocaleDateString()}</p>
+                                <p className="text-sm font-semibold text-white truncate">{s.videoName}</p>
+                                <p className="text-xs text-gray-200">{new Date(s.timestamp).toLocaleDateString()}</p>
                             </div>
-                            <span className="text-sm font-mono font-bold text-amber-600">{formatDuration(s.duration)}</span>
+                            <span className="text-sm font-mono font-bold text-amber-400">{formatDuration(s.duration)}</span>
                         </div>
                     ))}
                 </div>
@@ -112,8 +112,8 @@ function PomodoroTimer({ tasks }: { tasks: Task[] }) {
     const progress = ((DURATION - secondsLeft) / DURATION) * 100;
 
     return (
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow p-5 flex flex-col gap-3">
-            <h2 className="text-lg font-bold text-gray-700 dark:text-white">⏱ Focus Timer</h2>
+        <div className="bg-gray-800 rounded-2xl shadow p-5 flex flex-col gap-3">
+            <h2 className="text-lg font-bold text-white">⏱ Focus Timer</h2>
             <select
                 value={focusTask}
                 onChange={(e) => setFocusTask(e.target.value)}
@@ -127,7 +127,7 @@ function PomodoroTimer({ tasks }: { tasks: Task[] }) {
             {focusTask && (
                 <p className="text-xs text-amber-600 font-medium truncate">Focusing: {focusTask}</p>
             )}
-            <div className="text-5xl font-mono text-center text-gray-800 dark:text-white py-2">
+            <div className="text-5xl font-mono text-center text-white py-2">
                 {minutes}:{seconds}
             </div>
             <div className="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2">
@@ -136,7 +136,7 @@ function PomodoroTimer({ tasks }: { tasks: Task[] }) {
                     style={{ width: `${progress}%` }}
                 />
             </div>
-            <p className="text-center text-xs text-gray-400">25-min Pomodoro session</p>
+            <p className="text-center text-xs text-gray-200">25-min Pomodoro session</p>
             <div className="flex gap-2 justify-center">
                 <button
                     onClick={() => setRunning(true)}
@@ -174,17 +174,17 @@ function WeeklyChart({ tasks }: { tasks: Task[] }) {
     const max = Math.max(...counts, 1);
 
     return (
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow p-5">
-            <h2 className="text-lg font-bold text-gray-700 dark:text-white mb-4">📈 Weekly Progress</h2>
+        <div className="bg-gray-800 rounded-2xl shadow p-5">
+            <h2 className="text-lg font-bold text-white mb-4">📈 Weekly Progress</h2>
             <div className="flex items-end gap-2 h-28">
                 {days.map((day, i) => (
                     <div key={day} className="flex flex-col items-center flex-1 gap-1">
-                        <span className="text-xs text-gray-500 dark:text-gray-400">{counts[i] || ""}</span>
+                        <span className="text-xs text-gray-500 dark:text-gray-200">{counts[i] || ""}</span>
                         <div
                             className="w-full bg-amber-400 rounded-t transition-all"
                             style={{ height: `${(counts[i] / max) * 100}%`, minHeight: counts[i] > 0 ? "6px" : "2px", opacity: counts[i] > 0 ? 1 : 0.15 }}
                         />
-                        <span className="text-xs text-gray-400">{day}</span>
+                        <span className="text-xs text-gray-200">{day}</span>
                     </div>
                 ))}
             </div>
@@ -267,15 +267,15 @@ export default function Dashboard() {
     const displayName = user?.displayName || user?.email?.split("@")[0] || "there";
 
     return (
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4 sm:p-6 font-serif">
+        <div className="min-h-screen bg-linear-to-b from-gray-900 to-gray-600 p-4 sm:p-6 font-serif text-white">
 
             {/* 1 — Greeting + Quick Add */}
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow p-5 mb-5 flex flex-col sm:flex-row sm:items-center gap-4">
+            <div className="bg-gray-800 rounded-2xl shadow p-5 mb-5 flex flex-col sm:flex-row sm:items-center gap-4">
                 <div className="flex-1">
-                    <h1 className="text-2xl font-bold text-gray-800 dark:text-white">
+                    <h1 className="text-2xl font-bold text-white">
                         {getGreeting()}, {displayName} 👋
                     </h1>
-                    <p className="text-gray-400 text-sm mt-1">
+                    <p className="text-gray-200 text-sm mt-1">
                         {new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
                     </p>
                 </div>
@@ -295,20 +295,20 @@ export default function Dashboard() {
                     { icon: <Zap size={20} className="text-orange-500" />, label: "Day Streak", value: streak, color: "text-orange-500" },
                     { icon: <Target size={20} className="text-blue-500" />, label: "Due Today", value: todayTasks.length, color: "text-blue-500" },
                 ].map((card, idx) => (
-                    <div key={idx} className="bg-white dark:bg-gray-800 rounded-2xl shadow p-4 flex flex-col gap-1">
+                    <div key={idx} className="bg-gray-800 rounded-2xl shadow p-4 flex flex-col gap-1">
                         <span className="text-2xl">{card.icon}</span>
                         <span className={`text-3xl font-bold ${card.color}`}>{card.value}</span>
-                        <span className="text-xs text-gray-400">{card.label}</span>
+                        <span className="text-xs text-gray-200">{card.label}</span>
                     </div>
                 ))}
             </div>
 
             {/* 3 — Today's Tasks + Study Stats */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-5">
-                <div className="lg:col-span-2 bg-white dark:bg-gray-800 rounded-2xl shadow p-5">
-                    <h2 className="text-lg font-bold text-gray-700 dark:text-white mb-3">📅 Today's Tasks</h2>
+                <div className="lg:col-span-2 bg-gray-800 rounded-2xl shadow p-5">
+                    <h2 className="text-lg font-bold text-white mb-3">📅 Today's Tasks</h2>
                     {todayTasks.length === 0 ? (
-                        <p className="text-gray-400 text-sm">No tasks due today. Enjoy your day!</p>
+                        <p className="text-gray-200 text-sm">No tasks due today. Enjoy your day!</p>
                     ) : (
                         <ul className="flex flex-col gap-2">
                             {todayTasks.map((t) => (
@@ -318,8 +318,8 @@ export default function Dashboard() {
                                         className="w-5 h-5 rounded-full border-2 border-amber-400 hover:bg-amber-400 shrink-0 transition"
                                     />
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-sm font-semibold text-gray-800 dark:text-white truncate">{t.title}</p>
-                                        {t.time && <p className="text-xs text-gray-400">{t.time}</p>}
+                                        <p className="text-sm font-semibold text-white truncate">{t.title}</p>
+                                        {t.time && <p className="text-xs text-gray-200">{t.time}</p>}
                                     </div>
                                     <span className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 ${
                                         t.priority?.toLowerCase() === "high" ? "bg-red-100 text-red-600" :
@@ -342,10 +342,10 @@ export default function Dashboard() {
 
             {/* 5 — Notes Preview */}
             <div className="grid grid-cols-1 gap-4 mb-5">
-                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow p-5">
-                    <h2 className="text-lg font-bold text-gray-700 dark:text-white mb-3">💡 Recent Notes</h2>
+                <div className="bg-gray-800 rounded-2xl shadow p-5">
+                    <h2 className="text-lg font-bold text-white mb-3">💡 Recent Notes</h2>
                     {ideas.length === 0 ? (
-                        <p className="text-gray-400 text-sm">No notes yet.</p>
+                        <p className="text-gray-200 text-sm">No notes yet.</p>
                     ) : (
                         <ul className="flex flex-col gap-2">
                             {[...ideas].reverse().slice(0, 3).map((idea) => (
@@ -367,10 +367,10 @@ export default function Dashboard() {
                     <h2 className="text-lg font-bold text-red-600 mb-3">⚠️ Overdue Tasks</h2>
                     <ul className="flex flex-col gap-2">
                         {overdueTasks.map((t) => (
-                            <li key={t.id} className="flex items-center gap-3 p-3 bg-white dark:bg-gray-800 rounded-xl border border-red-100 dark:border-red-800">
+                            <li key={t.id} className="flex items-center gap-3 p-3 bg-gray-800 rounded-xl border border-red-100 dark:border-red-800">
                                 <span className="text-xl shrink-0">⏰</span>
                                 <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-semibold text-gray-800 dark:text-white truncate">{t.title}</p>
+                                    <p className="text-sm font-semibold text-white truncate">{t.title}</p>
                                     <p className="text-xs text-red-400">Due: {t.date} {t.time}</p>
                                 </div>
                                 <button
