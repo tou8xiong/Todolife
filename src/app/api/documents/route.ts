@@ -40,6 +40,7 @@ export async function POST(req: NextRequest) {
       user_email: email,
       title: typeof doc.title === "string" && doc.title.trim() ? doc.title.trim() : "Untitled Document",
       content: typeof doc.content === "string" ? doc.content : "",
+      folder_id: doc.folder_id || null,
       updated_at: new Date().toISOString(),
     });
 
