@@ -112,8 +112,8 @@ export default function AddTasks() {
     };
 
     return (
-        <div className="sm:flex sm:justify-center flex justify-center w-full relative">
-            
+        <div className="sm:flex  sm:justify-center flex justify-center w-full relative">
+
             {/* Loading Overlay */}
             {saving && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
@@ -130,21 +130,21 @@ export default function AddTasks() {
                 message="The date and time you selected is already in the past. Please choose a future date and time."
                 onClose={() => setAlertOpen(false)}
             />
-            <div className="sm:w-[700px] w-full mx-1 my-4 bg-gray-800/80 backdrop-blur-sm rounded-3xl shadow-2xl border border-gray-700">
-                
+            <div className="sm:w-[700px] w-full mx-1 min-h-[calc(100vh-220px)] bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-2xl border border-gray-700 flex flex-col">
+
                 {/* Header */}
-                <div className="text-center pt-8 pb-4">
-                    <h1 className="text-3xl font-bold text-white font-serif tracking-tight">
-                        ✨ Add New Task
+                <div className="text-center pt-3 pb-2">
+                    <h1 className="text-lg font-bold text-white font-serif tracking-tight">
+                        Add New Task
                     </h1>
-                    <p className="text-gray-400 text-sm mt-1">Fill in the details below to create your task</p>
+                    <p className="text-gray-400 text-xs mt-0.5">Fill in the details below</p>
                 </div>
 
-                <form className="px-4 sm:px-8 pb-8 space-y-5">
+                <form className="px-4 sm:px-6 pb-4 space-y-3 flex-1">
                     
                     {/* Title */}
-                    <div className="space-y-2">
-                        <label className="text-sm font-semibold text-gray-300 uppercase tracking-wide">Task Title</label>
+                    <div className="space-y-1">
+                        <label className="text-xs font-semibold text-gray-300 uppercase tracking-wide">Task Title</label>
                         <input
                             type="text"
                             placeholder="Enter task title..."
@@ -152,7 +152,7 @@ export default function AddTasks() {
                             autoComplete="off"
                             value={task.title}
                             onChange={handleChange}
-                            className={`w-full p-3 rounded-xl bg-gray-700/50 border-2 text-white placeholder-gray-500 focus:outline-none transition-colors ${
+                            className={`w-full p-2 rounded-lg bg-gray-700/50 border text-white placeholder-gray-500 focus:outline-none transition-colors ${
                                 errors.title ? "border-red-500 focus:border-red-400" : "border-gray-600 focus:border-amber-400"
                             }`}
                         />
@@ -160,22 +160,22 @@ export default function AddTasks() {
                     </div>
 
                     {/* Description */}
-                    <div className="space-y-2">
-                        <label className="text-sm font-semibold text-gray-300 uppercase tracking-wide">Description</label>
+                    <div className="space-y-1">
+                        <label className="text-xs font-semibold text-gray-300 uppercase tracking-wide">Description</label>
                         <textarea
                             name="description"
                             value={task.description}
                             onChange={handleChange}
                             placeholder="Add task details (optional)..."
-                            rows={3}
-                            className="w-full p-3 rounded-xl bg-gray-700/50 border-2 border-gray-600 text-white placeholder-gray-500 focus:outline-none focus:border-amber-400 transition-colors resize-none"
+                            rows={2}
+                            className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white placeholder-gray-500 focus:outline-none focus:border-amber-400 transition-colors resize-none"
                         />
                     </div>
 
                     {/* Type Selection */}
-                    <div className="space-y-3">
-                        <label className="text-sm font-semibold text-gray-300 uppercase tracking-wide">Task Type</label>
-                        <div className="grid grid-cols-3 gap-3">
+                    <div className="space-y-1">
+                        <label className="text-xs font-semibold text-gray-300 uppercase tracking-wide">Task Type</label>
+                        <div className="grid grid-cols-3 gap-2">
                             {[
                                 { value: "work", label: "Work", icon: Briefcase, color: "blue" },
                                 { value: "study", label: "Study", icon: BookOpen, color: "violet" },
@@ -191,12 +191,11 @@ export default function AddTasks() {
                                     <button
                                         key={value}
                                         type="button"
-                                        onClick={() => { setTask(p => ({ ...p, type: value })); setErrors(p => ({ ...p, type: undefined })); }}
-                                        className={`flex flex-col items-center gap-1.5 py-3 rounded-xl border-2 font-medium text-sm transition-all ${colorClasses[color as keyof typeof colorClasses]}`}
+                                        onClick={() => setTask(p => ({ ...p, type: value }))}
+                                        className={`flex flex-col items-center gap-1 py-2 rounded-lg border text-xs transition-all ${colorClasses[color as keyof typeof colorClasses]}`}
                                     >
-                                        <Icon size={18} />
+                                        <Icon size={16} />
                                         {label}
-                                        {isActive && <Check size={14} className="absolute top-1 right-1" />}
                                     </button>
                                 );
                             })}
@@ -205,9 +204,9 @@ export default function AddTasks() {
                     </div>
 
                     {/* Priority Selection */}
-                    <div className="space-y-3">
-                        <label className="text-sm font-semibold text-gray-300 uppercase tracking-wide">Priority Level</label>
-                        <div className="grid grid-cols-3 gap-3">
+                    <div className="space-y-1">
+                        <label className="text-xs font-semibold text-gray-300 uppercase tracking-wide">Priority Level</label>
+                        <div className="grid grid-cols-3 gap-2">
                             {[
                                 { value: "high", label: "High", color: "red" },
                                 { value: "medium", label: "Medium", color: "orange" },
@@ -223,8 +222,8 @@ export default function AddTasks() {
                                     <button
                                         key={value}
                                         type="button"
-                                        onClick={() => { setTask(p => ({ ...p, priority: value })); setErrors(p => ({ ...p, priority: undefined })); }}
-                                        className={`py-3 rounded-xl border-2 font-semibold text-sm transition-all ${colorClasses[color as keyof typeof colorClasses]}`}
+                                        onClick={() => setTask(p => ({ ...p, priority: value }))}
+                                        className={`py-2 rounded-lg border text-xs font-medium transition-all ${colorClasses[color as keyof typeof colorClasses]}`}
                                     >
                                         {label}
                                     </button>
@@ -235,32 +234,32 @@ export default function AddTasks() {
                     </div>
 
                     {/* Date & Time */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <label className="text-sm font-semibold text-gray-300 uppercase tracking-wide flex items-center gap-1.5">
-                                <CalendarDays size={14} /> Due Date
+                    <div className="grid grid-cols-2 gap-2">
+                        <div className="space-y-1">
+                            <label className="text-xs font-semibold text-gray-300 uppercase tracking-wide flex items-center gap-1">
+                                <CalendarDays size={12} /> Due Date
                             </label>
                             <input
                                 value={task.date}
                                 onChange={handleChange}
                                 type="date"
                                 name="date"
-                                className={`w-full p-3 rounded-xl bg-gray-700/50 border-2 text-white focus:outline-none transition-colors ${
+                                className={`w-full p-2 rounded-lg bg-gray-700/50 border text-white focus:outline-none transition-colors ${
                                     errors.date ? "border-red-500 focus:border-red-400" : "border-gray-600 focus:border-amber-400"
                                 }`}
                             />
                             {errors.date && <p className="text-red-400 text-xs">{errors.date}</p>}
                         </div>
-                        <div className="space-y-2">
-                            <label className="text-sm font-semibold text-gray-300 uppercase tracking-wide flex items-center gap-1.5">
-                                <Clock size={14} /> Due Time
+                        <div className="space-y-1">
+                            <label className="text-xs font-semibold text-gray-300 uppercase tracking-wide flex items-center gap-1">
+                                <Clock size={12} /> Due Time
                             </label>
                             <input
                                 value={task.time}
                                 type="time"
                                 name="time"
                                 onChange={handleChange}
-                                className={`w-full p-3 rounded-xl bg-gray-700/50 border-2 text-white focus:outline-none transition-colors ${
+                                className={`w-full p-2 rounded-lg bg-gray-700/50 border text-white focus:outline-none transition-colors ${
                                     errors.time ? "border-red-500 focus:border-red-400" : "border-gray-600 focus:border-amber-400"
                                 }`}
                             />
@@ -269,21 +268,21 @@ export default function AddTasks() {
                     </div>
 
                     {/* Buttons */}
-                    <div className="flex gap-4 pt-4">
+                    <div className="flex gap-2 pt-1">
                         <button
                             type="button"
                             onClick={handleCancel}
-                            className="flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gray-700 hover:bg-gray-600 text-gray-300 font-semibold transition-all border border-gray-600"
+                            className="flex-1 flex items-center justify-center gap-1 px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-gray-300 font-semibold transition-all border border-gray-600"
                         >
-                            <X size={18} /> Cancel
+                            <X size={16} /> Cancel
                         </button>
                         <button
                             type="button"
                             onClick={handleAdd}
                             disabled={saving}
-                            className="flex-1 flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold transition-all shadow-lg shadow-amber-500/30 disabled:opacity-60 disabled:cursor-not-allowed"
+                            className="flex-1 flex items-center justify-center gap-1 px-4 py-2 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold transition-all shadow-md shadow-amber-500/20 disabled:opacity-60 disabled:cursor-not-allowed"
                         >
-                            <Check size={18} /> Save Task
+                            <Check size={16} /> Save Task
                         </button>
                     </div>
                 </form>

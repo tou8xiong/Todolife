@@ -90,7 +90,16 @@ export default function NooteBook() {
     };
 
     return (
-        <div className="min-h-screen bg-linear-to-b from-gray-900 to-gray-600 p-4 sm:p-8 font-serif text-white">
+        <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-700 p-4 sm:p-8 font-serif text-white relative">
+
+            {/* Top Right Button */}
+            <Link
+                href="/notetext"
+                className="absolute top-4 right-4 flex items-center gap-2 px-4 py-2 bg-sky-500 hover:bg-sky-600 active:scale-95 text-white text-sm font-semibold rounded-xl shadow-lg shadow-sky-500/30 transition-all z-20"
+            >
+                <MdDescription size={18} />
+                Note Text
+            </Link>
 
             {/* Header */}
             <div className="flex flex-col items-center mb-8" data-aos="fade-down">
@@ -99,13 +108,6 @@ export default function NooteBook() {
                 </div>
                 <h1 className="text-3xl font-bold text-white tracking-tight">Idea Notes</h1>
                 <p className="text-sm text-gray-200 mt-1">Capture every thought before it slips away</p>
-                <Link
-                    href="/notetext"
-                    className="mt-4 flex items-center gap-2 px-4 py-2 bg-sky-500 hover:bg-sky-600 active:scale-95 text-white text-sm font-semibold rounded-xl shadow transition-all"
-                >
-                    <MdDescription size={18} />
-                    Note Text
-                </Link>
             </div>
 
             {/* Input Card */}

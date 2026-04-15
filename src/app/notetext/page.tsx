@@ -8,7 +8,7 @@ import {
   MdFormatBold, MdFormatItalic, MdFormatUnderlined, MdFormatStrikethrough,
   MdFormatAlignLeft, MdFormatAlignCenter, MdFormatAlignRight, MdFormatAlignJustify,
   MdFormatListBulleted, MdFormatListNumbered,
-  MdAdd, MdDelete, MdSave, MdArrowBack, MdNoteAdd,
+  MdAdd, MdDelete, MdSave, MdArrowBack, MdNoteAdd, MdInsertDriveFile,
 } from "react-icons/md";
 import { useTipTapEditor } from "@/hooks/useTipTapEditor";
 import { EditorContent } from "@tiptap/react";
@@ -21,6 +21,21 @@ interface Doc {
 }
 
 const FONT_SIZES = ["10", "12", "14", "16", "18", "20", "24", "28", "32", "36", "48", "64"];
+
+const FILE_COLORS = [
+  { bg: "bg-sky-100 dark:bg-sky-900/40", text: "text-sky-500" },
+  { bg: "bg-emerald-100 dark:bg-emerald-900/40", text: "text-emerald-500" },
+  { bg: "bg-amber-100 dark:bg-amber-900/40", text: "text-amber-500" },
+  { bg: "bg-rose-100 dark:bg-rose-900/40", text: "text-rose-500" },
+  { bg: "bg-violet-100 dark:bg-violet-900/40", text: "text-violet-500" },
+  { bg: "bg-cyan-100 dark:bg-cyan-900/40", text: "text-cyan-500" },
+  { bg: "bg-orange-100 dark:bg-orange-900/40", text: "text-orange-500" },
+  { bg: "bg-pink-100 dark:bg-pink-900/40", text: "text-pink-500" },
+];
+
+const getFileColor = (index: number) => {
+  return FILE_COLORS[index % FILE_COLORS.length];
+};
 
 const FONT_FAMILIES = [
   { label: "Georgia", value: "Georgia" },
@@ -197,17 +212,22 @@ export default function NoteTextPage() {
               No documents yet.<br />Click + to create one.
             </p>
           ) : (
-            docs.map((doc) => (
+            docs.map((doc, index) => {
+              const color = getFileColor(index);
+              return (
               <button
                 key={doc.id}
                 onClick={() => handleOpen(doc)}
-                className={`w-full text-left px-3 py-2 rounded-xl text-xs transition-all group flex items-center justify-between gap-2
+                className={`w-full text-left px-3 py-2 rounded-xl text-xs transition-all group flex items-center gap-2
                   ${activeDoc?.id === doc.id
                     ? "bg-sky-50 dark:bg-sky-900/30 text-sky-600 dark:text-sky-400 border border-sky-200 dark:border-sky-800"
                     : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700/50"
                   }`}
               >
-                <span className="truncate font-medium">{doc.title}</span>
+                <span className={`p-1.5 rounded-lg ${color.bg} shrink-0`}>
+                  <MdInsertDriveFile size={14} className={color.text} />
+                </span>
+                <span className="truncate font-medium flex-1">{doc.title}</span>
                 <span
                   role="button"
                   onClick={(e) => { e.stopPropagation(); handleDelete(doc.id); }}
@@ -216,7 +236,8 @@ export default function NoteTextPage() {
                   <MdDelete size={14} />
                 </span>
               </button>
-            ))
+              );
+            })
           )}
         </div>
 
