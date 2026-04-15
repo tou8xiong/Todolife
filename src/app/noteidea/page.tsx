@@ -6,6 +6,8 @@ import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { toast } from "sonner";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useAlert } from "@/hooks/useAlert";
 
 interface Idea {
     id: number;
@@ -13,6 +15,8 @@ interface Idea {
 }
 
 export default function NooteBook() {
+    const router = useRouter();
+    const { showAlert } = useAlert();
     const [curentideas, setCurentIdeas] = useState({ ideatext: "" });
     const [ideas, setIdeas] = useState<Idea[]>([]);
     const [user, setUser] = useState<any>(null);
@@ -52,16 +56,38 @@ export default function NooteBook() {
 
     const handleaddIdea = async () => {
         if (!curentideas.ideatext.trim()) return;
-        if (!user) { toast.error("Please login or signup!"); return; }
+        if (!user) {
+            sessionStorage.setItem("redirectAfterLogin", window.location.pathname);
+            showAlert({
+                title: "Login Required",
+                message: "Please login to add an idea.",
+                type: "warning",
+                confirmText: "Login",
+                linkToLogin: true,
+            });
+            return;
+        }
         const newIdea = { id: Date.now(), ...curentideas };
         const updatedIdeas = [...ideas, newIdea];
         setIdeas(updatedIdeas);
         setCurentIdeas({ ideatext: "" });
         await saveIdeas(user.email, updatedIdeas);
         window.dispatchEvent(new Event("tasksUpdated"));
+        toast.success("Idea added!");
     };
 
     const handleDelete = async (id: number) => {
+        if (!user) {
+            sessionStorage.setItem("redirectAfterLogin", window.location.pathname);
+            showAlert({
+                title: "Login Required",
+                message: "Please login to delete ideas.",
+                type: "warning",
+                confirmText: "Login",
+                linkToLogin: true,
+            });
+            return;
+        }
         const updatedIdeas = ideas.filter((idea) => idea.id !== id);
         setIdeas(updatedIdeas);
         await saveIdeas(user.email, updatedIdeas);
@@ -69,6 +95,17 @@ export default function NooteBook() {
     };
 
     const handleEditStart = (idea: Idea) => {
+        if (!user) {
+            sessionStorage.setItem("redirectAfterLogin", window.location.pathname);
+            showAlert({
+                title: "Login Required",
+                message: "Please login to edit ideas.",
+                type: "warning",
+                confirmText: "Login",
+                linkToLogin: true,
+            });
+            return;
+        }
         setEditingId(idea.id);
         setEditText(idea.ideatext);
     };
@@ -82,6 +119,7 @@ export default function NooteBook() {
         setEditingId(null);
         setEditText("");
         await saveIdeas(user.email, updatedIdeas);
+        toast.success("Idea updated!");
     };
 
     const handleEditCancel = () => {

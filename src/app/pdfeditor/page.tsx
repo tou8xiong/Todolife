@@ -6,6 +6,11 @@ import AnnotationItem from "@/components/pdf/AnnotationItem";
 import DownloadModal from "@/components/pdf/DownloadModal";
 import ConverterDownloadModal, { ConverterSizeOption } from "@/components/pdf/ConverterDownloadModal";
 import { UploadCloud, FileText, FileImage, FileType2 } from "lucide-react";
+import { useAppContext } from "@/context/AppContext";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
+import { saveTempData, loadTempData, clearTempData } from "@/lib/tempData";
+import { useAlert } from "@/hooks/useAlert";
 
 // ── Drag / resize ref type ───────────────────────────────────────────────────
 
@@ -34,6 +39,9 @@ type FileType = "pdf" | "docx" | "txt" | "image" | null;
 type Mode = "annotator" | "converter";
 
 export default function PdfEditor() {
+    const { user } = useAppContext();
+    const router = useRouter();
+    const { showAlert } = useAlert();
     const [pdfBytes, setPdfBytes] = useState<ArrayBuffer | null>(null);
     const [numPages, setNumPages] = useState(0);
     const [loading, setLoading] = useState(false);
@@ -63,6 +71,9 @@ export default function PdfEditor() {
 
     const [liveStroke, setLiveStroke] = useState<{ pageIndex: number; points: { x: number; y: number }[] } | null>(null);
 
+    const [originalFileName, setOriginalFileName] = useState<string>("");
+    const [pdfBase64, setPdfBase64] = useState<string>("");
+
     const canvasRefs = useRef<(HTMLCanvasElement | null)[]>([]);
     const containerRefs = useRef<(HTMLDivElement | null)[]>([]);
     const dragRef = useRef<DragState | null>(null);
@@ -70,6 +81,52 @@ export default function PdfEditor() {
 
     const selectedAnnotation = annotations.find((a) => a.id === selectedId) ?? null;
     const hasFile = fileType !== null;
+
+    // Restore data on mount after login
+    useEffect(() => {
+        const savedData = loadTempData<{
+            annotations: Annotation[];
+            mode: Mode;
+            fileType: FileType;
+            docContent: string;
+            imageData: string;
+            fileName: string;
+            originalFileName: string;
+            pdfBase64: string;
+        }>("pdfeditor");
+
+        if (savedData) {
+            setAnnotations(savedData.annotations || []);
+            setMode(savedData.mode || "annotator");
+            setFileType(savedData.fileType || null);
+            setDocContent(savedData.docContent || "");
+            setImageData(savedData.imageData || "");
+            setFileName(savedData.fileName || "annotated");
+            setOriginalFileName(savedData.originalFileName || "");
+            setPdfBase64(savedData.pdfBase64 || "");
+
+            if (savedData.pdfBase64) {
+                try {
+                    const binaryString = atob(savedData.pdfBase64);
+                    const bytes = new Uint8Array(binaryString.length);
+                    for (let i = 0; i < binaryString.length; i++) {
+                        bytes[i] = binaryString.charCodeAt(i);
+                    }
+                    setPdfBytes(bytes.buffer);
+                } catch (e) {
+                    console.error("Failed to restore PDF:", e);
+                }
+            }
+
+            showAlert({
+                title: "Work Restored",
+                message: "Your PDF work has been restored. You can continue editing.",
+                type: "success",
+                confirmText: "Got it",
+            });
+            clearTempData("pdfeditor");
+        }
+    }, []);
 
     // ── Render PDF ─────────────────────────────────────────────────────────
     const renderPdf = useCallback(async () => {
@@ -819,7 +876,42 @@ export default function PdfEditor() {
                     </button>
                     {hasFile && (
                         <button
-                            onClick={() => setDownloadModal(true)}
+                            onClick={() => {
+                                if (!user) {
+                                    // Save state before redirect - convert ArrayBuffer to base64
+                                    let pdfB64 = "";
+                                    if (pdfBytes) {
+                                        const bytes = new Uint8Array(pdfBytes);
+                                        let binary = "";
+                                        for (let i = 0; i < bytes.length; i++) {
+                                            binary += String.fromCharCode(bytes[i]);
+                                        }
+                                        pdfB64 = btoa(binary);
+                                    }
+                                    
+                                    saveTempData("pdfeditor", {
+                                        annotations,
+                                        mode,
+                                        fileType,
+                                        docContent,
+                                        imageData,
+                                        fileName,
+                                        originalFileName,
+                                        pdfBase64: pdfB64,
+                                    });
+                                    
+                                    sessionStorage.setItem("redirectAfterLogin", window.location.pathname);
+                                    showAlert({
+                                        title: "Login Required",
+                                        message: "Please login to download your work.",
+                                        type: "warning",
+                                        confirmText: "Login",
+                                        linkToLogin: true,
+                                    });
+                                    return;
+                                }
+                                setDownloadModal(true);
+                            }}
                             className="flex items-center gap-2 px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold rounded-xl shadow transition-colors"
                         >
                             ⬇ Download {mode === "converter" ? "as File" : "as PDF"}

@@ -4,6 +4,8 @@ import Link from "next/link";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
+import { useAlert } from "@/hooks/useAlert";
 import {
   MdFormatBold, MdFormatItalic, MdFormatUnderlined, MdFormatStrikethrough,
   MdFormatAlignLeft, MdFormatAlignCenter, MdFormatAlignRight, MdFormatAlignJustify,
@@ -93,6 +95,8 @@ function formatDate(dateStr?: string) {
 }
 
 export default function NoteTextPage() {
+  const router = useRouter();
+  const { showAlert } = useAlert();
   const [docs, setDocs] = useState<Doc[]>([]);
   const [folders, setFolders] = useState<Folder[]>([]);
   const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
@@ -149,6 +153,17 @@ export default function NoteTextPage() {
   }, []);
 
   const createFolder = useCallback(async () => {
+    if (!user) {
+      sessionStorage.setItem("redirectAfterLogin", window.location.pathname);
+      showAlert({
+        title: "Login Required",
+        message: "Please login to create a folder.",
+        type: "warning",
+        confirmText: "Login",
+        linkToLogin: true,
+      });
+      return;
+    }
     if (!user?.email || !newFolderName.trim()) return;
     try {
       const res = await fetch("/api/folders", {
@@ -173,9 +188,20 @@ export default function NoteTextPage() {
     } catch {
       toast.error("Failed to create folder");
     }
-  }, [user, newFolderName, loadFolders]);
+  }, [user, newFolderName, loadFolders, showAlert]);
 
   const deleteFolder = useCallback(async (folderId: string) => {
+    if (!user) {
+      sessionStorage.setItem("redirectAfterLogin", window.location.pathname);
+      showAlert({
+        title: "Login Required",
+        message: "Please login to delete folders.",
+        type: "warning",
+        confirmText: "Login",
+        linkToLogin: true,
+      });
+      return;
+    }
     if (!user?.email) return;
     const res = await fetch(
       `/api/folders?id=${folderId}&email=${encodeURIComponent(user.email)}`,
@@ -191,7 +217,7 @@ export default function NoteTextPage() {
       const data = await res.json();
       toast.error(data.error || "Failed to delete folder");
     }
-  }, [user, selectedFolderId, loadDocs]);
+  }, [user, selectedFolderId, loadDocs, showAlert]);
 
   const toggleFolderExpand = (folderId: string) => {
     setExpandedFolders((prev) => {
@@ -214,6 +240,17 @@ export default function NoteTextPage() {
   }, [loadDocs, loadFolders]);
 
   const saveDoc = useCallback(async (doc: Doc) => {
+    if (!user) {
+      sessionStorage.setItem("redirectAfterLogin", window.location.pathname);
+      showAlert({
+        title: "Login Required",
+        message: "Please login to save documents.",
+        type: "warning",
+        confirmText: "Login",
+        linkToLogin: true,
+      });
+      return;
+    }
     if (!user?.email) return;
     setSaving(true);
     try {
@@ -232,15 +269,44 @@ export default function NoteTextPage() {
     } finally {
       setSaving(false);
     }
-  }, [user, loadDocs, editor]);
+  }, [user, loadDocs, editor, showAlert]);
 
   const handleSave = useCallback(() => {
     if (!activeDoc || !editor) return;
+    if (!user) {
+      sessionStorage.setItem("redirectAfterLogin", window.location.pathname);
+      showAlert({
+        title: "Login Required",
+        message: "Please login to save documents.",
+        type: "warning",
+        confirmText: "Login",
+        linkToLogin: true,
+      });
+      return;
+    }
     const content = editor.getHTML();
     const updated: Doc = { ...activeDoc, title, content };
     setActiveDoc(updated);
     saveDoc(updated);
-  }, [activeDoc, title, saveDoc, editor]);
+  }, [activeDoc, title, saveDoc, editor, user, showAlert]);
+
+  const handleNew = () => {
+    if (!user) {
+      sessionStorage.setItem("redirectAfterLogin", window.location.pathname);
+      showAlert({
+        title: "Login Required",
+        message: "Please login to create documents.",
+        type: "warning",
+        confirmText: "Login",
+        linkToLogin: true,
+      });
+      return;
+    }
+    const doc: Doc = { id: Date.now(), title: "Untitled Document", content: "", folder_id: selectedFolderId };
+    setActiveDoc(doc);
+    setTitle(doc.title);
+    editor?.commands.clearContent();
+  };
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -253,14 +319,18 @@ export default function NoteTextPage() {
     return () => window.removeEventListener("keydown", onKey);
   }, [handleSave]);
 
-  const handleNew = () => {
-    const doc: Doc = { id: Date.now(), title: "Untitled Document", content: "", folder_id: selectedFolderId };
-    setActiveDoc(doc);
-    setTitle(doc.title);
-    editor?.commands.clearContent();
-  };
-
   const handleOpen = (doc: Doc) => {
+    if (!user) {
+      sessionStorage.setItem("redirectAfterLogin", window.location.pathname);
+      showAlert({
+        title: "Login Required",
+        message: "Please login to open documents.",
+        type: "warning",
+        confirmText: "Login",
+        linkToLogin: true,
+      });
+      return;
+    }
     setActiveDoc(doc);
     setTitle(doc.title);
     if (doc.content) {
@@ -271,6 +341,17 @@ export default function NoteTextPage() {
   };
 
   const handleDelete = async (id: number) => {
+    if (!user) {
+      sessionStorage.setItem("redirectAfterLogin", window.location.pathname);
+      showAlert({
+        title: "Login Required",
+        message: "Please login to delete documents.",
+        type: "warning",
+        confirmText: "Login",
+        linkToLogin: true,
+      });
+      return;
+    }
     if (!user?.email) return;
     const res = await fetch(
       `/api/documents?id=${id}&email=${encodeURIComponent(user.email)}`,
@@ -304,7 +385,20 @@ export default function NoteTextPage() {
             <h2 className="text-sm font-bold text-gray-800 dark:text-white">My Workspace</h2>
             <div className="flex items-center gap-1">
               <button
-                onClick={() => setShowNewFolderInput(true)}
+                onClick={() => {
+                  if (!user) {
+                    sessionStorage.setItem("redirectAfterLogin", window.location.pathname);
+                    showAlert({
+                      title: "Login Required",
+                      message: "Please login to create folders.",
+                      type: "warning",
+                      confirmText: "Login",
+                      linkToLogin: true,
+                    });
+                    return;
+                  }
+                  setShowNewFolderInput(true);
+                }}
                 className="p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400 hover:text-sky-500 dark:hover:text-sky-400 transition-all"
                 title="New Folder"
               >

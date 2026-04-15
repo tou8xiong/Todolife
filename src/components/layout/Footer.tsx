@@ -14,6 +14,7 @@ import {
   ImageIcon,
 } from "lucide-react";
 import { TbRobot } from "react-icons/tb";
+import { useAppContext } from "@/context/AppContext";
 
 const taskLinks = [
   { href: "/", label: "Home" },
@@ -22,16 +23,18 @@ const taskLinks = [
   { href: "/completetasks", label: "Complete Tasks", icon: CheckSquare },
 ];
 
-const featureLinks = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/settimepage", label: "Set Timer", icon: Timer },
-  { href: "/noteidea", label: "Idea Notes", icon: BookOpen },
-  { href: "/pdfeditor", label: "PDF Annotator", icon: FileText },
-  { href: "/background-removal", label: "Remove BG", icon: ImageIcon },
-  { href: "/agent", label: "AI Agent", icon: TbRobot },
-];
-
 export default function Footer() {
+  const { user } = useAppContext();
+
+  const featureLinks = [
+    { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, requiresAuth: true },
+    { href: "/settimepage", label: "Set Timer", icon: Timer },
+    { href: "/noteidea", label: "Idea Notes", icon: BookOpen },
+    { href: "/pdfeditor", label: "PDF Annotator", icon: FileText },
+    { href: "/background-removal", label: "Remove BG", icon: ImageIcon },
+    { href: "/agent", label: "AI Agent", icon: TbRobot, requiresAuth: true },
+  ].filter(link => !link.requiresAuth || user);
+
   return (
     <footer className="bg-gray-900 border-t border-gray-700/50 text-gray-300 font-serif" id="footer">
       <div className="max-w-5xl mx-auto px-6 py-12 flex flex-col gap-10">

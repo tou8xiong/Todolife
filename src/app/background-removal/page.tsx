@@ -4,6 +4,10 @@ import { ChangeEvent, useEffect, useRef, useState } from "react";
 import { Download, ImageIcon, Sparkles, Trash2, UploadCloud, X } from "lucide-react";
 import { toast } from "sonner";
 import { removeBackground, preload } from "@imgly/background-removal";
+import { useAppContext } from "@/context/AppContext";
+import { useRouter } from "next/navigation";
+import { saveTempData, loadTempData, clearTempData, dataUrlToBlob } from "@/lib/tempData";
+import { useAlert } from "@/hooks/useAlert";
 
 const BG_CONFIG = {
     device: "gpu" as const,
@@ -12,6 +16,9 @@ const BG_CONFIG = {
 };
 
 export default function BackgroundRemovalPage() {
+    const { user } = useAppContext();
+    const router = useRouter();
+    const { showAlert } = useAlert();
     const [sourcePreview, setSourcePreview] = useState<string | null>(null);
     const [resultPreview, setResultPreview] = useState<string | null>(null);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -20,7 +27,106 @@ export default function BackgroundRemovalPage() {
     const [fileName, setFileName] = useState<string | null>(null);
     const [dragOver, setDragOver] = useState(false);
     const resultRef = useRef<HTMLDivElement | null>(null); 
-    const fileInputRef = useRef<HTMLInputElement | null>(null);       
+    const fileInputRef = useRef<HTMLInputElement | null>(null);
+    const [restored, setRestored] = useState(false);
+
+    // Restore data on mount after login
+    useEffect(() => {
+        if (restored) return;
+        const savedData = loadTempData<{
+            sourcePreviewDataUrl: string;
+            resultPreviewDataUrl: string;
+            fileName: string;
+        }>("backgroundremoval");
+
+        if (savedData && savedData.sourcePreviewDataUrl) {
+            // Use the saved data URLs directly
+            setSourcePreview(savedData.sourcePreviewDataUrl);
+            
+            if (savedData.resultPreviewDataUrl) {
+                setResultPreview(savedData.resultPreviewDataUrl);
+            }
+            
+            setFileName(savedData.fileName);
+            showAlert({
+                title: "Welcome Back!",
+                message: "Your image has been restored. You can now download it.",
+                type: "success",
+                confirmText: "Got it",
+            });
+            clearTempData("backgroundremoval");
+            setRestored(true);
+        }
+    }, [restored, showAlert]);
+
+    const imageUrlToDataUrl = (imgUrl: string): Promise<string> => {
+        return new Promise((resolve, reject) => {
+            const img = new window.Image();
+            img.crossOrigin = "anonymous";
+            img.onload = () => {
+                const canvas = document.createElement("canvas");
+                canvas.width = img.naturalWidth;
+                canvas.height = img.naturalHeight;
+                const ctx = canvas.getContext("2d");
+                if (!ctx) {
+                    reject(new Error("Could not get canvas context"));
+                    return;
+                }
+                ctx.drawImage(img, 0, 0);
+                try {
+                    const dataUrl = canvas.toDataURL("image/png");
+                    resolve(dataUrl);
+                } catch (e) {
+                    reject(e);
+                }
+            };
+            img.onerror = reject;
+            img.src = imgUrl;
+        });
+    };
+
+    const handleDownload = async () => {
+        if (!user) {
+            if (sourcePreview) {
+                let sourceDataUrl = sourcePreview;
+                let resultDataUrl = resultPreview || "";
+
+                try {
+                    sourceDataUrl = await imageUrlToDataUrl(sourcePreview);
+                } catch (e) {
+                    console.error("Failed to convert source image:", e);
+                }
+
+                if (resultPreview) {
+                    try {
+                        resultDataUrl = await imageUrlToDataUrl(resultPreview);
+                    } catch (e) {
+                        console.error("Failed to convert result image:", e);
+                    }
+                }
+
+                saveTempData("backgroundremoval", {
+                    sourcePreviewDataUrl: sourceDataUrl,
+                    resultPreviewDataUrl: resultDataUrl,
+                    fileName: fileName || "",
+                });
+            }
+            
+            sessionStorage.setItem("redirectAfterLogin", window.location.pathname);
+            showAlert({
+                title: "Login Required",
+                message: "Please login to download the image.",
+                type: "warning",
+                confirmText: "Login",
+                linkToLogin: true,
+            });
+            return;
+        }
+        const link = document.createElement("a");
+        link.href = resultPreview!;
+        link.download = fileName ? `${fileName.replace(/\.[^.]+$/, "")}-no-bg.png` : "no-bg.png";
+        link.click();
+    };       
 
     useEffect(() => {
         if (resultPreview && resultRef.current) {
@@ -177,13 +283,12 @@ export default function BackgroundRemovalPage() {
                                 <div ref={resultRef} className="rounded-2xl bg-white/[0.04] border border-violet-500/30 overflow-hidden">
                                     <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
                                         <span className="text-xs font-semibold text-violet-400 uppercase tracking-widest">Result</span>
-                                        <a
-                                            href={resultPreview}
-                                            download={fileName ? `${fileName.replace(/\.[^.]+$/, "")}-no-bg.png` : "no-bg.png"}
+                                        <button
+                                            onClick={handleDownload}
                                             className="flex items-center gap-1.5 rounded-lg bg-violet-600 hover:bg-violet-500 px-3 py-1.5 text-xs font-semibold text-white transition-colors"
                                         >
                                             <Download size={13} /> Download PNG
-                                        </a>
+                                        </button>
                                     </div>
                                     <div className="relative flex items-center justify-center p-4 min-h-[220px] sm:min-h-[300px]"
                                         style={{ background: "repeating-conic-gradient(#1f2937 0% 25%, #111827 0% 50%) 0 0 / 20px 20px" }}

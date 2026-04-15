@@ -199,6 +199,7 @@ export default function Dashboard() {
     const [ideas, setIdeas] = useState<Idea[]>([]);
     const [studySessions, setStudySessions] = useState<StudySession[]>([]);
     const [streak, setStreak] = useState(0);
+    const [redirecting, setRedirecting] = useState(false);
 
     const todayStr = new Date().toISOString().split("T")[0];
 
@@ -233,6 +234,11 @@ export default function Dashboard() {
 
     useEffect(() => {
         const unsub = onAuthStateChanged(auth, (u) => {
+            if (!u && !redirecting) {
+                setRedirecting(true);
+                window.location.href = "/formlogin?redirect=/dashboard";
+                return;
+            }
             setUser(u);
             if (u?.email) loadData(u.email);
         });
@@ -265,6 +271,14 @@ export default function Dashboard() {
     };
 
     const displayName = user?.displayName || user?.email?.split("@")[0] || "there";
+
+    if (redirecting || !user) {
+        return (
+            <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+                <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full" />
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-linear-to-b from-gray-900 to-gray-600 p-4 sm:p-6 font-serif text-white">

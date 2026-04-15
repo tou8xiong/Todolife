@@ -2,9 +2,12 @@
 import { useState, useEffect } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/lib/firebase";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import AlertDialog from "@/components/ui/AlertDialog";
 import { Briefcase, BookOpen, Zap, CalendarDays, Clock, X, Check } from "lucide-react";
+import { saveTempData, loadTempData, clearTempData } from "@/lib/tempData";
+import { useAlert } from "@/hooks/useAlert";
 
 const VALID_TYPES = ["work", "study", "activities"];
 const VALID_PRIORITIES = ["high", "medium", "low"];
@@ -18,6 +21,8 @@ interface TaskErrors {
 }
 
 export default function AddTasks() {
+    const router = useRouter();
+    const { showAlert } = useAlert();
     const [task, setTask] = useState({
         title: "",
         description: "",
@@ -30,6 +35,22 @@ export default function AddTasks() {
     const [user, setUser] = useState<any>(null);
     const [alertOpen, setAlertOpen] = useState(false);
     const [saving, setSaving] = useState(false);
+    const [restored, setRestored] = useState(false);
+
+    useEffect(() => {
+        if (restored) return;
+        const savedTask = loadTempData<typeof task>("addtask");
+        if (savedTask && (savedTask.title || savedTask.type || savedTask.priority || savedTask.date || savedTask.time)) {
+            setTask(savedTask);
+            showAlert({
+                title: "Task Restored",
+                message: "Your task data has been restored. Complete your login to save it.",
+                type: "success",
+                confirmText: "Got it",
+            });
+            setRestored(true);
+        }
+    }, [restored, showAlert]);
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -40,7 +61,9 @@ export default function AddTasks() {
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
-        setTask((prev) => ({ ...prev, [name]: value }));
+        const newTask = { ...task, [name]: value };
+        setTask(newTask);
+        saveTempData("addtask", newTask);
         if (errors[name as keyof TaskErrors]) {
             setErrors((prev) => ({ ...prev, [name]: undefined }));
         }
@@ -70,7 +93,15 @@ export default function AddTasks() {
 
     const handleAdd = async () => {
         if (!user) {
-            toast.error("Please login or signup!");
+            saveTempData("addtask", task);
+            sessionStorage.setItem("redirectAfterLogin", window.location.pathname);
+            showAlert({
+                title: "Login Required",
+                message: "Please login to add a task.",
+                type: "warning",
+                confirmText: "Login",
+                linkToLogin: true,
+            });
             return;
         }
         const newErrors = validate();
@@ -99,6 +130,7 @@ export default function AddTasks() {
             toast.success("Task added!");
             setTask({ title: "", description: "", date: "", time: "", type: "", priority: "" });
             setErrors({});
+            clearTempData("addtask");
         } catch (err: any) {
             toast.error(err?.message ?? "Failed to save task. Please try again.");
         } finally {

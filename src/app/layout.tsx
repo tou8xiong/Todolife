@@ -6,8 +6,8 @@ import Header from "@/components/layout/Header";
 import Sidebar from "@/components/layout/Sidebar";
 import TimerPopup from "@/components/timer/TimerPopup";
 import AosClientWrapper from "@/components/layout/AosAnimation";
-import { Toaster } from 'sonner'
 import { AppProvider } from "@/context/AppContext";
+import Providers from "./Providers";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -137,17 +137,18 @@ export default function RootLayout({
         />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <AosClientWrapper>
-          <AppProvider>
-            <Header />
-            <Sidebar />
-            <main className="md:ml-45 min-h-[calc(100vh-4rem)]">
-              {children}
-            </main>
-            <Toaster richColors position="top-right" />
-            <TimerPopup />
-          </AppProvider>
-        </AosClientWrapper>
+        <Providers>
+          <AosClientWrapper>
+            <AppProvider>
+              <Header />
+              <Sidebar />
+              <main className="md:ml-45 min-h-[calc(100vh-4rem)]">
+                {children}
+              </main>
+              <TimerPopup />
+            </AppProvider>
+          </AosClientWrapper>
+        </Providers>
       </body>
     </html>
   );
