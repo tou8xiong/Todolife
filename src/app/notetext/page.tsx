@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/lib/firebase";
@@ -10,6 +10,8 @@ import {
   MdFormatListBulleted, MdFormatListNumbered,
   MdAdd, MdDelete, MdSave, MdArrowBack, MdNoteAdd,
 } from "react-icons/md";
+import { useTipTapEditor } from "@/hooks/useTipTapEditor";
+import { EditorContent } from "@tiptap/react";
 
 interface Doc {
   id: number;
@@ -20,7 +22,18 @@ interface Doc {
 
 const FONT_SIZES = ["10", "12", "14", "16", "18", "20", "24", "28", "32", "36", "48", "64"];
 
-// Strip dangerous tags and event-handler attributes before setting innerHTML
+const FONT_FAMILIES = [
+  { label: "Georgia", value: "Georgia" },
+  { label: "Arial", value: "Arial" },
+  { label: "Helvetica", value: "Helvetica" },
+  { label: "Times New Roman", value: "Times New Roman" },
+  { label: "Courier New", value: "Courier New" },
+  { label: "Verdana", value: "Verdana" },
+  { label: "Trebuchet MS", value: "Trebuchet MS" },
+  { label: "Impact", value: "Impact" },
+  { label: "Comic Sans MS", value: "Comic Sans MS" },
+];
+
 function sanitizeHtml(html: string): string {
   const doc = new DOMParser().parseFromString(html, "text/html");
   const DANGEROUS_TAGS = ["script", "iframe", "object", "embed", "form", "style", "link", "meta", "base"];
@@ -44,13 +57,30 @@ export default function NoteTextPage() {
   const [title, setTitle] = useState("");
   const [user, setUser] = useState<any>(null);
   const [saving, setSaving] = useState(false);
-  const [textColor, setTextColor] = useState("#000000");
-  const [highlightColor, setHighlightColor] = useState("#ffff00");
-  const [activeFormats, setActiveFormats] = useState<Set<string>>(new Set());
-  const editorRef = useRef<HTMLDivElement>(null);
-  const colorRef = useRef<HTMLInputElement>(null);
-  const highlightRef = useRef<HTMLInputElement>(null);
-  const savedRangeRef = useRef<Range | null>(null);
+
+  const editorContainerRef = useRef<HTMLDivElement>(null);
+
+  const {
+    editor,
+    EditorContent,
+    currentFontFamily,
+    currentFontSize,
+    isBulletList,
+    isOrderedList,
+    activeFormats,
+    toggleBold,
+    toggleItalic,
+    toggleUnderline,
+    toggleStrike,
+    setFontFamily,
+    setFontSize,
+    setTextColor,
+    setHighlight,
+    setTextAlign,
+    toggleBulletList,
+    toggleOrderedList,
+    handleKeyDown,
+  } = useTipTapEditor();
 
   const loadDocs = useCallback(async (email: string) => {
     try {
@@ -74,10 +104,12 @@ export default function NoteTextPage() {
     if (!user?.email) return;
     setSaving(true);
     try {
+      const content = editor?.getHTML() || "";
+      const docToSave = { ...doc, content };
       const res = await fetch("/api/documents", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: user.email, document: doc }),
+        body: JSON.stringify({ email: user.email, document: docToSave }),
       });
       if (!res.ok) throw new Error();
       await loadDocs(user.email);
@@ -87,16 +119,16 @@ export default function NoteTextPage() {
     } finally {
       setSaving(false);
     }
-  }, [user, loadDocs]);
+  }, [user, loadDocs, editor]);
 
   const handleSave = useCallback(() => {
-    if (!activeDoc || !editorRef.current) return;
-    const updated: Doc = { ...activeDoc, title, content: editorRef.current.innerHTML };
+    if (!activeDoc || !editor) return;
+    const content = editor.getHTML();
+    const updated: Doc = { ...activeDoc, title, content };
     setActiveDoc(updated);
     saveDoc(updated);
-  }, [activeDoc, title, saveDoc]);
+  }, [activeDoc, title, saveDoc, editor]);
 
-  // Ctrl+S save
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key === "s") {
@@ -112,20 +144,17 @@ export default function NoteTextPage() {
     const doc: Doc = { id: Date.now(), title: "Untitled Document", content: "" };
     setActiveDoc(doc);
     setTitle(doc.title);
-    setTimeout(() => {
-      if (editorRef.current) {
-        editorRef.current.innerHTML = "";
-        editorRef.current.focus();
-      }
-    }, 0);
+    editor?.commands.clearContent();
   };
 
   const handleOpen = (doc: Doc) => {
     setActiveDoc(doc);
     setTitle(doc.title);
-    setTimeout(() => {
-      if (editorRef.current) editorRef.current.innerHTML = sanitizeHtml(doc.content);
-    }, 0);
+    if (doc.content) {
+      editor?.commands.setContent(sanitizeHtml(doc.content));
+    } else {
+      editor?.commands.clearContent();
+    }
   };
 
   const handleDelete = async (id: number) => {
@@ -139,93 +168,17 @@ export default function NoteTextPage() {
       if (activeDoc?.id === id) {
         setActiveDoc(null);
         setTitle("");
-        if (editorRef.current) editorRef.current.innerHTML = "";
+        editor?.commands.clearContent();
       }
       toast.success("Deleted");
     }
   };
 
-  // Rich text helpers
-
-  const FORMAT_CMDS = [
-    "bold", "italic", "underline", "strikeThrough",
-    "insertUnorderedList", "insertOrderedList",
-    "justifyLeft", "justifyCenter", "justifyRight", "justifyFull",
-  ];
-
-  const refreshFormats = () => {
-    const active = new Set<string>();
-    FORMAT_CMDS.forEach((cmd) => {
-      try { if (document.queryCommandState(cmd)) active.add(cmd); } catch { }
-    });
-    setActiveFormats(active);
-  };
-
-  const saveSelection = () => {
-    const sel = window.getSelection();
-    if (sel && sel.rangeCount > 0 && editorRef.current?.contains(sel.anchorNode)) {
-      savedRangeRef.current = sel.getRangeAt(0).cloneRange();
-    }
-    refreshFormats();
-  };
-
-  const restoreSelection = () => {
-    editorRef.current?.focus();
-    const sel = window.getSelection();
-    if (!sel) return;
-    if (savedRangeRef.current) {
-      sel.removeAllRanges();
-      sel.addRange(savedRangeRef.current);
-    } else {
-      // No saved range yet — place cursor at end of editor so commands have a valid insertion point
-      const range = document.createRange();
-      range.selectNodeContents(editorRef.current!);
-      range.collapse(false);
-      sel.removeAllRanges();
-      sel.addRange(range);
-      savedRangeRef.current = range.cloneRange();
-    }
-  };
-
-  const exec = (cmd: string, value?: string) => {
-    restoreSelection();
-    document.execCommand(cmd, false, value ?? undefined);
-    const sel = window.getSelection();
-    if (sel && sel.rangeCount > 0) {
-      savedRangeRef.current = sel.getRangeAt(0).cloneRange();
-    }
-    refreshFormats();
-  };
-
-  const applyFontSize = (px: string) => {
-    restoreSelection();
-    document.execCommand("styleWithCSS", false, "true");
-    document.execCommand("fontSize", false, "7");
-    editorRef.current?.querySelectorAll('font[size="7"]').forEach((el) => {
-      const span = document.createElement("span");
-      span.style.fontSize = `${px}px`;
-      span.innerHTML = el.innerHTML;
-      el.replaceWith(span);
-    });
-    editorRef.current?.focus();
-  };
-
-  const applyColor = (color: string) => {
-    setTextColor(color);
-    exec("styleWithCSS", "true");
-    exec("foreColor", color);
-  };
-
-  const applyHighlight = (color: string) => {
-    setHighlightColor(color);
-    exec("styleWithCSS", "true");
-    exec("hiliteColor", color);
-  };
+  const colorInputRef = useRef<HTMLInputElement>(null);
+  const highlightInputRef = useRef<HTMLInputElement>(null);
 
   return (
     <div className="flex h-[calc(100vh-4rem)] bg-gray-100 dark:bg-gray-900 overflow-hidden">
-
-      {/* ── Left sidebar: document list ─────────────────────────────── */}
       <div className="w-56 shrink-0 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col">
         <div className="p-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
           <span className="text-sm font-bold text-gray-700 dark:text-white">Documents</span>
@@ -274,11 +227,9 @@ export default function NoteTextPage() {
         </div>
       </div>
 
-      {/* ── Main editor area ─────────────────────────────────────────── */}
       <div className="flex-1 flex flex-col overflow-hidden">
         {activeDoc ? (
           <>
-            {/* Title bar */}
             <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-6 py-3 flex items-center gap-4 shrink-0">
               <input
                 value={title}
@@ -297,15 +248,23 @@ export default function NoteTextPage() {
               </button>
             </div>
 
-            {/* Toolbar */}
             <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-2 flex items-center gap-1 flex-wrap shrink-0">
-
-              {/* Font size */}
               <select
-                onMouseDown={saveSelection}
-                onChange={(e) => applyFontSize(e.target.value)}
-                defaultValue="16"
-                className="text-xs px-2 py-1.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 focus:outline-none cursor-pointer"
+                value={currentFontFamily}
+                onChange={(e) => setFontFamily(e.target.value)}
+                className="text-xs px-2 py-1.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 focus:outline-none cursor-pointer min-w-[120px]"
+              >
+                {FONT_FAMILIES.map((font) => (
+                  <option key={font.value} value={font.value} style={{ fontFamily: font.value }}>
+                    {font.label}
+                  </option>
+                ))}
+              </select>
+
+              <select
+                value={currentFontSize}
+                onChange={(e) => setFontSize(e.target.value)}
+                className="text-xs px-2 py-1.5 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 focus:outline-none cursor-pointer w-20"
               >
                 {FONT_SIZES.map((s) => (
                   <option key={s} value={s}>{s}px</option>
@@ -314,135 +273,178 @@ export default function NoteTextPage() {
 
               <div className="w-px h-5 bg-gray-200 dark:bg-gray-600 mx-1" />
 
-              {/* Bold / Italic / Underline / Strikethrough */}
-              {[
-                { cmd: "bold", label: <strong className="text-sm">B</strong>, title: "Bold (Ctrl+B)" },
-                { cmd: "italic", label: <em className="text-sm">I</em>, title: "Italic (Ctrl+I)" },
-                { cmd: "underline", label: <u className="text-sm">U</u>, title: "Underline (Ctrl+U)" },
-                { cmd: "strikeThrough", label: <s className="text-sm">S</s>, title: "Strikethrough" },
-              ].map(({ cmd, label, title: t }) => (
-                <button
-                  key={cmd}
-                  onMouseDown={(e) => { e.preventDefault(); exec(cmd); }}
-                  title={t}
-                  className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors
-                    ${activeFormats.has(cmd)
-                      ? "bg-sky-100 dark:bg-sky-900/40 text-sky-600 dark:text-sky-400 ring-1 ring-sky-300 dark:ring-sky-700"
-                      : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"}`}
-                >
-                  {label}
-                </button>
-              ))}
+              <button
+                onClick={toggleBold}
+                title="Bold (Ctrl+B)"
+                className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors
+                  ${activeFormats.has("bold")
+                    ? "bg-sky-100 dark:bg-sky-900/40 text-sky-600 dark:text-sky-400 ring-1 ring-sky-300 dark:ring-sky-700"
+                    : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"}`}
+              >
+                <strong className="text-sm">B</strong>
+              </button>
+
+              <button
+                onClick={toggleItalic}
+                title="Italic (Ctrl+I)"
+                className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors
+                  ${activeFormats.has("italic")
+                    ? "bg-sky-100 dark:bg-sky-900/40 text-sky-600 dark:text-sky-400 ring-1 ring-sky-300 dark:ring-sky-700"
+                    : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"}`}
+              >
+                <em className="text-sm">I</em>
+              </button>
+
+              <button
+                onClick={toggleUnderline}
+                title="Underline (Ctrl+U)"
+                className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors
+                  ${activeFormats.has("underline")
+                    ? "bg-sky-100 dark:bg-sky-900/40 text-sky-600 dark:text-sky-400 ring-1 ring-sky-300 dark:ring-sky-700"
+                    : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"}`}
+              >
+                <u className="text-sm">U</u>
+              </button>
+
+              <button
+                onClick={toggleStrike}
+                title="Strikethrough"
+                className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors
+                  ${activeFormats.has("strikeThrough")
+                    ? "bg-sky-100 dark:bg-sky-900/40 text-sky-600 dark:text-sky-400 ring-1 ring-sky-300 dark:ring-sky-700"
+                    : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"}`}
+              >
+                <s className="text-sm">S</s>
+              </button>
 
               <div className="w-px h-5 bg-gray-200 dark:bg-gray-600 mx-1" />
 
-              {/* Text color */}
               <div className="relative">
                 <button
-                  onMouseDown={(e) => { e.preventDefault(); colorRef.current?.click(); }}
+                  onClick={() => colorInputRef.current?.click()}
                   title="Text Color"
                   className="w-8 h-8 flex flex-col items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                 >
                   <span className="text-sm font-bold text-gray-700 dark:text-gray-300 leading-none">A</span>
-                  <span className="w-5 h-1.5 rounded-sm mt-0.5" style={{ backgroundColor: textColor }} />
+                  <span className="w-5 h-1.5 rounded-sm mt-0.5" style={{ backgroundColor: "#000000" }} />
                 </button>
                 <input
-                  ref={colorRef}
+                  ref={colorInputRef}
                   type="color"
-                  value={textColor}
-                  onChange={(e) => applyColor(e.target.value)}
+                  value="#000000"
+                  onChange={(e) => setTextColor(e.target.value)}
                   className="absolute opacity-0 w-0 h-0 pointer-events-none"
                 />
               </div>
 
-              {/* Highlight color */}
               <div className="relative">
                 <button
-                  onMouseDown={(e) => { e.preventDefault(); highlightRef.current?.click(); }}
+                  onClick={() => highlightInputRef.current?.click()}
                   title="Highlight Color"
                   className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                 >
-                  <span className="text-xs font-bold px-1 py-0.5 rounded" style={{ backgroundColor: highlightColor, color: "#000" }}>
+                  <span className="text-xs font-bold px-1 py-0.5 rounded" style={{ backgroundColor: "#ffff00", color: "#000" }}>
                     H
                   </span>
                 </button>
                 <input
-                  ref={highlightRef}
+                  ref={highlightInputRef}
                   type="color"
-                  value={highlightColor}
-                  onChange={(e) => applyHighlight(e.target.value)}
+                  value="#ffff00"
+                  onChange={(e) => setHighlight(e.target.value)}
                   className="absolute opacity-0 w-0 h-0 pointer-events-none"
                 />
               </div>
 
               <div className="w-px h-5 bg-gray-200 dark:bg-gray-600 mx-1" />
 
-              {/* Alignment */}
-              {[
-                { cmd: "justifyLeft", icon: <MdFormatAlignLeft size={18} />, title: "Align Left" },
-                { cmd: "justifyCenter", icon: <MdFormatAlignCenter size={18} />, title: "Center" },
-                { cmd: "justifyRight", icon: <MdFormatAlignRight size={18} />, title: "Align Right" },
-                { cmd: "justifyFull", icon: <MdFormatAlignJustify size={18} />, title: "Justify" },
-              ].map(({ cmd, icon, title: t }) => (
-                <button
-                  key={cmd}
-                  onMouseDown={(e) => { e.preventDefault(); exec(cmd); }}
-                  title={t}
-                  className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors
-                    ${activeFormats.has(cmd)
-                      ? "bg-sky-100 dark:bg-sky-900/40 text-sky-600 dark:text-sky-400 ring-1 ring-sky-300 dark:ring-sky-700"
-                      : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"}`}
-                >
-                  {icon}
-                </button>
-              ))}
+              <button
+                onClick={() => setTextAlign("left")}
+                title="Align Left"
+                className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors
+                  ${activeFormats.has("justifyLeft")
+                    ? "bg-sky-100 dark:bg-sky-900/40 text-sky-600 dark:text-sky-400 ring-1 ring-sky-300 dark:ring-sky-700"
+                    : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"}`}
+              >
+                <MdFormatAlignLeft size={18} />
+              </button>
+
+              <button
+                onClick={() => setTextAlign("center")}
+                title="Center"
+                className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors
+                  ${activeFormats.has("justifyCenter")
+                    ? "bg-sky-100 dark:bg-sky-900/40 text-sky-600 dark:text-sky-400 ring-1 ring-sky-300 dark:ring-sky-700"
+                    : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"}`}
+              >
+                <MdFormatAlignCenter size={18} />
+              </button>
+
+              <button
+                onClick={() => setTextAlign("right")}
+                title="Align Right"
+                className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors
+                  ${activeFormats.has("justifyRight")
+                    ? "bg-sky-100 dark:bg-sky-900/40 text-sky-600 dark:text-sky-400 ring-1 ring-sky-300 dark:ring-sky-700"
+                    : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"}`}
+              >
+                <MdFormatAlignRight size={18} />
+              </button>
+
+              <button
+                onClick={() => setTextAlign("justify")}
+                title="Justify"
+                className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors
+                  ${activeFormats.has("justifyFull")
+                    ? "bg-sky-100 dark:bg-sky-900/40 text-sky-600 dark:text-sky-400 ring-1 ring-sky-300 dark:ring-sky-700"
+                    : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"}`}
+              >
+                <MdFormatAlignJustify size={18} />
+              </button>
 
               <div className="w-px h-5 bg-gray-200 dark:bg-gray-600 mx-1" />
 
-              {/* Lists */}
-              {[
-                { cmd: "insertUnorderedList", icon: <MdFormatListBulleted size={18} />, title: "Bullet List" },
-                { cmd: "insertOrderedList", icon: <MdFormatListNumbered size={18} />, title: "Numbered List" },
-              ].map(({ cmd, icon, title: t }) => (
-                <button
-                  key={cmd}
-                  onMouseDown={(e) => { e.preventDefault(); exec(cmd); }}
-                  title={t}
-                  className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors
-                    ${activeFormats.has(cmd)
-                      ? "bg-sky-100 dark:bg-sky-900/40 text-sky-600 dark:text-sky-400 ring-1 ring-sky-300 dark:ring-sky-700"
-                      : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"}`}
-                >
-                  {icon}
-                </button>
-              ))}
+              <button
+                onClick={toggleBulletList}
+                title="Bullet List"
+                className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors
+                  ${isBulletList
+                    ? "bg-sky-100 dark:bg-sky-900/40 text-sky-600 dark:text-sky-400 ring-1 ring-sky-300 dark:ring-sky-700"
+                    : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"}`}
+              >
+                <MdFormatListBulleted size={18} />
+              </button>
+
+              <button
+                onClick={toggleOrderedList}
+                title="Numbered List"
+                className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors
+                  ${isOrderedList
+                    ? "bg-sky-100 dark:bg-sky-900/40 text-sky-600 dark:text-sky-400 ring-1 ring-sky-300 dark:ring-sky-700"
+                    : "hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-300"}`}
+              >
+                <MdFormatListNumbered size={18} />
+              </button>
             </div>
 
-            {/* A4 paper scroll area */}
             <div className="flex-1 overflow-auto bg-gray-200 dark:bg-gray-900 p-8 flex justify-center">
               <div
-                ref={editorRef}
-                contentEditable
-                suppressContentEditableWarning
-                spellCheck
-                onMouseUp={saveSelection}
-                onKeyUp={saveSelection}
-                onSelect={saveSelection}
-                className="bg-white shadow-2xl focus:outline-none text-gray-900 shrink-0"
+                ref={editorContainerRef}
+                className="bg-white shadow-2xl shrink-0 tiptap-editor-container"
                 style={{
                   width: "794px",
                   minHeight: "1123px",
-                  padding: "72px",
-                  fontSize: "16px",
-                  lineHeight: "1.7",
-                  fontFamily: "Georgia, 'Times New Roman', serif",
-                  boxSizing: "border-box",
                 }}
-              />
+              >
+                <div
+                  onKeyDown={handleKeyDown}
+                >
+                  <EditorContent editor={editor} />
+                </div>
+              </div>
             </div>
           </>
         ) : (
-          /* Empty state */
           <div className="flex-1 flex flex-col items-center justify-center text-gray-400 dark:text-gray-600 px-8">
             <MdNoteAdd size={72} className="mb-4 opacity-20" />
             <p className="text-xl font-semibold mb-1 text-gray-500 dark:text-gray-400">No document open</p>
@@ -456,6 +458,81 @@ export default function NoteTextPage() {
           </div>
         )}
       </div>
+
+      <style jsx global>{`
+        .tiptap-editor-container .ProseMirror {
+          outline: none;
+          padding: 72px;
+          font-size: 16px;
+          line-height: 1.7;
+          min-height: 1123px;
+          font-family: Georgia, 'Times New Roman', serif;
+        }
+        .tiptap-editor-container .ProseMirror p {
+          margin: 0 0 1em 0;
+        }
+        .tiptap-editor-container .ProseMirror ul,
+        .tiptap-editor-container .ProseMirror ol {
+          padding-left: 1.5em;
+          margin: 1em 0;
+        }
+        .tiptap-editor-container .ProseMirror li {
+          margin: 0.25em 0;
+        }
+        .tiptap-editor-container .ProseMirror ul li {
+          list-style-type: disc;
+        }
+        .tiptap-editor-container .ProseMirror ol li {
+          list-style-type: decimal;
+        }
+        .tiptap-editor-container .ProseMirror ul ul li {
+          list-style-type: circle;
+        }
+        .tiptap-editor-container .ProseMirror ol ol li {
+          list-style-type: lower-alpha;
+        }
+        .tiptap-editor-container .ProseMirror blockquote {
+          border-left: 4px solid #38bdf8;
+          padding-left: 16px;
+          margin: 16px 0;
+          font-style: italic;
+          color: #64748b;
+        }
+        .tiptap-editor-container .ProseMirror pre {
+          background: #1e293b;
+          color: #e2e8f0;
+          padding: 16px;
+          border-radius: 8px;
+          font-family: monospace;
+          overflow: auto;
+        }
+        .tiptap-editor-container .ProseMirror code {
+          background: #f1f5f9;
+          padding: 2px 4px;
+          border-radius: 4px;
+          font-family: monospace;
+        }
+        .tiptap-editor-container .ProseMirror hr {
+          border: none;
+          border-top: 2px solid #e2e8f0;
+          margin: 24px 0;
+        }
+        .tiptap-editor-container .ProseMirror h1 {
+          font-size: 32px;
+          font-weight: bold;
+          margin: 24px 0 16px;
+        }
+        .tiptap-editor-container .ProseMirror h2 {
+          font-size: 24px;
+          font-weight: bold;
+          margin: 20px 0 12px;
+        }
+        .tiptap-editor-container .ProseMirror h3 {
+          font-size: 20px;
+          font-weight: bold;
+          margin: 16px 0 8px;
+        }
+      `}</style>
     </div>
   );
 }
