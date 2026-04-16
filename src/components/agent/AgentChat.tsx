@@ -8,6 +8,7 @@ import {
   Bot, Send, Loader2, MessageSquare, FileText, ListTodo,
   AlertCircle, ChevronUp, CheckCircle2, SquarePen, Trash2, Menu, X,
 } from "lucide-react";
+import { buildSystemPrompt, parseTaskFromResponse, AgentSystemPromptOptions } from "@/utils/aiPrompts";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -28,8 +29,6 @@ interface ConvMeta {
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
-const TASK_CREATE_REGEX = /\[TASK_CREATE\]([\s\S]*?)\[\/TASK_CREATE\]/;
-
 const MODES: { id: Mode; label: string; icon: React.ElementType; placeholder: string; hint: string }[] = [
   { id: "chat", label: "Chat", icon: MessageSquare, placeholder: "Ask about tasks, or say 'create a task: buy groceries'...", hint: "I can read your tasks, show done tasks, and create new ones." },
   { id: "summarize", label: "Summarize", icon: FileText, placeholder: "Paste any text here and I'll summarize it...", hint: "I'll return 3–5 concise bullet points." },
@@ -43,7 +42,6 @@ function makeTitle(text: string) {
 }
 
 function groupConversations(convs: ConvMeta[]) {
-  const now = Date.now();
   const startOfToday = new Date(new Date().setHours(0, 0, 0, 0)).getTime();
   const startOfYesterday = startOfToday - 86400000;
 
@@ -63,34 +61,6 @@ function groupConversations(convs: ConvMeta[]) {
     { label: "Yesterday", items: yesterday },
     { label: "Previous 7 Days", items: older },
   ].filter((g) => g.items.length > 0);
-}
-
-function buildSystemPrompt(mode: Mode, tasks: Task[], today: string): string {
-  if (mode === "chat") {
-    const pending = tasks.filter((t) => !t.completed);
-    const done = tasks.filter((t) => t.completed);
-    const pendingCtx = pending.length > 0
-      ? `Pending tasks (${pending.length}):\n${pending.map((t, i) => `${i + 1}. [${t.type ?? "general"}] ${t.title}${t.priority ? ` (${t.priority} priority)` : ""}${t.date ? `, due ${t.date}` : ""}${t.description ? ` — ${t.description}` : ""}`).join("\n")}`
-      : "No pending tasks.";
-    const doneCtx = done.length > 0
-      ? `\n\nCompleted tasks (${done.length}):\n${done.slice(0, 15).map((t, i) => `${i + 1}. ${t.title}${t.completedAt ? ` (completed ${t.completedAt})` : ""}`).join("\n")}`
-      : "\n\nNo completed tasks.";
-    return `You are a helpful productivity assistant for a todo app. Be concise and practical. Today is ${today}.\n\nYou have access to the user's full task data below. When asked about tasks or done tasks, use this data to answer clearly.\n\nWhen the user asks to CREATE or ADD a task, respond with a short confirmation AND append a task creation block at the very END of your response in EXACTLY this format (nothing else after it):\n[TASK_CREATE]{"title":"Task title here","priority":"medium","type":"work","date":"","description":""}[/TASK_CREATE]\n\nTask creation field rules:\n- title: required, clear and concise task title\n- priority: "high", "medium", or "low" (default: "medium")\n- type: "work", "study", or "activities" (default: "work")\n- date: YYYY-MM-DD format, or empty string if no date mentioned\n- description: brief description or empty string\n\nUser task data:\n${pendingCtx}${doneCtx}`;
-  }
-  if (mode === "summarize") {
-    return "You are a summarization assistant. When given text, return 3 to 5 clear bullet points in plain language. Output only the bullet points, no introduction.";
-  }
-  return "You are a productivity coach. When given a goal, break it into numbered actionable tasks. Label each with a priority: High, Medium, or Low. Be concise.";
-}
-
-function parseTaskFromResponse(response: string) {
-  const match = response.match(TASK_CREATE_REGEX);
-  if (!match) return { cleanText: response, taskData: null };
-  try {
-    return { cleanText: response.replace(TASK_CREATE_REGEX, "").trim(), taskData: JSON.parse(match[1]) };
-  } catch {
-    return { cleanText: response, taskData: null };
-  }
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -306,7 +276,7 @@ export default function AgentChat() {
         body: JSON.stringify({
           model: "openai",
           messages: [
-            { role: "system", content: buildSystemPrompt(mode, tasks, today) },
+            { role: "system", content: buildSystemPrompt({ mode, tasks, today } as AgentSystemPromptOptions) },
             ...updatedWithUser.map((m) => ({ role: m.role, content: m.content })),
           ],
         }),
@@ -318,7 +288,7 @@ export default function AgentChat() {
       const { cleanText, taskData } = parseTaskFromResponse(data.result);
 
       let createdTask: Task | undefined;
-      if (taskData?.title && mode === "chat") {
+      if (taskData && !Array.isArray(taskData) && taskData.title && mode === "chat") {
         try { createdTask = await createTask(taskData); }
         catch (err: any) { setError(`Task created in chat but failed to persist: ${err.message}`); }
       }
