@@ -888,7 +888,7 @@ export default function PdfEditor() {
                                         }
                                         pdfB64 = btoa(binary);
                                     }
-                                    
+
                                     saveTempData("pdfeditor", {
                                         annotations,
                                         mode,
@@ -899,7 +899,7 @@ export default function PdfEditor() {
                                         originalFileName,
                                         pdfBase64: pdfB64,
                                     });
-                                    
+
                                     sessionStorage.setItem("redirectAfterLogin", window.location.pathname);
                                     showAlert({
                                         title: "Login Required",

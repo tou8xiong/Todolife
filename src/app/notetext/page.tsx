@@ -12,10 +12,14 @@ import {
   MdFormatListBulleted, MdFormatListNumbered,
   MdAdd, MdDelete, MdSave, MdArrowBack, MdNoteAdd, MdInsertDriveFile,
   MdFolder, MdFolderOpen, MdCreateNewFolder, MdExpandMore, MdChevronRight,
-  MdGridView, MdDescription,
+  MdGridView, MdDescription, MdImage, MdLink,
 } from "react-icons/md";
+import { IoShareSocialSharp } from "react-icons/io5";
+import { LuFileDown } from "react-icons/lu";
 import { useTipTapEditor } from "@/hooks/useTipTapEditor";
 import { EditorContent } from "@tiptap/react";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 
 interface Doc {
   id: number;
@@ -107,6 +111,13 @@ export default function NoteTextPage() {
   const [newFolderName, setNewFolderName] = useState("");
   const [showNewFolderInput, setShowNewFolderInput] = useState(false);
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
+  const [showImageModal, setShowImageModal] = useState(false);
+  const [showLinkModal, setShowLinkModal] = useState(false);
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [imageUrl, setImageUrl] = useState("");
+  const [linkUrl, setLinkUrl] = useState("");
+  const [imageContextMenu, setImageContextMenu] = useState<{ x: number; y: number; src: string } | null>(null);
+  const [exporting, setExporting] = useState(false);
 
   const editorContainerRef = useRef<HTMLDivElement>(null);
 
@@ -130,6 +141,9 @@ export default function NoteTextPage() {
     toggleBulletList,
     toggleOrderedList,
     handleKeyDown,
+    insertImage,
+    insertImageFromFile,
+    insertLink,
   } = useTipTapEditor();
 
   const loadDocs = useCallback(async (email: string) => {
@@ -151,6 +165,64 @@ export default function NoteTextPage() {
       console.error("Failed to load folders");
     }
   }, []);
+
+  const exportToPDF = useCallback(async () => {
+    if (!editorContainerRef.current || !title.trim()) return;
+    setExporting(true);
+    try {
+      const element = editorContainerRef.current.querySelector('.ProseMirror');
+      if (!element) {
+        throw new Error("Editor content not found");
+      }
+      const canvas = await html2canvas(element as HTMLElement, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: "#ffffff",
+      });
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4",
+      });
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const imgWidth = canvas.width;
+      const imgHeight = canvas.height;
+      const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
+      const imgX = (pdfWidth - imgWidth * ratio) / 2;
+      const imgY = 10;
+      pdf.addImage(imgData, "PNG", imgX, imgY, imgWidth * ratio, imgHeight * ratio);
+      pdf.save(`${title || "document"}.pdf`);
+      toast.success("PDF exported successfully!");
+      setShowExportModal(false);
+    } catch (err) {
+      console.error("Export error:", err);
+      toast.error("Failed to export PDF");
+    } finally {
+      setExporting(false);
+    }
+  }, [title]);
+
+  const exportToText = useCallback(() => {
+    if (!editor || !title.trim()) return;
+    try {
+      const content = editor.getText();
+      const blob = new Blob([`${title}\n\n${content}`], { type: "text/plain" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${title || "document"}.txt`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success("Text file exported successfully!");
+      setShowExportModal(false);
+    } catch (err) {
+      console.error("Export error:", err);
+      toast.error("Failed to export text file");
+    }
+  }, [editor, title]);
 
   const createFolder = useCallback(async () => {
     if (!user) {
@@ -378,7 +450,7 @@ export default function NoteTextPage() {
   const highlightInputRef = useRef<HTMLInputElement>(null);
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] bg-gray-50 dark:bg-gray-950 overflow-hidden">
+    <div className="flex h-[calc(100vh-4rem)] bg-gradient-to-br from-gray-900 to-gray-600 overflow-hidden">
       <div className="w-72 shrink-0 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col">
         <div className="p-4 border-b border-gray-200 dark:border-gray-800">
           <div className="flex items-center justify-between mb-3">
@@ -473,39 +545,31 @@ export default function NoteTextPage() {
 
             return (
               <div key={folder.id} className="space-y-0.5">
-                <div className={`flex items-center gap-1 rounded-xl transition-all ${isSelected ? "bg-gradient-to-r from-sky-50 to-transparent dark:from-sky-900/20 dark:to-transparent" : ""}`}>
-                  <button
-                    onClick={() => { setSelectedFolderId(folder.id); setActiveDoc(null); toggleFolderExpand(folder.id); }}
-                    className={`flex-1 text-left px-3 py-2.5 rounded-xl text-sm font-medium transition-all flex items-center gap-2 group
-                      ${isSelected
-                        ? "text-sky-600 dark:text-sky-400"
-                        : "text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white"
-                      }`}
-                  >
+                <button
+                  onClick={() => { setSelectedFolderId(folder.id); setActiveDoc(null); toggleFolderExpand(folder.id); }}
+                  className={`w-full text-left px-3 py-2.5 rounded-xl text-sm font-medium transition-all flex items-center gap-2 group
+                    ${isSelected
+                      ? "bg-gradient-to-r from-sky-50 to-sky-100 dark:from-sky-900/30 dark:to-sky-800/20 text-sky-600 dark:text-sky-400 border border-sky-200 dark:border-sky-800 shadow-sm"
+                      : "text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-gray-800 dark:hover:text-white border border-transparent"
+                    }`}
+                >
+                  {isExpanded ? (
+                    <MdExpandMore size={18} className="shrink-0" />
+                  ) : (
+                    <MdChevronRight size={18} className="shrink-0" />
+                  )}
+                  <span className={`p-1.5 rounded-lg ${folderColor.bg} shrink-0 transition-transform ${isExpanded ? "scale-110" : ""}`}>
                     {isExpanded ? (
-                      <MdExpandMore size={18} className="shrink-0" />
+                      <MdFolderOpen size={16} className={folderColor.text} />
                     ) : (
-                      <MdChevronRight size={18} className="shrink-0" />
+                      <MdFolder size={16} className={folderColor.text} />
                     )}
-                    <span className={`p-1.5 rounded-lg ${folderColor.bg} shrink-0 transition-transform ${isExpanded ? "scale-110" : ""}`}>
-                      {isExpanded ? (
-                        <MdFolderOpen size={16} className={folderColor.text} />
-                      ) : (
-                        <MdFolder size={16} className={folderColor.text} />
-                      )}
-                    </span>
-                    <span className="truncate">{folder.name}</span>
-                    <span className={`ml-auto text-xs px-2 py-0.5 rounded-full ${isSelected ? "bg-sky-100 dark:bg-sky-900/50 text-sky-600 dark:text-sky-400" : "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400"} group-hover:bg-gray-200 dark:group-hover:bg-gray-700 transition-colors`}>
-                      {folderDocs.length}
-                    </span>
-                  </button>
-                  <button
-                    onClick={() => deleteFolder(folder.id)}
-                    className="p-2 rounded-lg opacity-0 group-hover:opacity-100 hover:bg-red-50 dark:hover:bg-red-900/30 text-red-400 hover:text-red-500 transition-all"
-                  >
-                    <MdDelete size={16} />
-                  </button>
-                </div>
+                  </span>
+                  <span className="truncate">{folder.name}</span>
+                  <span className={`ml-auto text-xs px-2 py-0.5 rounded-full ${isSelected ? "bg-sky-100 dark:bg-sky-900/50 text-sky-600 dark:text-sky-400" : "bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400"} group-hover:bg-gray-200 dark:group-hover:bg-gray-700 transition-colors`}>
+                    {folderDocs.length}
+                  </span>
+                </button>
 
                 {isExpanded && isSelected && (
                   <div className="ml-6 space-y-0.5 mt-1">
@@ -569,27 +633,47 @@ export default function NoteTextPage() {
         {activeDoc ? (
           <>
             <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-6 py-4 flex items-center gap-4 shrink-0">
-              <input
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                className="flex-1 text-lg font-semibold bg-transparent text-gray-800 dark:text-white border-b-2 border-transparent hover:border-gray-300 dark:hover:border-gray-600 focus:border-sky-500 dark:focus:border-sky-400 transition-colors px-1 py-1 outline-none"
-                placeholder="Enter document name..."
-              />
               {selectedFolder && (
-                <span className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2.5 py-1 rounded-full">
-                  <MdFolder size={12} />
+                <span className="flex items-center gap-1.5 text-xs font-medium text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 px-3 py-1.5 rounded-lg border border-sky-200 dark:border-sky-800">
+                  <MdFolder size={14} />
                   {selectedFolder.name}
                 </span>
               )}
-              <span className="text-xs text-gray-400 hidden sm:block">Ctrl+S to save</span>
-              <button
-                onClick={handleSave}
-                disabled={saving}
-                className="flex items-center gap-2 px-5 py-2.5 bg-sky-500 hover:bg-sky-600 disabled:opacity-50 text-white text-sm font-semibold rounded-xl shadow-lg shadow-sky-500/25 hover:shadow-sky-500/40 transition-all"
-              >
-                <MdSave size={16} />
-                {saving ? "Saving..." : "Save"}
-              </button>
+              <div className="ml-auto flex items-center gap-2">
+                <span className="text-xs text-gray-400 hidden sm:block">Ctrl+S to save</span>
+                <button
+                  onClick={() => setShowExportModal(true)}
+                  className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-xl transition-all"
+                >
+                  <LuFileDown size={16} />
+                  Export
+                </button>
+                <button
+                  onClick={() => {
+                    if (navigator.share && editor) {
+                      const content = editor.getText();
+                      navigator.share({
+                        title: title || "Document",
+                        text: content.slice(0, 500) + (content.length > 500 ? "..." : ""),
+                      }).catch(() => { });
+                    } else {
+                      toast.info("Copy the content to share it manually");
+                    }
+                  }}
+                  className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-xl transition-all"
+                >
+                  <IoShareSocialSharp size={16} />
+                  Share
+                </button>
+                <button
+                  onClick={handleSave}
+                  disabled={saving}
+                  className="flex items-center gap-2 px-5 py-2.5 bg-sky-500 hover:bg-sky-600 disabled:opacity-50 text-white text-sm font-semibold rounded-xl shadow-lg shadow-sky-500/25 hover:shadow-sky-500/40 transition-all"
+                >
+                  <MdSave size={16} />
+                  {saving ? "Saving..." : "Save"}
+                </button>
+              </div>
             </div>
 
             <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-4 py-2 flex items-center gap-1 flex-wrap shrink-0">
@@ -769,17 +853,39 @@ export default function NoteTextPage() {
               >
                 <MdFormatListNumbered size={18} />
               </button>
+
+              <div className="w-px h-6 bg-gray-200 dark:bg-gray-700 mx-1" />
+
+              <button
+                onClick={() => setShowImageModal(true)}
+                title="Insert Image"
+                className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-all"
+              >
+                <MdImage size={18} />
+              </button>
+
+              <button
+                onClick={() => setShowLinkModal(true)}
+                title="Insert Link"
+                className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-all"
+              >
+                <MdLink size={18} />
+              </button>
             </div>
 
-            <div className="flex-1 overflow-auto bg-gray-100 dark:bg-gray-950 p-8 flex justify-center">
+            <div className="flex-1 overflow-auto p-8 flex justify-center">
               <div
                 ref={editorContainerRef}
-                className="bg-white shadow-2xl shrink-0 tiptap-editor-container rounded-2xl overflow-hidden"
-                style={{
-                  width: "794px",
-                  minHeight: "1123px",
-                }}
+                className="bg-white shadow-2xl shrink-0 tiptap-editor-container w-[900px] min-h-[1123px]"
               >
+                <div className="text-center px-8 pt-8 pb-4">
+                  <input
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    className="w-full text-center text-3xl font-bold bg-transparent text-gray-800 border-b-2 border-transparent hover:border-gray-300 focus:border-sky-500 transition-colors px-1 py-2 outline-none"
+                    placeholder="Document Title"
+                  />
+                </div>
                 <div onKeyDown={handleKeyDown}>
                   <EditorContent editor={editor} />
                 </div>
@@ -787,7 +893,7 @@ export default function NoteTextPage() {
             </div>
           </>
         ) : selectedFolderId ? (
-          <div className="flex-1 overflow-auto bg-gray-50 dark:bg-gray-950 p-8">
+          <div className="flex-1 overflow-auto p-8">
             <div className="max-w-6xl mx-auto">
               <div className="flex items-center gap-3 mb-6">
                 <div className={`p-3 rounded-2xl bg-gradient-to-br ${getFolderColor(folders.findIndex(f => f.id === selectedFolderId)).bg}`}>
@@ -996,7 +1102,156 @@ export default function NoteTextPage() {
           font-weight: bold;
           margin: 16px 0 8px;
         }
+        .tiptap-editor-container .ProseMirror img {
+          max-width: 100%;
+          height: auto;
+          border-radius: 8px;
+          margin: 16px 0;
+          cursor: pointer;
+        }
+        .tiptap-editor-container .ProseMirror a {
+          color: #0ea5e9;
+          text-decoration: underline;
+          cursor: pointer;
+        }
+        .tiptap-editor-container .ProseMirror a:hover {
+          color: #0284c7;
+        }
       `}</style>
+
+      {showImageModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-[90%] max-w-md p-6 flex flex-col gap-4">
+            <h2 className="text-lg font-bold text-gray-800 dark:text-white">Insert Image</h2>
+            <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+              <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">Click to upload image</p>
+                <p className="text-xs text-gray-400">PNG, JPG, GIF up to 5MB</p>
+              </div>
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    insertImageFromFile(file);
+                    setShowImageModal(false);
+                  }
+                }}
+              />
+            </label>
+            <div className="flex items-center gap-3">
+              <div className="flex-1 border-t border-gray-300 dark:border-gray-600" />
+              <span className="text-xs text-gray-400">or</span>
+              <div className="flex-1 border-t border-gray-300 dark:border-gray-600" />
+            </div>
+            <input
+              type="url"
+              value={imageUrl}
+              onChange={(e) => setImageUrl(e.target.value)}
+              placeholder="Paste image URL..."
+              className="w-full text-sm px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all"
+            />
+            <div className="flex gap-3 mt-2">
+              <button
+                onClick={() => { setShowImageModal(false); setImageUrl(""); }}
+                className="flex-1 px-4 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 font-medium transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => { insertImage(imageUrl); setShowImageModal(false); setImageUrl(""); }}
+                disabled={!imageUrl.trim()}
+                className="flex-1 px-4 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 disabled:opacity-50 text-white font-semibold shadow-lg shadow-sky-500/25 transition-colors"
+              >
+                Insert URL
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showLinkModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-[90%] max-w-md p-6 flex flex-col gap-4">
+            <h2 className="text-lg font-bold text-gray-800 dark:text-white">Insert Link</h2>
+            <input
+              type="url"
+              value={linkUrl}
+              onChange={(e) => setLinkUrl(e.target.value)}
+              placeholder="Paste URL (e.g., https://example.com)..."
+              className="w-full text-sm px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all"
+              autoFocus
+            />
+            <div className="flex gap-3 mt-2">
+              <button
+                onClick={() => { setShowLinkModal(false); setLinkUrl(""); }}
+                className="flex-1 px-4 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 font-medium transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  if (linkUrl.trim()) {
+                    editor?.chain().focus().insertContent(`<a href="${linkUrl}" target="_blank" rel="noopener noreferrer" class="text-sky-500 underline hover:text-sky-600">${linkUrl}</a>`).run();
+                    setShowLinkModal(false);
+                    setLinkUrl("");
+                  }
+                }}
+                disabled={!linkUrl.trim()}
+                className="flex-1 px-4 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 disabled:opacity-50 text-white font-semibold shadow-lg shadow-sky-500/25 transition-colors"
+              >
+                Insert Link
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showExportModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-[90%] max-w-sm p-6 flex flex-col gap-4">
+            <h2 className="text-lg font-bold text-gray-800 dark:text-white">Export Document</h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Choose a format to export your document</p>
+            <div className="flex flex-col gap-3 mt-2">
+              <button
+                onClick={exportToPDF}
+                disabled={exporting}
+                className="flex items-center gap-3 px-4 py-4 rounded-xl bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all border border-gray-200 dark:border-gray-700"
+              >
+                <div className="w-10 h-10 rounded-lg bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                  <span className="text-red-500 text-lg font-bold">PDF</span>
+                </div>
+                <div className="text-left">
+                  <p className="text-sm font-semibold text-gray-800 dark:text-white">Export as PDF</p>
+                  <p className="text-xs text-gray-500">Preserves formatting and images</p>
+                </div>
+              </button>
+              <button
+                onClick={exportToText}
+                className="flex items-center gap-3 px-4 py-4 rounded-xl bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all border border-gray-200 dark:border-gray-700"
+              >
+                <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                  <span className="text-blue-500 text-lg font-bold">TXT</span>
+                </div>
+                <div className="text-left">
+                  <p className="text-sm font-semibold text-gray-800 dark:text-white">Export as Text</p>
+                  <p className="text-xs text-gray-500">Plain text file</p>
+                </div>
+              </button>
+            </div>
+            <div className="flex gap-3 mt-2">
+              <button
+                onClick={() => setShowExportModal(false)}
+                className="flex-1 px-4 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 font-medium transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

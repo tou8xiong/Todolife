@@ -10,6 +10,8 @@ import Underline from "@tiptap/extension-underline";
 import { FontFamily } from "@tiptap/extension-font-family";
 import { BulletList, OrderedList } from "@tiptap/extension-list";
 import ListItem from "@tiptap/extension-list-item";
+import Image from "@tiptap/extension-image";
+import Link from "@tiptap/extension-link";
 import { useState, useCallback, useEffect } from "react";
 
 export function useTipTapEditor() {
@@ -54,6 +56,19 @@ export function useTipTapEditor() {
         keepAttributes: false,
       }),
       ListItem,
+      Image.configure({
+        inline: false,
+        allowBase64: true,
+        HTMLAttributes: {
+          class: "rounded-lg cursor-pointer max-w-full",
+        },
+      }),
+      Link.configure({
+        openOnClick: false,
+        HTMLAttributes: {
+          class: "text-sky-500 underline hover:text-sky-600 cursor-pointer",
+        },
+      }),
     ],
     content: "",
     onUpdate: ({ editor }) => {
@@ -203,6 +218,29 @@ export function useTipTapEditor() {
     }
   }, [editor, isBulletList, isOrderedList]);
 
+  const insertImage = useCallback((url: string) => {
+    if (!url) return;
+    editor?.chain().focus().setImage({ src: url }).run();
+  }, [editor]);
+
+  const insertImageFromFile = useCallback((file: File) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const base64 = e.target?.result as string;
+      editor?.chain().focus().setImage({ src: base64 }).run();
+    };
+    reader.readAsDataURL(file);
+  }, [editor]);
+
+  const insertLink = useCallback((url: string, text?: string) => {
+    if (!url) return;
+    if (text && text.trim()) {
+      editor?.chain().focus().insertContent(`<a href="${url}" target="_blank" rel="noopener noreferrer">${text}</a>`).run();
+    } else {
+      editor?.chain().focus().setLink({ href: url, target: "_blank", rel: "noopener noreferrer" }).run();
+    }
+  }, [editor]);
+
   return {
     editor,
     EditorContent,
@@ -227,5 +265,8 @@ export function useTipTapEditor() {
     toggleBulletList,
     toggleOrderedList,
     handleKeyDown,
+    insertImage,
+    insertImageFromFile,
+    insertLink,
   };
 }
