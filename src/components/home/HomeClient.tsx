@@ -44,6 +44,16 @@ function FloatingDots() {
 function MouseFollower() {
   const [positions, setPositions] = useState<{ x: number; y: number }[]>([]);
   const [isVisible, setIsVisible] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
+
+  useEffect(() => {
+    const checkDesktop = () => {
+      setIsDesktop(window.innerWidth >= 1024);
+    };
+    checkDesktop();
+    window.addEventListener("resize", checkDesktop);
+    return () => window.removeEventListener("resize", checkDesktop);
+  }, []);
   
   const handleMouseMove = useCallback((e: MouseEvent) => {
     setPositions(prev => {
@@ -67,7 +77,7 @@ function MouseFollower() {
     };
   }, [handleMouseMove, handleMouseLeave]);
 
-  if (!isVisible || positions.length === 0) return null;
+  if (!isDesktop || !isVisible || positions.length === 0) return null;
 
   return (
     <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
