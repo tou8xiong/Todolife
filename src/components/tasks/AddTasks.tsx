@@ -112,9 +112,8 @@ export default function AddTasks() {
     };
 
     return (
-        <div className="sm:flex  sm:justify-center flex justify-center w-full relative">
+        <div className="sm:flex sm:justify-center flex justify-center w-full relative">
 
-            {/* Loading Overlay */}
             {saving && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
                     <div className="flex flex-col items-center gap-4">
@@ -130,19 +129,19 @@ export default function AddTasks() {
                 message="The date and time you selected is already in the past. Please choose a future date and time."
                 onClose={() => setAlertOpen(false)}
             />
-            <div className="sm:w-[700px] w-full mx-1 my-2 max-h-[500px] overflow-y-auto bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-2xl border border-gray-700">
+            <div className="sm:w-[700px] w-full mx-1 min-h-[calc(100vh-220px)] bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-2xl border border-gray-700 flex flex-col">
 
-                {/* Header */}
-                <div className="text-center pt-2 pb-1">
-                    <h1 className="text-sm font-bold text-white font-serif tracking-tight">
-                        Add Task
+                <div className="text-center pt-3 pb-2">
+                    <h1 className="text-lg font-bold text-white font-serif tracking-tight">
+                        Add New Task
                     </h1>
+                    <p className="text-gray-400 text-xs mt-0.5">Fill in the details below</p>
                 </div>
 
-                <form className="px-3 pb-2 space-y-2">
+                <form className="px-4 sm:px-6 pb-4 space-y-3 flex-1">
 
-                    {/* Title */}
-                    <div>
+                    <div className="space-y-1">
+                        <label className="text-xs font-semibold text-gray-300 uppercase tracking-wide">Task Title</label>
                         <input
                             type="text"
                             placeholder="Enter task title..."
@@ -150,73 +149,88 @@ export default function AddTasks() {
                             autoComplete="off"
                             value={task.title}
                             onChange={handleChange}
-                            className={`w-full p-2 rounded-lg bg-gray-700/50 border text-white placeholder-gray-400 focus:outline-none transition-colors ${errors.title ? "border-red-500 focus:border-red-400" : "border-gray-600 focus:border-amber-400"
+                            className={`w-full p-2 rounded-lg bg-gray-700/50 border text-white placeholder-gray-500 focus:outline-none transition-colors ${errors.title ? "border-red-500 focus:border-red-400" : "border-gray-600 focus:border-amber-400"
                                 }`}
                         />
-                        {errors.title && <p className="text-red-400 text-xs mt-0.5">{errors.title}</p>}
+                        {errors.title && <p className="text-red-400 text-xs">{errors.title}</p>}
                     </div>
 
-                    {/* Type & Priority Row */}
-                    <div className="grid grid-cols-2 gap-2">
-                        <div>
-                            <div className="grid grid-cols-3 gap-1">
-                                {[
-                                    { value: "work", label: "W", icon: Briefcase, color: "blue" },
-                                    { value: "study", label: "S", icon: BookOpen, color: "violet" },
-                                    { value: "activities", label: "A", icon: Zap, color: "amber" },
-                                ].map(({ value, label, icon: Icon, color }) => {
-                                    const isActive = task.type === value;
-                                    const colorClasses = {
-                                        blue: isActive ? "bg-blue-500/20 border-blue-500 text-blue-400" : "bg-gray-700/50 border-gray-600 text-gray-400 hover:border-blue-500/50",
-                                        violet: isActive ? "bg-violet-500/20 border-violet-500 text-violet-400" : "bg-gray-700/50 border-gray-600 text-gray-400 hover:border-violet-500/50",
-                                        amber: isActive ? "bg-amber-500/20 border-amber-500 text-amber-400" : "bg-gray-700/50 border-gray-600 text-gray-400 hover:border-amber-500/50",
-                                    };
-                                    return (
-                                        <button
-                                            key={value}
-                                            type="button"
-                                            onClick={() => { setTask(p => ({ ...p, type: value })); setErrors(p => ({ ...p, type: undefined })); }}
-                                            className={`flex items-center justify-center py-1.5 rounded-lg border text-xs transition-all ${colorClasses[color as keyof typeof colorClasses]}`}
-                                        >
-                                            <Icon size={14} />
-                                        </button>
-                                    );
-                                })}
-                            </div>
-                            {errors.type && <p className="text-red-400 text-xs mt-0.5">{errors.type}</p>}
-                        </div>
-                        <div>
-                            <div className="grid grid-cols-3 gap-1">
-                                {[
-                                    { value: "high", label: "H", color: "red" },
-                                    { value: "medium", label: "M", color: "orange" },
-                                    { value: "low", label: "L", color: "green" },
-                                ].map(({ value, label, color }) => {
-                                    const isActive = task.priority === value;
-                                    const colorClasses = {
-                                        red: isActive ? "bg-red-500/20 border-red-500 text-red-400" : "bg-gray-700/50 border-gray-600 text-gray-400 hover:border-red-500/50",
-                                        orange: isActive ? "bg-orange-500/20 border-orange-500 text-orange-400" : "bg-gray-700/50 border-gray-600 text-gray-400 hover:border-orange-500/50",
-                                        green: isActive ? "bg-green-500/20 border-green-500 text-green-400" : "bg-gray-700/50 border-gray-600 text-gray-400 hover:border-green-500/50",
-                                    };
-                                    return (
-                                        <button
-                                            key={value}
-                                            type="button"
-                                            onClick={() => { setTask(p => ({ ...p, priority: value })); setErrors(p => ({ ...p, priority: undefined })); }}
-                                            className={`py-1.5 rounded-lg border text-xs font-medium transition-all ${colorClasses[color as keyof typeof colorClasses]}`}
-                                        >
-                                            {label}
-                                        </button>
-                                    );
-                                })}
-                            </div>
-                            {errors.priority && <p className="text-red-400 text-xs mt-0.5">{errors.priority}</p>}
-                        </div>
+                    <div className="space-y-1">
+                        <label className="text-xs font-semibold text-gray-300 uppercase tracking-wide">Description</label>
+                        <textarea
+                            name="description"
+                            value={task.description}
+                            onChange={handleChange}
+                            placeholder="Add task details (optional)..."
+                            rows={2}
+                            className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white placeholder-gray-500 focus:outline-none focus:border-amber-400 transition-colors resize-none"
+                        />
                     </div>
 
-                    {/* Date & Time */}
+                    <div className="space-y-1">
+                        <label className="text-xs font-semibold text-gray-300 uppercase tracking-wide">Task Type</label>
+                        <div className="grid grid-cols-3 gap-2">
+                            {[
+                                { value: "work", label: "Work", icon: Briefcase, color: "blue" },
+                                { value: "study", label: "Study", icon: BookOpen, color: "violet" },
+                                { value: "activities", label: "Activities", icon: Zap, color: "amber" },
+                            ].map(({ value, label, icon: Icon, color }) => {
+                                const isActive = task.type === value;
+                                const colorClasses = {
+                                    blue: isActive ? "bg-blue-500/20 border-blue-500 text-blue-400" : "bg-gray-700/50 border-gray-600 text-gray-400 hover:border-blue-500/50",
+                                    violet: isActive ? "bg-violet-500/20 border-violet-500 text-violet-400" : "bg-gray-700/50 border-gray-600 text-gray-400 hover:border-violet-500/50",
+                                    amber: isActive ? "bg-amber-500/20 border-amber-500 text-amber-400" : "bg-gray-700/50 border-gray-600 text-gray-400 hover:border-amber-500/50",
+                                };
+                                return (
+                                    <button
+                                        key={value}
+                                        type="button"
+                                        onClick={() => setTask(p => ({ ...p, type: value }))}
+                                        className={`flex flex-col items-center gap-1 py-2 rounded-lg border text-xs transition-all ${colorClasses[color as keyof typeof colorClasses]}`}
+                                    >
+                                        <Icon size={16} />
+                                        {label}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                        {errors.type && <p className="text-red-400 text-xs">{errors.type}</p>}
+                    </div>
+
+                    <div className="space-y-1">
+                        <label className="text-xs font-semibold text-gray-300 uppercase tracking-wide">Priority Level</label>
+                        <div className="grid grid-cols-3 gap-2">
+                            {[
+                                { value: "high", label: "High", color: "red" },
+                                { value: "medium", label: "Medium", color: "orange" },
+                                { value: "low", label: "Low", color: "green" },
+                            ].map(({ value, label, color }) => {
+                                const isActive = task.priority === value;
+                                const colorClasses = {
+                                    red: isActive ? "bg-red-500/20 border-red-500 text-red-400" : "bg-gray-700/50 border-gray-600 text-gray-400 hover:border-red-500/50",
+                                    orange: isActive ? "bg-orange-500/20 border-orange-500 text-orange-400" : "bg-gray-700/50 border-gray-600 text-gray-400 hover:border-orange-500/50",
+                                    green: isActive ? "bg-green-500/20 border-green-500 text-green-400" : "bg-gray-700/50 border-gray-600 text-gray-400 hover:border-green-500/50",
+                                };
+                                return (
+                                    <button
+                                        key={value}
+                                        type="button"
+                                        onClick={() => setTask(p => ({ ...p, priority: value }))}
+                                        className={`py-2 rounded-lg border text-xs font-medium transition-all ${colorClasses[color as keyof typeof colorClasses]}`}
+                                    >
+                                        {label}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                        {errors.priority && <p className="text-red-400 text-xs">{errors.priority}</p>}
+                    </div>
+
                     <div className="grid grid-cols-2 gap-2">
-                        <div>
+                        <div className="space-y-1">
+                            <label className="text-xs font-semibold text-gray-300 uppercase tracking-wide flex items-center gap-1">
+                                <CalendarDays size={12} /> Due Date
+                            </label>
                             <input
                                 value={task.date}
                                 onChange={handleChange}
@@ -225,9 +239,12 @@ export default function AddTasks() {
                                 className={`w-full p-2 rounded-lg bg-gray-700/50 border text-white focus:outline-none transition-colors ${errors.date ? "border-red-500 focus:border-red-400" : "border-gray-600 focus:border-amber-400"
                                     }`}
                             />
-                            {errors.date && <p className="text-red-400 text-xs mt-0.5">{errors.date}</p>}
+                            {errors.date && <p className="text-red-400 text-xs">{errors.date}</p>}
                         </div>
-                        <div>
+                        <div className="space-y-1">
+                            <label className="text-xs font-semibold text-gray-300 uppercase tracking-wide flex items-center gap-1">
+                                <Clock size={12} /> Due Time
+                            </label>
                             <input
                                 value={task.time}
                                 type="time"
@@ -236,30 +253,17 @@ export default function AddTasks() {
                                 className={`w-full p-2 rounded-lg bg-gray-700/50 border text-white focus:outline-none transition-colors ${errors.time ? "border-red-500 focus:border-red-400" : "border-gray-600 focus:border-amber-400"
                                     }`}
                             />
-                            {errors.time && <p className="text-red-400 text-xs mt-0.5">{errors.time}</p>}
+                            {errors.time && <p className="text-red-400 text-xs">{errors.time}</p>}
                         </div>
                     </div>
 
-                    {/* Description */}
-                    <div>
-                        <textarea
-                            name="description"
-                            value={task.description}
-                            onChange={handleChange}
-                            placeholder="Description (optional)..."
-                            rows={1}
-                            className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white placeholder-gray-400 focus:outline-none focus:border-amber-400 transition-colors resize-none"
-                        />
-                    </div>
-
-                    {/* Buttons */}
                     <div className="flex gap-2 pt-1">
                         <button
                             type="button"
                             onClick={handleCancel}
                             className="flex-1 flex items-center justify-center gap-1 px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-gray-300 font-semibold transition-all border border-gray-600"
                         >
-                            <X size={14} /> Cancel
+                            <X size={16} /> Cancel
                         </button>
                         <button
                             type="button"
@@ -267,7 +271,7 @@ export default function AddTasks() {
                             disabled={saving}
                             className="flex-1 flex items-center justify-center gap-1 px-4 py-2 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold transition-all shadow-md shadow-amber-500/20 disabled:opacity-60 disabled:cursor-not-allowed"
                         >
-                            <Check size={14} /> Save Task
+                            <Check size={16} /> Save Task
                         </button>
                     </div>
                 </form>
