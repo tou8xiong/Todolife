@@ -14,7 +14,6 @@ import {
   MdFolder, MdFolderOpen, MdCreateNewFolder, MdExpandMore, MdChevronRight,
   MdGridView, MdDescription, MdImage, MdLink,
 } from "react-icons/md";
-import { IoShareSocialSharp } from "react-icons/io5";
 import { LuFileDown } from "react-icons/lu";
 import { useTipTapEditor } from "@/hooks/useTipTapEditor";
 import { EditorContent } from "@tiptap/react";
@@ -118,8 +117,13 @@ export default function NoteTextPage() {
   const [linkUrl, setLinkUrl] = useState("");
   const [imageContextMenu, setImageContextMenu] = useState<{ x: number; y: number; src: string } | null>(null);
   const [exporting, setExporting] = useState(false);
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number; type: "folder" | "file"; id: string | number } | null>(null);
+  const [showRenameModal, setShowRenameModal] = useState(false);
+  const [renameValue, setRenameValue] = useState("");
+  const [renameTarget, setRenameTarget] = useState<{ type: "folder" | "file"; id: string | number } | null>(null);
 
   const editorContainerRef = useRef<HTMLDivElement>(null);
+  const activeDocIdRef = useRef<number | null>(null);
 
   const {
     editor,
@@ -300,6 +304,61 @@ export default function NoteTextPage() {
     });
   };
 
+  const handleContextMenu = (e: React.MouseEvent, type: "folder" | "file", id: string | number) => {
+    e.preventDefault();
+    setContextMenu({ x: e.clientX, y: e.clientY, type, id });
+  };
+
+  const renameFolder = useCallback(async () => {
+    if (!user || !renameTarget || renameTarget.type !== "folder" || !renameValue.trim()) return;
+    try {
+      const res = await fetch(
+        `/api/folders?id=${renameTarget.id}&email=${encodeURIComponent(user.email)}`,
+        { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: renameValue.trim() }) }
+      );
+      if (res.ok) {
+        await loadFolders(user.email);
+        setShowRenameModal(false);
+        setRenameValue("");
+        setRenameTarget(null);
+        toast.success("Folder renamed");
+      } else {
+        const data = await res.json();
+        toast.error(data.error || "Failed to rename folder");
+      }
+    } catch { toast.error("Failed to rename folder"); }
+  }, [user, renameTarget, renameValue, loadFolders]);
+
+  const renameDoc = useCallback(async () => {
+    if (!user || !renameTarget || renameTarget.type !== "file" || !renameValue.trim()) return;
+    try {
+      const res = await fetch(
+        `/api/documents?id=${renameTarget.id}&email=${encodeURIComponent(user.email)}`,
+        { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title: renameValue.trim() }) }
+      );
+      if (res.ok) {
+        await loadDocs(user.email);
+        if (activeDoc && activeDoc.id === renameTarget.id) {
+          setTitle(renameValue.trim());
+          setActiveDoc({ ...activeDoc, title: renameValue.trim() });
+        }
+        setShowRenameModal(false);
+        setRenameValue("");
+        setRenameTarget(null);
+        toast.success("Document renamed");
+      } else {
+        const data = await res.json();
+        toast.error(data.error || "Failed to rename document");
+      }
+    } catch { toast.error("Failed to rename document"); }
+  }, [user, renameTarget, renameValue, loadDocs, activeDoc]);
+
+  useEffect(() => {
+    const handleClick = () => setContextMenu(null);
+    window.addEventListener("click", handleClick);
+    return () => window.removeEventListener("click", handleClick);
+  }, []);
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (u) => {
       setUser(u);
@@ -391,7 +450,7 @@ export default function NoteTextPage() {
     return () => window.removeEventListener("keydown", onKey);
   }, [handleSave]);
 
-  const handleOpen = (doc: Doc) => {
+  const handleOpen = async (doc: Doc) => {
     if (!user) {
       sessionStorage.setItem("redirectAfterLogin", window.location.pathname);
       showAlert({
@@ -403,12 +462,30 @@ export default function NoteTextPage() {
       });
       return;
     }
+    activeDocIdRef.current = doc.id;
     setActiveDoc(doc);
     setTitle(doc.title);
-    if (doc.content) {
-      editor?.commands.setContent(sanitizeHtml(doc.content));
-    } else {
-      editor?.commands.clearContent();
+    editor?.commands.setContent("<p>Loading...</p>");
+
+    if (!user?.email) return;
+
+    try {
+      const res = await fetch(`/api/documents?email=${encodeURIComponent(user.email)}&id=${doc.id}`);
+      if (res.ok) {
+        const data = await res.json();
+        const fullDoc = data.document;
+        if (fullDoc && activeDocIdRef.current === doc.id) {
+          setActiveDoc(fullDoc);
+          if (fullDoc.content) {
+            editor?.commands.setContent(sanitizeHtml(fullDoc.content));
+          } else {
+            editor?.commands.clearContent();
+          }
+        }
+      }
+    } catch (err) {
+      console.error("Failed to load document content", err);
+      toast.error("Failed to load document content");
     }
   };
 
@@ -451,7 +528,7 @@ export default function NoteTextPage() {
 
   return (
     <div className="flex h-[calc(100vh-4rem)] bg-gradient-to-br from-gray-900 to-gray-600 overflow-hidden">
-      <div className="w-72 shrink-0 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col">
+      <div className="w-64 sm:w-72 shrink-0 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col max-md:hidden">
         <div className="p-4 border-b border-gray-200 dark:border-gray-800">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-sm font-bold text-gray-800 dark:text-white">My Workspace</h2>
@@ -547,6 +624,7 @@ export default function NoteTextPage() {
               <div key={folder.id} className="space-y-0.5">
                 <button
                   onClick={() => { setSelectedFolderId(folder.id); setActiveDoc(null); toggleFolderExpand(folder.id); }}
+                  onContextMenu={(e) => handleContextMenu(e, "folder", folder.id)}
                   className={`w-full text-left px-3 py-2.5 rounded-xl text-sm font-medium transition-all flex items-center gap-2 group
                     ${isSelected
                       ? "bg-gradient-to-r from-sky-50 to-sky-100 dark:from-sky-900/30 dark:to-sky-800/20 text-sky-600 dark:text-sky-400 border border-sky-200 dark:border-sky-800 shadow-sm"
@@ -581,6 +659,7 @@ export default function NoteTextPage() {
                           <button
                             key={doc.id}
                             onClick={() => handleOpen(doc)}
+                            onContextMenu={(e) => handleContextMenu(e, "file", doc.id)}
                             className={`w-full text-left px-3 py-2 rounded-xl text-sm transition-all flex items-center gap-2 group
                               ${isActive
                                 ? "bg-white dark:bg-gray-800 shadow-sm border border-sky-200 dark:border-sky-800 text-sky-600 dark:text-sky-400"
@@ -591,13 +670,6 @@ export default function NoteTextPage() {
                               <MdInsertDriveFile size={14} className={color.text} />
                             </span>
                             <span className="truncate flex-1">{doc.title}</span>
-                            <span
-                              role="button"
-                              onClick={(e) => { e.stopPropagation(); handleDelete(doc.id); }}
-                              className="p-1 rounded opacity-0 group-hover:opacity-100 hover:bg-red-50 dark:hover:bg-red-900/30 text-red-400 hover:text-red-500 transition-all"
-                            >
-                              <MdDelete size={14} />
-                            </span>
                           </button>
                         );
                       })
@@ -649,23 +721,6 @@ export default function NoteTextPage() {
                   Export
                 </button>
                 <button
-                  onClick={() => {
-                    if (navigator.share && editor) {
-                      const content = editor.getText();
-                      navigator.share({
-                        title: title || "Document",
-                        text: content.slice(0, 500) + (content.length > 500 ? "..." : ""),
-                      }).catch(() => { });
-                    } else {
-                      toast.info("Copy the content to share it manually");
-                    }
-                  }}
-                  className="flex items-center gap-2 px-4 py-2 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm font-medium rounded-xl transition-all"
-                >
-                  <IoShareSocialSharp size={16} />
-                  Share
-                </button>
-                <button
                   onClick={handleSave}
                   disabled={saving}
                   className="flex items-center gap-2 px-5 py-2.5 bg-sky-500 hover:bg-sky-600 disabled:opacity-50 text-white text-sm font-semibold rounded-xl shadow-lg shadow-sky-500/25 hover:shadow-sky-500/40 transition-all"
@@ -676,7 +731,7 @@ export default function NoteTextPage() {
               </div>
             </div>
 
-            <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-4 py-2 flex items-center gap-1 flex-wrap shrink-0">
+            <div className="bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 px-2 py-2 flex items-center gap-1 flex-nowrap overflow-x-auto shrink-0">
               <select
                 value={currentFontFamily}
                 onChange={(e) => setFontFamily(e.target.value)}
@@ -873,12 +928,12 @@ export default function NoteTextPage() {
               </button>
             </div>
 
-            <div className="flex-1 overflow-auto p-8 flex justify-center">
+            <div className="flex-1 overflow-auto p-4 sm:p-8 flex justify-center">
               <div
                 ref={editorContainerRef}
-                className="bg-white shadow-2xl shrink-0 tiptap-editor-container w-[900px] min-h-[1123px]"
+                className="bg-white shadow-2xl shrink-0 tiptap-editor-container w-full max-w-[900px] min-h-[1123px] max-md:min-h-[700px]"
               >
-                <div className="text-center px-8 pt-8 pb-4">
+                <div className="text-center px-4 sm:px-8 pt-4 sm:pt-8 pb-4">
                   <input
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
@@ -984,6 +1039,7 @@ export default function NoteTextPage() {
                       <button
                         key={doc.id}
                         onClick={() => handleOpen(doc)}
+                        onContextMenu={(e) => handleContextMenu(e, "file", doc.id)}
                         className={`group relative p-5 rounded-2xl ${color.bg} border-2 ${color.border} hover:shadow-xl hover:scale-[1.02] transition-all duration-200 text-left`}
                       >
                         <div className="flex items-start gap-3">
@@ -996,14 +1052,6 @@ export default function NoteTextPage() {
                               <p className="text-xs text-gray-500 dark:text-gray-400">{formatDate(doc.updated_at)}</p>
                             )}
                           </div>
-                        </div>
-                        <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button
-                            onClick={(e) => { e.stopPropagation(); handleDelete(doc.id); }}
-                            className="p-1.5 rounded-lg bg-white/90 dark:bg-gray-800/90 shadow-sm hover:bg-red-50 dark:hover:bg-red-900/30 text-gray-400 hover:text-red-500 transition-all"
-                          >
-                            <MdDelete size={16} />
-                          </button>
                         </div>
                       </button>
                     );
@@ -1032,11 +1080,20 @@ export default function NoteTextPage() {
       <style jsx global>{`
         .tiptap-editor-container .ProseMirror {
           outline: none;
-          padding: 72px;
+          padding: 32px;
           font-size: 16px;
           line-height: 1.7;
           min-height: 1123px;
           font-family: Georgia, 'Times New Roman', serif;
+        }
+        @media (max-width: 768px) {
+          .tiptap-editor-container .ProseMirror {
+            padding: 16px;
+            min-height: 700px;
+          }
+          .tiptap-editor-container .ProseMirror h1 { font-size: 24px; }
+          .tiptap-editor-container .ProseMirror h2 { font-size: 20px; }
+          .tiptap-editor-container .ProseMirror h3 { font-size: 18px; }
         }
         .tiptap-editor-container .ProseMirror p {
           margin: 0 0 1em 0;
@@ -1247,6 +1304,80 @@ export default function NoteTextPage() {
                 className="flex-1 px-4 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 font-medium transition-colors"
               >
                 Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {contextMenu && (
+        <div
+          className="fixed z-50 bg-white dark:bg-gray-900 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-1 min-w-[160px] overflow-hidden"
+          style={{ left: contextMenu.x, top: contextMenu.y }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <button
+            onClick={() => {
+              if (contextMenu.type === "folder") {
+                const folder = folders.find(f => f.id === contextMenu.id);
+                setRenameTarget({ type: "folder", id: contextMenu.id });
+                setRenameValue(folder?.name || "");
+              } else {
+                const doc = docs.find(d => d.id === contextMenu.id);
+                setRenameTarget({ type: "file", id: contextMenu.id });
+                setRenameValue(doc?.title || "");
+              }
+              setShowRenameModal(true);
+              setContextMenu(null);
+            }}
+            className="w-full px-4 py-2.5 text-left text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex items-center gap-2"
+          >
+            <MdCreateNewFolder size={16} />
+            Rename
+          </button>
+          <button
+            onClick={async () => {
+              if (contextMenu.type === "folder") {
+                await deleteFolder(contextMenu.id as string);
+              } else {
+                await handleDelete(contextMenu.id as number);
+              }
+              setContextMenu(null);
+            }}
+            className="w-full px-4 py-2.5 text-left text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors flex items-center gap-2"
+          >
+            <MdDelete size={16} />
+            Delete
+          </button>
+        </div>
+      )}
+
+      {showRenameModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl p-6 w-full max-w-md mx-4 border border-gray-200 dark:border-gray-700">
+            <h3 className="text-lg font-bold text-gray-800 dark:text-white mb-4">
+              Rename {renameTarget?.type === "folder" ? "Folder" : "Document"}
+            </h3>
+            <input
+              type="text"
+              value={renameValue}
+              onChange={(e) => setRenameValue(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") { renameTarget?.type === "folder" ? renameFolder() : renameDoc(); } }}
+              className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500 mb-4"
+              autoFocus
+            />
+            <div className="flex gap-3">
+              <button
+                onClick={() => { setShowRenameModal(false); setRenameValue(""); setRenameTarget(null); }}
+                className="flex-1 px-4 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 font-medium transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => { renameTarget?.type === "folder" ? renameFolder() : renameDoc(); }}
+                className="flex-1 px-4 py-2.5 rounded-xl bg-sky-500 text-white font-medium hover:bg-sky-600 transition-colors"
+              >
+                Rename
               </button>
             </div>
           </div>

@@ -7,21 +7,29 @@ function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && email.length <= 254;
 }
 
-// GET /api/documents?email=user@example.com
+// GET /api/documents?email=user@example.com&id=optional_id
 export async function GET(req: NextRequest) {
   try {
     const email = req.nextUrl.searchParams.get("email");
+    const id = req.nextUrl.searchParams.get("id");
     if (!email || !isValidEmail(email)) return NextResponse.json({ documents: [] });
 
-    const { data, error } = await supabase
+    let query = supabase
       .from("documents")
-      .select("*")
-      .eq("user_email", email)
-      .order("updated_at", { ascending: false });
+      .select(id ? "*" : "id, title, folder_id, updated_at, user_email")
+      .eq("user_email", email);
 
-    if (error) throw error;
-
-    return NextResponse.json({ documents: data ?? [] });
+    if (id) {
+      query = query.eq("id", Number(id));
+      const { data, error } = await query.single();
+      if (error) throw error;
+      return NextResponse.json({ document: data });
+    } else {
+      query = query.order("updated_at", { ascending: false });
+      const { data, error } = await query;
+      if (error) throw error;
+      return NextResponse.json({ documents: data ?? [] });
+    }
   } catch (err: any) {
     console.error("[GET /api/documents]", err?.message ?? err);
     return NextResponse.json({ error: "Failed to load documents" }, { status: 500 });

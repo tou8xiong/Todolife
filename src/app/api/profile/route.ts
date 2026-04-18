@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import redis from "@/lib/redis";
+import supabase from "@/lib/supabase";
 
 export const dynamic = "force-dynamic";
 
@@ -9,8 +9,20 @@ export async function GET(req: NextRequest) {
     const email = req.nextUrl.searchParams.get("email");
     if (!email) return NextResponse.json({ profileImage: null, emoji: null });
 
-    const data = await redis.get(`profile:${email}`);
-    const profile = data ? JSON.parse(data as string) : { profileImage: null, emoji: null };
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("profile_image, emoji")
+      .eq("user_email", email)
+      .single();
+
+    if (error && error.code !== "PGRST116") { // PGRST116 is 'Row not found'
+      throw error;
+    }
+
+    const profile = data
+      ? { profileImage: data.profile_image, emoji: data.emoji }
+      : { profileImage: null, emoji: null };
+
     return NextResponse.json(profile);
   } catch (err: any) {
     console.error("[GET /api/profile]", err?.message ?? err);
@@ -24,16 +36,16 @@ export async function POST(req: NextRequest) {
     const { email, profileImage, emoji } = await req.json();
     if (!email) return NextResponse.json({ error: "Email required" }, { status: 400 });
 
-    // Merge with existing so partial updates work
-    const existing = await redis.get(`profile:${email}`);
-    const current = existing ? JSON.parse(existing as string) : {};
-    const updated = {
-      ...current,
-      ...(profileImage !== undefined ? { profileImage } : {}),
-      ...(emoji !== undefined ? { emoji } : {}),
-    };
+    const updateData: any = { user_email: email };
+    if (profileImage !== undefined) updateData.profile_image = profileImage;
+    if (emoji !== undefined) updateData.emoji = emoji;
 
-    await redis.set(`profile:${email}`, JSON.stringify(updated));
+    const { error } = await supabase
+      .from("profiles")
+      .upsert(updateData, { onConflict: 'user_email' });
+
+    if (error) throw error;
+
     return NextResponse.json({ ok: true });
   } catch (err: any) {
     console.error("[POST /api/profile]", err?.message ?? err);
