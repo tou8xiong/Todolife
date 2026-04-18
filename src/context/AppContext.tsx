@@ -24,6 +24,8 @@ interface AppContextValue {
   taskCounts: TaskCounts;
   profile: Profile;
   profileLoading: boolean;
+  forceExpandSidebar: boolean;
+  toggleSidebar: () => void;
 }
 
 const AppContext = createContext<AppContextValue>({
@@ -32,6 +34,8 @@ const AppContext = createContext<AppContextValue>({
   taskCounts: { total: 0, pending: 0, completed: 0 },
   profile: { profileImage: null, emoji: null },
   profileLoading: false,
+  forceExpandSidebar: false,
+  toggleSidebar: () => {},
 });
 
 export function AppProvider({ children }: { children: ReactNode }) {
@@ -47,7 +51,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     emoji: null,
   });
   const [profileLoading, setProfileLoading] = useState(false);
+  const [forceExpandSidebar, setForceExpandSidebar] = useState(false);
   const emailRef = useRef<string | null>(null);
+
+  const toggleSidebar = useCallback(() => {
+    setForceExpandSidebar((prev) => !prev);
+  }, []);
 
   const reloadTasks = useCallback(async () => {
     const email = emailRef.current;
@@ -115,7 +124,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   return (
     <AppContext.Provider
-      value={{ user, authLoading, taskCounts, profile, profileLoading }}
+      value={{ user, authLoading, taskCounts, profile, profileLoading, forceExpandSidebar, toggleSidebar }}
     >
       {children}
     </AppContext.Provider>

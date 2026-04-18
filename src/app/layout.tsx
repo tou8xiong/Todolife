@@ -8,6 +8,7 @@ import TimerPopup from "@/components/timer/TimerPopup";
 import AosClientWrapper from "@/components/layout/AosAnimation";
 import { AppProvider } from "@/context/AppContext";
 import Providers from "./Providers";
+import MainLayoutWrapper from "@/components/layout/MainLayoutWrapper";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -142,9 +143,9 @@ export default function RootLayout({
             <AppProvider>
               <Header />
               <Sidebar />
-              <main className="md:ml-45 min-h-[calc(100vh-4rem)]">
+              <MainLayoutWrapper>
                 {children}
-              </main>
+              </MainLayoutWrapper>
               <TimerPopup />
             </AppProvider>
           </AosClientWrapper>
