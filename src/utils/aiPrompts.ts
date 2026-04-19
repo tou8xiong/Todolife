@@ -8,6 +8,7 @@ export interface AgentSystemPromptOptions {
 
 export const TASK_CREATE_REGEX = /\[TASK_CREATE\]([\s\S]*?)\[\/TASK_CREATE\]/g;
 export const TASK_DELETE_REGEX = /\[TASK_DELETE\]([\s\S]*?)\[\/TASK_DELETE\]/g;
+export const TASK_UPDATE_REGEX = /\[TASK_UPDATE\]([\s\S]*?)\[\/TASK_UPDATE\]/g;
 
 export interface ParsedTaskData {
   title: string;
@@ -23,20 +24,33 @@ export interface ParsedDeleteData {
   title: string;
 }
 
+export interface ParsedUpdateData {
+  id: number;
+  title?: string;
+  priority?: string;
+  type?: string;
+  date?: string;
+  time?: string;
+  description?: string;
+}
+
 export function parseTaskFromResponse(response: string): {
   cleanText: string;
   taskData: ParsedTaskData | ParsedTaskData[] | null;
   deleteData: ParsedDeleteData | ParsedDeleteData[] | null;
+  updateData: ParsedUpdateData | ParsedUpdateData[] | null;
 } {
   const createMatches = response.match(TASK_CREATE_REGEX);
   const deleteMatches = response.match(TASK_DELETE_REGEX);
+  const updateMatches = response.match(TASK_UPDATE_REGEX);
 
-  if (!createMatches?.length && !deleteMatches?.length) {
-    return { cleanText: response, taskData: null, deleteData: null };
+  if (!createMatches?.length && !deleteMatches?.length && !updateMatches?.length) {
+    return { cleanText: response, taskData: null, deleteData: null, updateData: null };
   }
 
   const taskDataList: ParsedTaskData[] = [];
   const deleteDataList: ParsedDeleteData[] = [];
+  const updateDataList: ParsedUpdateData[] = [];
 
   for (const match of createMatches || []) {
     const jsonStr = match
@@ -72,15 +86,37 @@ export function parseTaskFromResponse(response: string): {
     } catch { /* Skip invalid JSON */ }
   }
 
+  for (const match of updateMatches || []) {
+    const jsonStr = match
+      .replace(/\[TASK_UPDATE\]/, "")
+      .replace(/\[\/TASK_UPDATE\]/, "");
+    try {
+      const parsed = JSON.parse(jsonStr);
+      if (parsed && typeof parsed === "object" && parsed.id) {
+        updateDataList.push({
+          id: Number(parsed.id),
+          ...(parsed.title !== undefined && { title: parsed.title }),
+          ...(parsed.priority !== undefined && { priority: parsed.priority }),
+          ...(parsed.type !== undefined && { type: parsed.type }),
+          ...(parsed.date !== undefined && { date: parsed.date }),
+          ...(parsed.time !== undefined && { time: parsed.time }),
+          ...(parsed.description !== undefined && { description: parsed.description }),
+        });
+      }
+    } catch { /* Skip invalid JSON */ }
+  }
+
   let cleanText = response
     .replace(TASK_CREATE_REGEX, "")
     .replace(TASK_DELETE_REGEX, "")
+    .replace(TASK_UPDATE_REGEX, "")
     .trim();
 
   return {
     cleanText,
     taskData: taskDataList.length === 0 ? null : taskDataList.length === 1 ? taskDataList[0] : taskDataList,
     deleteData: deleteDataList.length === 0 ? null : deleteDataList.length === 1 ? deleteDataList[0] : deleteDataList,
+    updateData: updateDataList.length === 0 ? null : updateDataList.length === 1 ? updateDataList[0] : updateDataList,
   };
 }
 
@@ -126,10 +162,11 @@ Today is ${today}.
 ## Your Capabilities:
 1. Create tasks with title, priority (high/medium/low), type (work/study/activities), date (YYYY-MM-DD), time (HH:MM), and description
 2. Delete tasks when user asks to remove/delete/cancel a task
-3. Analyze user's task patterns and suggest improvements
-4. Help break down complex goals into actionable tasks
-5. Remind about deadlines and suggest scheduling
-6. Provide motivational support and productivity tips
+3. Update/edit pending tasks when user asks to change title, priority, type, date, time, or description
+4. Analyze user's task patterns and suggest improvements
+5. Help break down complex goals into actionable tasks
+6. Remind about deadlines and suggest scheduling
+7. Provide motivational support and productivity tips
 
 ## Task Creation Format:
 When user asks to CREATE, ADD, or MAKE a task, respond briefly then append at the END:
@@ -147,6 +184,12 @@ When user asks to CREATE, ADD, or MAKE a task, respond briefly then append at th
 When user asks to DELETE, REMOVE, or CANCEL a task, find the task ID from the pending tasks list above and respond briefly then append:
 [TASK_DELETE]{"id":123,"title":"Task title"}[/TASK_DELETE]
 
+## Task Update Format:
+When user asks to UPDATE, EDIT, CHANGE, or RESCHEDULE a pending task, find the task ID from the pending tasks list above, then respond briefly and append ONLY the fields that are changing:
+[TASK_UPDATE]{"id":123,"title":"New title","priority":"high","date":"2026-04-20","time":"10:00"}[/TASK_UPDATE]
+- Only include fields the user wants to change — omit unchanged fields
+- You can update: title, priority, type, date, time, description
+
 ## Smart Suggestions:
 - If user mentions "urgent" or "asap" → high priority
 - If user mentions specific day/time → include in date/time
@@ -163,6 +206,7 @@ When user asks to DELETE, REMOVE, or CANCEL a task, find the task ID from the pe
 - "study", "learn", "exam", "school", "course" → study type
 - "hobby", "fun", "exercise", "play" → activities type
 - "delete", "remove", "cancel", "don't want" → delete action
+- "update", "edit", "change", "reschedule", "rename", "move to", "set priority" → update action
 
 ${userBehavior}
 

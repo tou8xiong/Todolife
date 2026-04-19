@@ -527,7 +527,7 @@ export default function NoteTextPage() {
   const highlightInputRef = useRef<HTMLInputElement>(null);
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] bg-gradient-to-br from-gray-900 to-gray-600 overflow-hidden">
+    <div className="flex h-[calc(100vh-4rem)] bg-transparent overflow-hidden">
       <div className="w-64 sm:w-72 shrink-0 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col max-md:hidden">
         <div className="p-4 border-b border-gray-200 dark:border-gray-800">
           <div className="flex items-center justify-between mb-3">
