@@ -8,7 +8,7 @@ import {
   Bot, Send, Loader2, MessageSquare, FileText, ListTodo,
   AlertCircle, ChevronUp, CheckCircle2, SquarePen, Trash2, Menu, X,
 } from "lucide-react";
-import { buildSystemPrompt, parseTaskFromResponse, AgentSystemPromptOptions } from "@/utils/aiPrompts";
+import { buildSystemPrompt, parseTaskFromResponse, AgentSystemPromptOptions, ParsedUpdateData } from "@/utils/aiPrompts";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -18,6 +18,8 @@ interface Message {
   role: "user" | "assistant";
   content: string;
   taskCreated?: Task;
+  taskDeleted?: { id: number; title: string };
+  taskUpdated?: { id: number; fields: Partial<Task> };
 }
 
 interface ConvMeta {
@@ -252,6 +254,43 @@ export default function AgentChat() {
     return newTask;
   };
 
+  const deleteTask = async (id: number): Promise<{ id: number; title: string }> => {
+    if (!userEmail) throw new Error("Not logged in");
+    const target = tasks.find((t) => t.id === id);
+    if (!target) throw new Error(`Task with ID ${id} not found`);
+    const updatedTasks = tasks.filter((t) => t.id !== id);
+    const res = await fetch("/api/tasks", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: userEmail, tasks: updatedTasks }),
+    });
+    if (!res.ok) throw new Error("Failed to delete task");
+    setTasks(updatedTasks);
+    localStorage.setItem(`tasks_${userEmail}`, JSON.stringify(updatedTasks));
+    window.dispatchEvent(new Event("tasksUpdated"));
+    return { id: target.id, title: target.title };
+  };
+
+  const updateTask = async (updateData: ParsedUpdateData): Promise<{ id: number; fields: Partial<Task> }> => {
+    if (!userEmail) throw new Error("Not logged in");
+    const target = tasks.find((t) => t.id === updateData.id);
+    if (!target) throw new Error(`Task with ID ${updateData.id} not found`);
+    const { id, ...fields } = updateData;
+    const updatedTasks = tasks.map((t) =>
+      t.id === id ? { ...t, ...fields } : t
+    );
+    const res = await fetch("/api/tasks", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: userEmail, tasks: updatedTasks }),
+    });
+    if (!res.ok) throw new Error("Failed to update task");
+    setTasks(updatedTasks);
+    localStorage.setItem(`tasks_${userEmail}`, JSON.stringify(updatedTasks));
+    window.dispatchEvent(new Event("tasksUpdated"));
+    return { id, fields };
+  };
+
   const send = async () => {
     const trimmed = input.trim();
     if (!trimmed || loading) return;
@@ -285,7 +324,7 @@ export default function AgentChat() {
       const data = await res.json();
       if (!res.ok || data.error) throw new Error(data.error ?? `Error ${res.status}`);
 
-      const { cleanText, taskData } = parseTaskFromResponse(data.result);
+      const { cleanText, taskData, deleteData, updateData } = parseTaskFromResponse(data.result);
 
       let createdTask: Task | undefined;
       if (taskData && !Array.isArray(taskData) && taskData.title && mode === "chat") {
@@ -293,7 +332,25 @@ export default function AgentChat() {
         catch (err: any) { setError(`Task created in chat but failed to persist: ${err.message}`); }
       }
 
-      const assistantMessage: Message = { role: "assistant", content: cleanText, taskCreated: createdTask };
+      let deletedTask: { id: number; title: string } | undefined;
+      if (deleteData && !Array.isArray(deleteData) && mode === "chat") {
+        try { deletedTask = await deleteTask(deleteData.id); }
+        catch (err: any) { setError(`Could not delete task: ${err.message}`); }
+      }
+
+      let updatedTask: { id: number; fields: Partial<Task> } | undefined;
+      if (updateData && !Array.isArray(updateData) && mode === "chat") {
+        try { updatedTask = await updateTask(updateData); }
+        catch (err: any) { setError(`Could not update task: ${err.message}`); }
+      }
+
+      const assistantMessage: Message = {
+        role: "assistant",
+        content: cleanText,
+        taskCreated: createdTask,
+        taskDeleted: deletedTask,
+        taskUpdated: updatedTask,
+      };
       const finalMessages = [...updatedWithUser, assistantMessage];
       setMessages(finalMessages);
 
@@ -471,6 +528,23 @@ export default function AgentChat() {
                   Task created: <strong>{msg.taskCreated.title}</strong>
                   {msg.taskCreated.priority && <span className="capitalize opacity-70">· {msg.taskCreated.priority}</span>}
                   {msg.taskCreated.type && <span className="capitalize opacity-70">· {msg.taskCreated.type}</span>}
+                </div>
+              )}
+
+              {msg.taskDeleted && (
+                <div className="flex items-center gap-2 ml-10 px-3 py-1.5 rounded-xl bg-red-900/30 border border-red-800 text-red-300 text-xs">
+                  <Trash2 size={13} className="shrink-0" />
+                  Task deleted: <strong>{msg.taskDeleted.title}</strong>
+                </div>
+              )}
+
+              {msg.taskUpdated && (
+                <div className="flex items-center gap-2 ml-10 px-3 py-1.5 rounded-xl bg-sky-900/30 border border-sky-800 text-sky-300 text-xs">
+                  <CheckCircle2 size={13} className="shrink-0" />
+                  Task updated
+                  {msg.taskUpdated.fields.title && <span>: <strong>{msg.taskUpdated.fields.title}</strong></span>}
+                  {msg.taskUpdated.fields.priority && <span className="capitalize opacity-70">· {msg.taskUpdated.fields.priority}</span>}
+                  {msg.taskUpdated.fields.date && <span className="opacity-70">· {msg.taskUpdated.fields.date}</span>}
                 </div>
               )}
             </div>

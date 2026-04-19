@@ -11,7 +11,7 @@ import { useAlert } from "@/hooks/useAlert";
 
 const BG_CONFIG = {
     device: "gpu" as const,
-    model: "isnet" as const,
+    model: "isnet_quint8" as const,
     output: { format: "image/png" as const },
 };
 
@@ -26,7 +26,7 @@ export default function BackgroundRemovalPage() {
     const [progress, setProgress] = useState(0);
     const [fileName, setFileName] = useState<string | null>(null);
     const [dragOver, setDragOver] = useState(false);
-    const resultRef = useRef<HTMLDivElement | null>(null); 
+    const resultRef = useRef<HTMLDivElement | null>(null);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
     const [restored, setRestored] = useState(false);
 
@@ -42,11 +42,11 @@ export default function BackgroundRemovalPage() {
         if (savedData && savedData.sourcePreviewDataUrl) {
             // Use the saved data URLs directly
             setSourcePreview(savedData.sourcePreviewDataUrl);
-            
+
             if (savedData.resultPreviewDataUrl) {
                 setResultPreview(savedData.resultPreviewDataUrl);
             }
-            
+
             setFileName(savedData.fileName);
             showAlert({
                 title: "Welcome Back!",
@@ -111,7 +111,7 @@ export default function BackgroundRemovalPage() {
                     fileName: fileName || "",
                 });
             }
-            
+
             sessionStorage.setItem("redirectAfterLogin", window.location.pathname);
             showAlert({
                 title: "Login Required",
@@ -126,7 +126,7 @@ export default function BackgroundRemovalPage() {
         link.href = resultPreview!;
         link.download = fileName ? `${fileName.replace(/\.[^.]+$/, "")}-no-bg.png` : "no-bg.png";
         link.click();
-    };       
+    };
 
     useEffect(() => {
         if (resultPreview && resultRef.current) {
