@@ -7,6 +7,8 @@ import Sidebar from "@/components/layout/Sidebar";
 import TimerPopup from "@/components/timer/TimerPopup";
 import AosClientWrapper from "@/components/layout/AosAnimation";
 import { AppProvider } from "@/context/AppContext";
+import { LanguageProvider } from "@/context/LanguageContext";
+import { ThemeProvider } from "@/context/ThemeProvider";
 import Providers from "./Providers";
 import MainLayoutWrapper from "@/components/layout/MainLayoutWrapper";
 
@@ -122,7 +124,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <meta name="viewport" content="width=device-width, height=device-height, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
         <meta name="theme-color" content="#f59e0b" />

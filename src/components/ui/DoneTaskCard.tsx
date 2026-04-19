@@ -4,9 +4,9 @@ import { ConfirmDeleteButton } from "@/components/ui/ConfirmDeleteitems";
 import { CheckCircle2, CalendarDays, Clock } from "lucide-react";
 
 const PRIORITY_STYLES: Record<string, string> = {
-  high:   "bg-red-100 text-red-600 border-red-400",
+  high: "bg-red-100 text-red-600 border-red-400",
   medium: "bg-yellow-100 text-yellow-600 border-yellow-400",
-  low:    "bg-green-100 text-green-600 border-green-400",
+  low: "bg-green-100 text-green-600 border-green-400",
 };
 
 const formatCompletedAt = (iso?: string | null) => {

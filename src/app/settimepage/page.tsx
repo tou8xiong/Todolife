@@ -6,10 +6,10 @@ export const metadata: Metadata = {
   description: "Use the TodoLife study timer to boost focus and track your sessions. Set custom durations and stay productive.",
 };
 
-export default function SetTimePage(){
-    return(
-        <div className="flex justify-center">
-        <TimeSetting />
-        </div>
-    )
+export default function SetTimePage() {
+  return (
+    <div className="flex justify-center">
+      <TimeSetting />
+    </div>
+  )
 }

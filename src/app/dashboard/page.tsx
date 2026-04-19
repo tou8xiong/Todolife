@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { Task } from "@/types/task";
+import { useLanguage } from "@/context/LanguageContext";
 import { BookOpen, Clock, Zap, Target, CheckCircle } from "lucide-react";
 
 interface Idea {
@@ -17,12 +18,12 @@ interface StudySession {
     videoName: string;
 }
 
-function getGreeting() {
+function getGreeting(t: any) {
     const h = new Date().getHours();
-    if (h < 12) return "Good morning";
-    if (h < 17) return "Good afternoon";
-    if (h < 21) return "Good evening";
-    return "Good night";
+    if (h < 12) return t.goodMorning;
+    if (h < 17) return t.goodAfternoon;
+    if (h < 21) return t.goodEvening;
+    return t.goodNight;
 }
 
 function formatDuration(centis: number) {
@@ -38,33 +39,35 @@ function formatDuration(centis: number) {
 
 // ── Study Stats ──────────────────────────────────────────────────────────────
 function StudyStats({ sessions }: { sessions: StudySession[] }) {
+    const { t } = useLanguage();
+    const d = t.dashboard;
     const totalCentis = sessions.reduce((acc, s) => acc + s.duration, 0);
     const recent = [...sessions].reverse().slice(0, 3);
 
     return (
-        <div className="bg-gray-800 rounded-2xl shadow p-5 flex flex-col gap-4">
+        <div className="bg-white/10 backdrop-blur-md border border-white/10 rounded-2xl shadow-lg p-5 flex flex-col gap-4">
             <div className="flex items-center justify-between">
                 <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                    <BookOpen size={20} className="text-blue-500" /> Study Stats
+                    <BookOpen size={20} className="text-blue-500" /> {d.studyStats}
                 </h2>
                 <div className="px-3 py-1 bg-blue-900/50 text-blue-300 rounded-full text-xs font-bold">
-                    Total: {formatDuration(totalCentis)}
+                    {d.total}: {formatDuration(totalCentis)}
                 </div>
             </div>
 
             {sessions.length === 0 ? (
-                <p className="text-gray-200 text-sm italic">No study sessions recorded yet. Head to Study Hub to start!</p>
+                <p className="text-gray-500 dark:text-gray-200 text-sm italic">{d.noStudySessions}</p>
             ) : (
                 <div className="space-y-3">
-                    <p className="text-xs text-gray-200 uppercase font-bold tracking-wider">Recent Sessions</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-200 uppercase font-bold tracking-wider">{d.recentSessions}</p>
                     {recent.map((s) => (
-                        <div key={s.id} className="flex items-center gap-3 p-3 bg-gray-700/50 rounded-xl border border-gray-600">
-                            <div className="p-2 bg-gray-700 rounded-lg shadow-sm">
-                                <Clock size={16} className="text-amber-500" />
+                        <div key={s.id} className="flex items-center gap-3 p-3 bg-white/5 rounded-xl border border-white/10">
+                            <div className="p-2 bg-white/10 rounded-lg shadow-sm">
+                                <Clock size={16} className="text-amber-400" />
                             </div>
                             <div className="flex-1 min-w-0">
                                 <p className="text-sm font-semibold text-white truncate">{s.videoName}</p>
-                                <p className="text-xs text-gray-200">{new Date(s.timestamp).toLocaleDateString()}</p>
+                                <p className="text-xs text-gray-300">{new Date(s.timestamp).toLocaleDateString()}</p>
                             </div>
                             <span className="text-sm font-mono font-bold text-amber-400">{formatDuration(s.duration)}</span>
                         </div>
@@ -72,7 +75,7 @@ function StudyStats({ sessions }: { sessions: StudySession[] }) {
                 </div>
             )}
             <a href="/settimepage" className="text-xs text-blue-500 hover:underline mt-1 block">
-                Open Study Hub →
+                {d.openStudyHub} →
             </a>
         </div>
     );
@@ -80,6 +83,8 @@ function StudyStats({ sessions }: { sessions: StudySession[] }) {
 
 // ── Pomodoro Timer ──────────────────────────────────────────────────────────
 function PomodoroTimer({ tasks }: { tasks: Task[] }) {
+    const { t } = useLanguage();
+    const d = t.dashboard;
     const DURATION = 25 * 60;
     const [secondsLeft, setSecondsLeft] = useState(DURATION);
     const [running, setRunning] = useState(false);
@@ -112,46 +117,46 @@ function PomodoroTimer({ tasks }: { tasks: Task[] }) {
     const progress = ((DURATION - secondsLeft) / DURATION) * 100;
 
     return (
-        <div className="bg-gray-800 rounded-2xl shadow p-5 flex flex-col gap-3">
-            <h2 className="text-lg font-bold text-white">⏱ Focus Timer</h2>
+        <div className="bg-white/10 backdrop-blur-md border border-white/10 rounded-2xl shadow-lg p-5 flex flex-col gap-3 transition-all">
+            <h2 className="text-lg font-bold text-white">⏱ {d.focusTimer}</h2>
             <select
                 value={focusTask}
                 onChange={(e) => setFocusTask(e.target.value)}
-                className="border rounded-lg p-2 text-sm text-gray-600 dark:bg-gray-700 dark:text-white dark:border-gray-600"
+                className="border rounded-lg p-2 text-sm text-slate-900 dark:text-white bg-white dark:bg-gray-700 dark:border-gray-600 outline-none"
             >
-                <option value="">Select task to focus on...</option>
+                <option value="">{d.selectTaskToFocus}</option>
                 {tasks.map((t) => (
                     <option key={t.id} value={t.title}>{t.title}</option>
                 ))}
             </select>
             {focusTask && (
-                <p className="text-xs text-amber-600 font-medium truncate">Focusing: {focusTask}</p>
+                <p className="text-xs text-amber-600 font-medium truncate">{d.focusing} {focusTask}</p>
             )}
-            <div className="text-5xl font-mono text-center text-white py-2">
+            <div className="text-5xl font-mono text-center text-slate-900 dark:text-white py-2">
                 {minutes}:{seconds}
             </div>
-            <div className="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-2">
+            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                 <div
                     className="bg-amber-400 h-2 rounded-full transition-all duration-1000"
                     style={{ width: `${progress}%` }}
                 />
             </div>
-            <p className="text-center text-xs text-gray-200">25-min Pomodoro session</p>
+            <p className="text-center text-xs text-gray-500 dark:text-gray-200">{d.pomodoroSession}</p>
             <div className="flex gap-2 justify-center">
                 <button
                     onClick={() => setRunning(true)}
                     disabled={running}
                     className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg disabled:opacity-40 text-sm transition-colors"
-                >Start</button>
+                >{d.start}</button>
                 <button
                     onClick={() => setRunning(false)}
                     disabled={!running}
                     className="px-4 py-2 bg-yellow-400 hover:bg-yellow-500 text-white rounded-lg disabled:opacity-40 text-sm transition-colors"
-                >Pause</button>
+                >{d.pause}</button>
                 <button
                     onClick={() => { setRunning(false); setSecondsLeft(DURATION); }}
                     className="px-4 py-2 bg-red-400 hover:bg-red-500 text-white rounded-lg text-sm transition-colors"
-                >Reset</button>
+                >{d.reset}</button>
             </div>
         </div>
     );
@@ -159,6 +164,8 @@ function PomodoroTimer({ tasks }: { tasks: Task[] }) {
 
 // ── Weekly Chart ─────────────────────────────────────────────────────────────
 function WeeklyChart({ tasks }: { tasks: Task[] }) {
+    const { t } = useLanguage();
+    const d = t.dashboard;
     const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
     const today = new Date();
     const dayOfWeek = today.getDay();
@@ -174,8 +181,8 @@ function WeeklyChart({ tasks }: { tasks: Task[] }) {
     const max = Math.max(...counts, 1);
 
     return (
-        <div className="bg-gray-800 rounded-2xl shadow p-5">
-            <h2 className="text-lg font-bold text-white mb-4">📈 Weekly Progress</h2>
+        <div className="bg-white/10 backdrop-blur-md border border-white/10 rounded-2xl shadow-lg p-5 transition-all">
+            <h2 className="text-lg font-bold text-white mb-4">📈 {d.weeklyProgress}</h2>
             <div className="flex items-end gap-2 h-28">
                 {days.map((day, i) => (
                     <div key={day} className="flex flex-col items-center flex-1 gap-1">
@@ -184,7 +191,7 @@ function WeeklyChart({ tasks }: { tasks: Task[] }) {
                             className="w-full bg-amber-400 rounded-t transition-all"
                             style={{ height: `${(counts[i] / max) * 100}%`, minHeight: counts[i] > 0 ? "6px" : "2px", opacity: counts[i] > 0 ? 1 : 0.15 }}
                         />
-                        <span className="text-xs text-gray-200">{day}</span>
+                        <span className="text-xs text-gray-500 dark:text-gray-200">{day}</span>
                     </div>
                 ))}
             </div>
@@ -194,17 +201,21 @@ function WeeklyChart({ tasks }: { tasks: Task[] }) {
 
 // ── Dashboard Page ───────────────────────────────────────────────────────────
 export default function Dashboard() {
+    const { locale, t } = useLanguage();
+    const d = t.dashboard;
     const [user, setUser] = useState<any>(null);
     const [tasks, setTasks] = useState<Task[]>([]);
     const [ideas, setIdeas] = useState<Idea[]>([]);
     const [studySessions, setStudySessions] = useState<StudySession[]>([]);
-    const [streak, setStreak] = useState(0);
+    const [streakDays, setStreak] = useState(0);
     const [redirecting, setRedirecting] = useState(false);
+    const [loadingTasks, setLoadingTasks] = useState(true);
 
     const todayStr = new Date().toISOString().split("T")[0];
 
     const loadData = async (email: string) => {
         try {
+            setLoadingTasks(true);
             const [tasksRes, ideasRes] = await Promise.all([
                 fetch(`/api/tasks?email=${encodeURIComponent(email)}`),
                 fetch(`/api/ideas?email=${encodeURIComponent(email)}`),
@@ -217,7 +228,6 @@ export default function Dashboard() {
             setIdeas(ideasData.ideas ?? []);
             setStudySessions(JSON.parse(localStorage.getItem(`study_sessions_${email}`) || "[]"));
 
-            // Compute streak
             let s = 0;
             const d = new Date();
             while (true) {
@@ -229,6 +239,8 @@ export default function Dashboard() {
             setStreak(s);
         } catch (err) {
             console.error("Failed to load dashboard data", err);
+        } finally {
+            setLoadingTasks(false);
         }
     };
 
@@ -242,16 +254,12 @@ export default function Dashboard() {
             setUser(u);
             if (u?.email) loadData(u.email);
         });
-        const onUpdate = () => { if (user?.email) loadData(user.email); };
-        window.addEventListener("tasksUpdated", onUpdate);
-        return () => { unsub(); window.removeEventListener("tasksUpdated", onUpdate); };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        return () => unsub();
     }, []);
 
     const pendingTasks = tasks.filter((t) => !t.completed);
-    const completedTasks = tasks.filter((t) => t.completed);
     const todayTasks = pendingTasks.filter((t) => t.date === todayStr);
-    const completedToday = completedTasks.filter((t) => t.completedAt?.startsWith(todayStr));
+    const todayDoneCount = tasks.filter((t) => t.completed && t.completedAt?.startsWith(todayStr)).length;
     const overdueTasks = pendingTasks.filter((t) => {
         if (!t.date) return false;
         return new Date(`${t.date}T${t.time || "23:59"}`).getTime() < Date.now();
@@ -274,8 +282,8 @@ export default function Dashboard() {
 
     if (redirecting || !user) {
         return (
-            <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-                <div className="animate-spin h-8 w-8 border-4 border-blue-500 border-t-transparent rounded-full" />
+            <div className="min-h-screen bg-linear-to-b from-gray-900 to-gray-600 flex items-center justify-center">
+                <div className="animate-spin h-8 w-8 border-4 border-sky-500 border-t-transparent rounded-full" />
             </div>
         );
     }
@@ -283,63 +291,59 @@ export default function Dashboard() {
     return (
         <div className="min-h-screen bg-linear-to-b from-gray-900 to-gray-600 p-4 sm:p-6 font-serif text-white">
 
-            {/* 1 — Greeting + Quick Add */}
-            <div className="bg-gray-800 rounded-2xl shadow p-5 mb-5 flex flex-col sm:flex-row sm:items-center gap-4">
+            <div className="bg-white/10 backdrop-blur-md border border-white/10 rounded-2xl shadow-lg p-5 mb-5 flex flex-col sm:flex-row sm:items-center gap-4 transition-all">
                 <div className="flex-1">
                     <h1 className="text-2xl font-bold text-white">
-                        {getGreeting()}, {displayName} 👋
+                        {getGreeting(d)}, {displayName} 👋
                     </h1>
-                    <p className="text-gray-200 text-sm mt-1">
-                        {new Date().toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
+                    <p className="text-gray-300 text-sm mt-1">
+                        {new Date().toLocaleDateString(locale === "lo" ? "lo-LA" : "en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
                     </p>
                 </div>
                 <a
                     href="/newtasks"
-                    className="flex items-center gap-2 px-5 py-2.5 bg-amber-400 hover:bg-amber-500 text-white rounded-xl text-sm font-semibold transition-colors shadow-sm"
+                    className="flex items-center gap-2 px-5 py-2.5 bg-amber-500 hover:bg-amber-600 dark:bg-amber-400 dark:hover:bg-amber-500 text-white rounded-xl text-sm font-semibold transition-colors shadow-sm"
                 >
-                    <span className="text-lg leading-none">+</span> Add a Task
+                    <span className="text-lg leading-none">+</span> {d.addATask}
                 </a>
             </div>
 
-            {/* 2 — Overview Cards */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-5">
                 {[
-                    { icon: <CheckCircle size={20} className="text-green-500" />, label: "Completed Today", value: completedToday.length, color: "text-green-500" },
-                    { icon: <Clock size={20} className="text-amber-500" />, label: "Pending", value: pendingTasks.length, color: "text-amber-500" },
-                    { icon: <Zap size={20} className="text-orange-500" />, label: "Day Streak", value: streak, color: "text-orange-500" },
-                    { icon: <Target size={20} className="text-blue-500" />, label: "Due Today", value: todayTasks.length, color: "text-blue-500" },
+                    { icon: <CheckCircle size={20} className="text-green-400" />, label: d.completedToday, value: todayDoneCount, color: "text-green-400" },
+                    { icon: <Clock size={20} className="text-amber-400" />, label: d.pending, value: pendingTasks.length, color: "text-amber-400" },
+                    { icon: <Zap size={20} className="text-orange-400" />, label: d.dayStreak, value: streakDays, color: "text-orange-400" },
+                    { icon: <Target size={20} className="text-blue-400" />, label: d.dueToday, value: todayTasks.length, color: "text-blue-400" },
                 ].map((card, idx) => (
-                    <div key={idx} className="bg-gray-800 rounded-2xl shadow p-4 flex flex-col gap-1">
+                    <div key={idx} className="bg-white/10 backdrop-blur-md border border-white/10 rounded-2xl shadow-lg p-4 flex flex-col gap-1 transition-all">
                         <span className="text-2xl">{card.icon}</span>
                         <span className={`text-3xl font-bold ${card.color}`}>{card.value}</span>
-                        <span className="text-xs text-gray-200">{card.label}</span>
+                        <span className="text-xs text-gray-300">{card.label}</span>
                     </div>
                 ))}
             </div>
 
-            {/* 3 — Today's Tasks + Study Stats */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-5">
-                <div className="lg:col-span-2 bg-gray-800 rounded-2xl shadow p-5">
-                    <h2 className="text-lg font-bold text-white mb-3">📅 Today's Tasks</h2>
+                <div className="lg:col-span-2 bg-white/10 backdrop-blur-md border border-white/10 rounded-2xl shadow-lg p-5 transition-all">
+                    <h2 className="text-lg font-bold text-white mb-3">📅 {d.todaysTasks}</h2>
                     {todayTasks.length === 0 ? (
-                        <p className="text-gray-200 text-sm">No tasks due today. Enjoy your day!</p>
+                        <p className="text-gray-500 dark:text-gray-200 text-sm">{d.noTasksToday}</p>
                     ) : (
                         <ul className="flex flex-col gap-2">
-                            {todayTasks.map((t) => (
-                                <li key={t.id} className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+                            {todayTasks.map((task) => (
+                                <li key={task.id} className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-transparent hover:bg-gray-100 dark:hover:bg-gray-700 transition">
                                     <button
-                                        onClick={() => handleMarkDone(t.id)}
+                                        onClick={() => handleMarkDone(task.id)}
                                         className="w-5 h-5 rounded-full border-2 border-amber-400 hover:bg-amber-400 shrink-0 transition"
                                     />
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-sm font-semibold text-white truncate">{t.title}</p>
-                                        {t.time && <p className="text-xs text-gray-200">{t.time}</p>}
+                                        <p className="text-sm font-semibold text-white truncate">{task.title}</p>
+                                        {task.time && <p className="text-xs text-gray-300">{task.time}</p>}
                                     </div>
-                                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 ${
-                                        t.priority?.toLowerCase() === "high" ? "bg-red-100 text-red-600" :
-                                        t.priority?.toLowerCase() === "medium" ? "bg-yellow-100 text-yellow-600" :
-                                        "bg-green-100 text-green-600"
-                                    }`}>{t.priority}</span>
+                                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 ${task.priority?.toLowerCase() === "high" ? "bg-red-100 text-red-600" :
+                                        task.priority?.toLowerCase() === "medium" ? "bg-amber-100 text-amber-700 dark:bg-yellow-100 dark:text-yellow-600" :
+                                            "bg-green-100 text-green-600"
+                                        }`}>{task.priority === "High" ? t.tasks.high : task.priority === "Medium" ? t.tasks.medium : task.priority === "Low" ? t.tasks.low : task.priority}</span>
                                 </li>
                             ))}
                         </ul>
@@ -356,41 +360,41 @@ export default function Dashboard() {
 
             {/* 5 — Notes Preview */}
             <div className="grid grid-cols-1 gap-4 mb-5">
-                <div className="bg-gray-800 rounded-2xl shadow p-5">
-                    <h2 className="text-lg font-bold text-white mb-3">💡 Recent Notes</h2>
+                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm dark:shadow p-5 transition-colors duration-300">
+                    <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-3">💡 {d.recentNotes}</h2>
                     {ideas.length === 0 ? (
-                        <p className="text-gray-200 text-sm">No notes yet.</p>
+                        <p className="text-gray-500 dark:text-gray-200 text-sm">{d.noNotesYet}</p>
                     ) : (
                         <ul className="flex flex-col gap-2">
                             {[...ideas].reverse().slice(0, 3).map((idea) => (
-                                <li key={idea.id} className="text-sm text-gray-600 dark:text-gray-300 p-3 bg-gray-50 dark:bg-gray-700 rounded-xl truncate">
+                                <li key={idea.id} className="text-sm text-slate-700 dark:text-gray-300 p-3 bg-gray-50 dark:bg-gray-700 rounded-xl truncate">
                                     💡 {idea.ideatext}
                                 </li>
                             ))}
                         </ul>
                     )}
-                    <a href="/noteidea" className="text-xs text-amber-500 hover:underline mt-3 block">
-                        View all notes →
+                    <a href="/noteidea" className="text-xs text-sky-600 dark:text-amber-500 hover:underline mt-3 block">
+                        {d.viewAllNotes} →
                     </a>
                 </div>
             </div>
 
             {/* 6 — Overdue Tasks */}
             {overdueTasks.length > 0 && (
-                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl shadow p-5">
-                    <h2 className="text-lg font-bold text-red-600 mb-3">⚠️ Overdue Tasks</h2>
+                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl shadow-sm p-5 transition-colors duration-300">
+                    <h2 className="text-lg font-bold text-red-600 mb-3">⚠️ {d.overdueTasks}</h2>
                     <ul className="flex flex-col gap-2">
-                        {overdueTasks.map((t) => (
-                            <li key={t.id} className="flex items-center gap-3 p-3 bg-gray-800 rounded-xl border border-red-100 dark:border-red-800">
+                        {overdueTasks.map((task) => (
+                            <li key={task.id} className="flex items-center gap-3 p-3 bg-white dark:bg-gray-800 rounded-xl border border-red-100 dark:border-red-800 shadow-sm dark:shadow-none">
                                 <span className="text-xl shrink-0">⏰</span>
                                 <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-semibold text-white truncate">{t.title}</p>
-                                    <p className="text-xs text-red-400">Due: {t.date} {t.time}</p>
+                                    <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{task.title}</p>
+                                    <p className="text-xs text-red-500 dark:text-red-400">{d.due} {task.date} {task.time}</p>
                                 </div>
                                 <button
-                                    onClick={() => handleMarkDone(t.id)}
-                                    className="text-xs px-3 py-1 bg-green-500 hover:bg-green-600 text-white rounded-lg shrink-0 transition-colors"
-                                >Done</button>
+                                    onClick={() => handleMarkDone(task.id)}
+                                    className="text-xs px-3 py-1 bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-green-500 dark:text-white dark:hover:bg-green-600 font-semibold rounded-lg shrink-0 transition-colors"
+                                >{t.done}</button>
                             </li>
                         ))}
                     </ul>

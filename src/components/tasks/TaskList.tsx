@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { Task } from "@/types/task";
+import { useLanguage } from "@/context/LanguageContext";
 import { ConfirmDeleteButton } from "@/components/ui/ConfirmDeleteitems";
 import { saveTasksToDB } from "@/lib/taskDB";
 
@@ -26,6 +27,7 @@ const getPriorityColor = (priority: string) => {
 };
 
 export default function TaskList() {
+    const { t } = useLanguage();
     const [tasks, setTasks] = useState<Task[]>([]);
     const [titledit, setTitleEdit] = useState("");
     const [descritionedit, setDescittionEdit] = useState("");
@@ -217,8 +219,8 @@ export default function TaskList() {
 
     return (
         <div className="max-h-[100vh] p-4 sm:p-7 max-w-full hide-scrollbar mx-auto font-serif border-0 border-amber-400 relative overflow-y-auto">
-            <h1 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-2 text-center text-amber-600 ">
-                Your Task List
+            <h1 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-2 text-center text-amber-500 ">
+                {t.tasks.yourTaskList}
             </h1>
             <hr className="bg-amber-400 text-amber-600 w-[96%] mb-5"></hr>
 
@@ -228,41 +230,41 @@ export default function TaskList() {
                         <h2 className="text-xl font-semibold mb-4">Update Task</h2>
                         <input
                             type="text"
-                            placeholder="Title"
+                            placeholder={t.tasks.title}
                             value={titledit}
                             onChange={(e) => setTitleEdit(e.target.value)}
                             className="border p-2 w-full mb-2"
                         />
                         <textarea
-                            placeholder="Description"
+                            placeholder={t.tasks.description}
                             value={descritionedit}
                             onChange={(e) => setDescittionEdit(e.target.value)}
-                            className="border p-2 w-full mb-2"
+                            className="border border-gray-300 dark:border-gray-600 p-2 w-full mb-3 rounded-lg bg-white dark:bg-gray-700/50 text-slate-900 dark:text-white focus:outline-none focus:border-amber-500 dark:focus:border-amber-400 resize-none"
                         />
                         <input
                             type="date"
                             value={dateedit}
                             onChange={(e) => setDateEdit(e.target.value)}
-                            className="border p-2 w-full mb-2"
+                            className="border border-gray-300 dark:border-gray-600 p-2 w-full mb-3 rounded-lg bg-white dark:bg-gray-700/50 text-slate-900 dark:text-white focus:outline-none focus:border-amber-500 dark:focus:border-amber-400"
                         />
                         <input
                             type="time"
                             value={timeedit}
                             onChange={(e) => settimeEdit(e.target.value)}
-                            className="border p-2 w-full mb-4"
+                            className="border border-gray-300 dark:border-gray-600 p-2 w-full mb-5 rounded-lg bg-white dark:bg-gray-700/50 text-slate-900 dark:text-white focus:outline-none focus:border-amber-500 dark:focus:border-amber-400"
                         />
                         <div className="flex justify-end gap-2">
                             <button
                                 onClick={() => setEditPopup(false)}
-                                className="px-3 py-1 bg-gray-400 text-white rounded-md"
+                                className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition font-medium"
                             >
-                                Cancel
+                                {t.cancel}
                             </button>
                             <button
                                 onClick={() => handleUpdate(selectedTask.id)}
-                                className="px-3 py-1 bg-blue-500 text-white rounded-md"
+                                className="px-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition font-medium shadow-sm"
                             >
-                                Save
+                                {t.save}
                             </button>
                         </div>
                     </div>
@@ -270,7 +272,7 @@ export default function TaskList() {
             )}
 
             {tasks.length === 0 ? (
-                <p className="text-center text-gray-500">No tasks yet. Add one!</p>
+                <p className="text-center text-gray-400 mt-10">{t.tasks.noTasks}</p>
             ) : (
                 <ul data-aos="zoom-in-up" className="space-y-4 md:mx-auto md:max-w-3xl">
                     {tasks.map((task) => {
@@ -278,21 +280,21 @@ export default function TaskList() {
                         return (
                             <li
                                 key={task.id}
-                                className={`w-full p-5 sm:p-7 shadow-md rounded-xl border-l-4 hover:shadow-xl transition-all duration-200
+                                className={`w-full p-5 sm:p-7 shadow-sm dark:shadow-none rounded-2xl border border-l-4 transition-all duration-300
                                 ${urgency === "missed"
-                                        ? "bg-gray-100 border-gray-400"
+                                        ? "bg-gray-50 dark:bg-gray-800/50 border-gray-400 dark:border-gray-600 text-gray-500"
                                         : urgency === "critical"
-                                            ? "bg-red-50 border-red-500"
+                                            ? "bg-red-50 dark:bg-red-900/20 border-red-500 border-l-red-500 dark:border-red-800"
                                             : urgency === "warning"
                                                 ? "bg-orange-50 border-orange-400"
                                                 : "bg-white border-amber-400"}`}>
                                 <div className="flex items-start gap-2">
                                     <h2 className={`text-lg sm:text-xl font-bold break-words flex-1 min-w-0
-                                    ${urgency === "missed" ? "text-gray-400 line-through" : urgency === "critical" ? "text-red-700" : urgency === "warning" ? "text-orange-600" : "text-gray-800"}`}>
+                                    ${urgency === "missed" ? "text-gray-400 dark:text-gray-500 line-through" : urgency === "critical" ? "text-red-700 dark:text-red-400" : urgency === "warning" ? "text-orange-600 dark:text-orange-400" : "text-slate-800 dark:text-gray-100"}`}>
                                         {task.title}
                                     </h2>
-                                    <span className={`px-3 py-1 rounded-full text-xs sm:text-sm font-semibold border shrink-0 ${getPriorityColor(task.priority || "")}`}>
-                                        {task.priority}
+                                    <span className={`px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-wider border shrink-0 ${getPriorityColor(task.priority || "")}`}>
+                                        {task.priority === "High" ? t.tasks.high : task.priority === "Medium" ? t.tasks.medium : task.priority === "Low" ? t.tasks.low : task.priority}
                                     </span>
                                 </div>
                                 <p className={`mt-2 break-words whitespace-normal
@@ -315,10 +317,10 @@ export default function TaskList() {
                                     <div className="ml-auto flex gap-2">
                                         <button
                                             onClick={() => handleEditClick(task)}
-                                            className="cursor-pointer px-3 py-1 bg-sky-500 text-white rounded-md hover:bg-sky-600">update</button>
+                                            className="cursor-pointer px-3 py-1 bg-sky-500 text-white rounded-md hover:bg-sky-600">{t.update}</button>
                                         <button
                                             onClick={() => handleMarkDone(task.id)}
-                                            className="cursor-pointer px-3 py-1 bg-green-500 text-white rounded-md hover:bg-green-600">Done</button>
+                                            className="cursor-pointer px-3 py-1 bg-green-500 text-white rounded-md hover:bg-green-600">{t.done}</button>
                                         <ConfirmDeleteButton
                                             itemName={task.title}
                                             itemId={task.id}

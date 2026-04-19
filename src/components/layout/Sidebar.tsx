@@ -8,18 +8,21 @@ import { TbRobot } from "react-icons/tb";
 
 import { useAppContext } from "@/context/AppContext";
 
+import { useLanguage } from "@/context/LanguageContext";
+
 const navItems = [
-    { href: "/dashboard", label: "Dashboard", icon: MdDashboard },
-    { href: "/settimepage", label: "Set Timer", icon: MdTimer },
-    { href: "/noteidea", label: "Idea Notes", icon: GiNotebook },
-    { href: "/pdfeditor", label: "PDF Annotator", icon: MdPictureAsPdf },
-    { href: "/background-removal", label: "Remove BG", icon: MdPhotoSizeSelectActual },
-    { href: "/agent", label: "Agent", icon: TbRobot },
+    { href: "/dashboard", key: "dashboard", icon: MdDashboard },
+    { href: "/settimepage", key: "timer", icon: MdTimer },
+    { href: "/noteidea", key: "ideaNotes", icon: GiNotebook },
+    { href: "/pdfeditor", key: "pdfAnnotator", icon: MdPictureAsPdf },
+    { href: "/background-removal", key: "removeBg", icon: MdPhotoSizeSelectActual },
+    { href: "/agent", key: "agent", icon: TbRobot },
 ];
 
 export default function Sidebar() {
     const pathname = usePathname();
     const { forceExpandSidebar, toggleSidebar } = useAppContext();
+    const { t } = useLanguage();
     const isCompact = pathname === "/notetext" && !forceExpandSidebar;
 
     return (
@@ -36,8 +39,9 @@ export default function Sidebar() {
 
             {/* Nav links */}
             <nav className={`flex flex-col ${isCompact ? 'gap-3 p-2' : 'gap-1.5 p-3'} flex-1 mt-1 ${isCompact ? 'w-full' : ''}`}>
-                {navItems.map(({ href, label, icon: Icon }) => {
+                {navItems.map(({ href, key, icon: Icon }) => {
                     const isActive = pathname === href;
+                    const label = t.nav[key as keyof typeof t.nav];
                     return (
                         <Link
                             key={href}
@@ -59,7 +63,7 @@ export default function Sidebar() {
             {/* Bottom label */}
             {!isCompact && (
                 <div className="px-4 py-4 border-t border-gray-700/50">
-                    <p className="text-[10px] text-gray-600 text-center tracking-widest uppercase">Menu</p>
+                    <p className="text-[10px] text-gray-600 text-center tracking-widest uppercase">{t.nav.menu}</p>
                 </div>
             )}
         </aside>

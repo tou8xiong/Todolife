@@ -7,33 +7,34 @@ import { useAppContext } from "@/context/AppContext";
 import { useTaskCounts } from "@/hooks/useTaskCounts";
 import {
   Menu, X, LayoutDashboard, Timer, FileText, BookOpen,
-  CheckSquare, ListTodo, PlusSquare, ImageIcon, Loader2,
+  CheckSquare, ListTodo, PlusSquare, ImageIcon, Loader2, Settings,
 } from "lucide-react";
 import { TbRobot } from "react-icons/tb";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
+import { useLanguage } from "@/context/LanguageContext";
 
-type NavItem = { href: string; label: string; icon: React.ComponentType<{ size?: number; className?: string }>; badge?: string };
+type NavItem = { href: string; labelKey: string; icon: React.ComponentType<{ size?: number; className?: string }>; badge?: string };
 type NavGroup = { group: string; items: NavItem[] };
 
 const drawerNav: NavGroup[] = [
   {
     group: "Tasks",
     items: [
-      { href: "/newtasks", label: "New Tasks", icon: PlusSquare },
-      { href: "/mytasks", label: "My Tasks", icon: ListTodo, badge: "pending" },
-      { href: "/completetasks", label: "Complete Tasks", icon: CheckSquare, badge: "completed" },
+      { href: "/newtasks", labelKey: "newTasks", icon: PlusSquare },
+      { href: "/mytasks", labelKey: "myTasks", icon: ListTodo, badge: "pending" },
+      { href: "/completetasks", labelKey: "completeTasks", icon: CheckSquare, badge: "completed" },
     ],
   },
   {
     group: "Explore",
     items: [
-      { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-      { href: "/settimepage", label: "Set Timer", icon: Timer },
-      { href: "/noteidea", label: "Idea Notes", icon: BookOpen },
-      { href: "/pdfeditor", label: "PDF Annotator", icon: FileText },
-      { href: "/background-removal", label: "Remove BG", icon: ImageIcon },
-      { href: "/agent", label: "Agent", icon: TbRobot },
+      { href: "/dashboard", labelKey: "dashboard", icon: LayoutDashboard },
+      { href: "/settimepage", labelKey: "timer", icon: Timer },
+      { href: "/noteidea", labelKey: "ideaNotes", icon: BookOpen },
+      { href: "/pdfeditor", labelKey: "pdfAnnotator", icon: FileText },
+      { href: "/background-removal", labelKey: "removeBg", icon: ImageIcon },
+      { href: "/agent", labelKey: "agent", icon: TbRobot },
     ],
   },
 ];
@@ -41,6 +42,7 @@ const drawerNav: NavGroup[] = [
 export default function Header() {
   const { user, authLoading, profile, profileLoading } = useAppContext();
   const { pending, completed } = useTaskCounts();
+  const { t } = useLanguage();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
 
@@ -62,7 +64,7 @@ export default function Header() {
   return (
     <>
       {/* ── Header bar ─────────────────────────────────────────────── */}
-      <header className="bg-blue-300 sticky top-0 z-50 shadow-md shadow-black/20 h-16">
+      <header className="bg-blue-300 sticky top-0 z-50 shadow-md shadow-black/20 h-16 text-slate-900">
         <div className="flex items-center justify-between px-3 h-full w-full gap-2">
 
           {/* Logo */}
@@ -74,22 +76,28 @@ export default function Header() {
           <nav className="hidden md:flex items-center gap-1 font-serif">
             <Link href="/newtasks"
               className="px-3 py-2 rounded-xl text-sm hover:bg-amber-100 transition-colors">
-              New Tasks
+              {t.nav.newTasks}
             </Link>
             <Link href="/mytasks"
               className="px-3 py-2 rounded-xl text-sm hover:bg-amber-100 transition-colors flex items-center gap-1.5">
-              My Tasks
-              <span className="rounded-full px-2 py-0.5 text-[10px] font-bold bg-slate-800 text-white">{pending}</span>
+              {t.nav.myTasks}
+              {pending > 0 && (
+                <span className="rounded-full px-2 py-0.5 text-[10px] font-bold bg-slate-800 text-white">{pending}</span>
+              )}
             </Link>
             <Link href="/completetasks"
               className="px-3 py-2 rounded-xl text-sm hover:bg-amber-100 transition-colors flex items-center gap-1.5">
-              Complete Tasks
-              <span className="rounded-full px-2 py-0.5 text-[10px] font-bold bg-green-700 text-white">{user ? completed : 0}</span>
+              {t.nav.completeTasks}
+              {user && completed > 0 && (
+                <span className="rounded-full px-2 py-0.5 text-[10px] font-bold bg-green-700 text-white">{completed}</span>
+              )}
             </Link>
           </nav>
 
           {/* Right side: auth + mobile menu button */}
           <div className="flex items-center gap-2 ml-auto md:ml-0">
+
+
 
             {/* Auth area */}
             {authLoading ? (
@@ -98,11 +106,11 @@ export default function Header() {
               <div className="flex items-center gap-1.5">
                 <Link href="/formlogin"
                   className="px-3 py-1.5 rounded-lg font-serif text-sm bg-amber-100 hover:bg-amber-200 shadow transition-colors">
-                  Log in
+                  {t.nav.login}
                 </Link>
                 <Link href="/formsignup"
                   className="px-3 py-1.5 rounded-lg font-serif text-sm bg-green-300 hover:bg-green-400 shadow transition-colors">
-                  Sign up
+                  {t.nav.signup}
                 </Link>
               </div>
             ) : (
@@ -138,13 +146,21 @@ export default function Header() {
                           <Link href="/profile"
                             onClick={() => setShowProfileMenu(false)}
                             className="block px-3 py-2 rounded-lg hover:bg-gray-100 text-sm transition-colors">
-                            Profile
+                            {t.nav.profile}
+                          </Link>
+                        </li>
+                        <li>
+                          <Link href="/settings"
+                            onClick={() => setShowProfileMenu(false)}
+                            className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 text-sm transition-colors">
+                            <Settings size={14} className="text-gray-500" />
+                            {t.nav.settings}
                           </Link>
                         </li>
                         <li>
                           <button onClick={handleLogout}
                             className="w-full text-left px-3 py-2 rounded-lg hover:bg-red-50 text-sm text-red-600 transition-colors">
-                            Logout
+                            {t.nav.logout}
                           </button>
                         </li>
                       </ul>
@@ -181,7 +197,7 @@ export default function Header() {
       >
         {/* Drawer header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-700">
-          <span className="text-white font-bold text-base font-serif tracking-wide">Menu</span>
+          <span className="text-white font-bold text-base font-serif tracking-wide">{t.nav.menu}</span>
           <button
             onClick={() => setDrawerOpen(false)}
             className="text-gray-400 hover:text-white p-1 rounded-lg hover:bg-gray-700 transition-colors"
@@ -198,7 +214,7 @@ export default function Header() {
                 {group}
               </p>
               <ul className="flex flex-col gap-0.5">
-                {items.map(({ href, label, icon: Icon, badge }) => (
+                {items.map(({ href, labelKey, icon: Icon, badge }) => (
                   <li key={href}>
                     <Link
                       href={href}
@@ -206,7 +222,7 @@ export default function Header() {
                       className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-300 hover:bg-gray-800 hover:text-white transition-colors text-sm font-serif"
                     >
                       <Icon size={17} className="text-amber-400 shrink-0" />
-                      <span className="flex-1">{label}</span>
+                      <span className="flex-1">{t.nav[labelKey as keyof typeof t.nav]}</span>
                       {badge && badgeCount(badge) > 0 && (
                         <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold text-white ${badge === "pending" ? "bg-slate-700" : "bg-green-700"}`}>
                           {badgeCount(badge)}

@@ -4,6 +4,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { toast } from "sonner";
 import AlertDialog from "@/components/ui/AlertDialog";
+import { useLanguage } from "@/context/LanguageContext";
 import { Briefcase, BookOpen, Zap, CalendarDays, Clock, X, Check } from "lucide-react";
 
 const VALID_TYPES = ["work", "study", "activities"];
@@ -18,6 +19,7 @@ interface TaskErrors {
 }
 
 export default function AddTasks() {
+    const { t } = useLanguage();
     const [task, setTask] = useState({
         title: "",
         description: "",
@@ -118,7 +120,7 @@ export default function AddTasks() {
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
                     <div className="flex flex-col items-center gap-4">
                         <div className="w-14 h-14 border-4 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
-                        <p className="text-white font-medium animate-pulse">Saving task...</p>
+                        <p className="text-white font-medium animate-pulse">{t.tasks.savingTask}</p>
                     </div>
                 </div>
             )}
@@ -133,15 +135,15 @@ export default function AddTasks() {
 
                 <div className="text-center pt-3 pb-2">
                     <h1 className="text-lg font-bold text-white font-serif tracking-tight">
-                        Add New Task
+                        {t.tasks.addNewTask}
                     </h1>
-                    <p className="text-gray-400 text-xs mt-0.5">Fill in the details below</p>
+                    <p className="text-gray-300 text-xs mt-0.5">Fill in the details below</p>
                 </div>
 
                 <form className="px-4 sm:px-6 pb-4 space-y-3 flex-1">
 
                     <div className="space-y-1">
-                        <label className="text-xs font-semibold text-gray-300 uppercase tracking-wide">Task Title</label>
+                        <label className="text-xs font-semibold text-gray-300 uppercase tracking-wide">{t.tasks.taskTitle}</label>
                         <input
                             type="text"
                             placeholder="Enter task title..."
@@ -152,7 +154,7 @@ export default function AddTasks() {
                             className={`w-full p-2 rounded-lg bg-gray-700/50 border text-white placeholder-gray-500 focus:outline-none transition-colors ${errors.title ? "border-red-500 focus:border-red-400" : "border-gray-600 focus:border-amber-400"
                                 }`}
                         />
-                        {errors.title && <p className="text-red-400 text-xs">{errors.title}</p>}
+                        {errors.title && <p className="text-red-500 dark:text-red-400 text-xs">{errors.title}</p>}
                     </div>
 
                     <div className="space-y-1">
@@ -168,12 +170,12 @@ export default function AddTasks() {
                     </div>
 
                     <div className="space-y-1">
-                        <label className="text-xs font-semibold text-gray-300 uppercase tracking-wide">Task Type</label>
+                        <label className="text-xs font-semibold text-gray-300 uppercase tracking-wide">{t.tasks.taskType}</label>
                         <div className="grid grid-cols-3 gap-2">
                             {[
-                                { value: "work", label: "Work", icon: Briefcase, color: "blue" },
-                                { value: "study", label: "Study", icon: BookOpen, color: "violet" },
-                                { value: "activities", label: "Activities", icon: Zap, color: "amber" },
+                                { value: "work", label: t.tasks.work, icon: Briefcase, color: "blue" },
+                                { value: "study", label: t.tasks.study, icon: BookOpen, color: "violet" },
+                                { value: "activities", label: t.tasks.activities, icon: Zap, color: "amber" },
                             ].map(({ value, label, icon: Icon, color }) => {
                                 const isActive = task.type === value;
                                 const colorClasses = {
@@ -194,16 +196,16 @@ export default function AddTasks() {
                                 );
                             })}
                         </div>
-                        {errors.type && <p className="text-red-400 text-xs">{errors.type}</p>}
+                        {errors.type && <p className="text-red-500 dark:text-red-400 text-xs">{errors.type}</p>}
                     </div>
 
                     <div className="space-y-1">
-                        <label className="text-xs font-semibold text-gray-300 uppercase tracking-wide">Priority Level</label>
+                        <label className="text-xs font-semibold text-gray-300 uppercase tracking-wide">{t.tasks.priorityLevel}</label>
                         <div className="grid grid-cols-3 gap-2">
                             {[
-                                { value: "high", label: "High", color: "red" },
-                                { value: "medium", label: "Medium", color: "orange" },
-                                { value: "low", label: "Low", color: "green" },
+                                { value: "high", label: t.tasks.high, color: "red" },
+                                { value: "medium", label: t.tasks.medium, color: "orange" },
+                                { value: "low", label: t.tasks.low, color: "green" },
                             ].map(({ value, label, color }) => {
                                 const isActive = task.priority === value;
                                 const colorClasses = {
@@ -223,13 +225,13 @@ export default function AddTasks() {
                                 );
                             })}
                         </div>
-                        {errors.priority && <p className="text-red-400 text-xs">{errors.priority}</p>}
+                        {errors.priority && <p className="text-red-500 dark:text-red-400 text-xs">{errors.priority}</p>}
                     </div>
 
                     <div className="grid grid-cols-2 gap-2">
                         <div className="space-y-1">
                             <label className="text-xs font-semibold text-gray-300 uppercase tracking-wide flex items-center gap-1">
-                                <CalendarDays size={12} /> Due Date
+                                <CalendarDays size={12} /> {t.tasks.dueDate}
                             </label>
                             <input
                                 value={task.date}
@@ -239,11 +241,11 @@ export default function AddTasks() {
                                 className={`w-full p-2 rounded-lg bg-gray-700/50 border text-white focus:outline-none transition-colors ${errors.date ? "border-red-500 focus:border-red-400" : "border-gray-600 focus:border-amber-400"
                                     }`}
                             />
-                            {errors.date && <p className="text-red-400 text-xs">{errors.date}</p>}
+                            {errors.date && <p className="text-red-500 dark:text-red-400 text-xs">{errors.date}</p>}
                         </div>
                         <div className="space-y-1">
                             <label className="text-xs font-semibold text-gray-300 uppercase tracking-wide flex items-center gap-1">
-                                <Clock size={12} /> Due Time
+                                <Clock size={12} /> {t.tasks.dueTime}
                             </label>
                             <input
                                 value={task.time}
@@ -253,7 +255,7 @@ export default function AddTasks() {
                                 className={`w-full p-2 rounded-lg bg-gray-700/50 border text-white focus:outline-none transition-colors ${errors.time ? "border-red-500 focus:border-red-400" : "border-gray-600 focus:border-amber-400"
                                     }`}
                             />
-                            {errors.time && <p className="text-red-400 text-xs">{errors.time}</p>}
+                            {errors.time && <p className="text-red-500 dark:text-red-400 text-xs">{errors.time}</p>}
                         </div>
                     </div>
 
@@ -263,7 +265,7 @@ export default function AddTasks() {
                             onClick={handleCancel}
                             className="flex-1 flex items-center justify-center gap-1 px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-gray-300 font-semibold transition-all border border-gray-600"
                         >
-                            <X size={16} /> Cancel
+                            <X size={16} /> {t.cancel}
                         </button>
                         <button
                             type="button"
@@ -271,7 +273,7 @@ export default function AddTasks() {
                             disabled={saving}
                             className="flex-1 flex items-center justify-center gap-1 px-4 py-2 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold transition-all shadow-md shadow-amber-500/20 disabled:opacity-60 disabled:cursor-not-allowed"
                         >
-                            <Check size={16} /> Save Task
+                            <Check size={16} /> {t.save}
                         </button>
                     </div>
                 </form>

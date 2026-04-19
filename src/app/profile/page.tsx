@@ -6,8 +6,10 @@ import { toast } from "sonner";
 import { MdEdit, MdLogout, MdEmail, MdPhotoCamera, MdSave, MdClose, MdPerson } from "react-icons/md";
 import EmojiProfiles from "@/components/ui/cartoonvector";
 import Image from "next/image";
+import { useLanguage } from "@/context/LanguageContext";
 
 export default function Profile() {
+  const { t } = useLanguage();
   const [user, setUser] = useState<any>(null);
   const [displayName, setDisplayName] = useState("");
   const [changename, setChangeName] = useState(false);
@@ -125,13 +127,13 @@ export default function Profile() {
   };
 
   if (!user) return (
-    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-gray-950">
+    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-linear-to-b from-gray-900 to-gray-600">
       <div className="w-12 h-12 border-4 border-sky-500 border-t-transparent rounded-full animate-spin" />
     </div>
   );
 
   return (
-    <div className="min-h-[calc(100vh-4rem)] bg-[#0f111a] font-serif relative overflow-hidden text-gray-200">
+    <div className="min-h-screen bg-linear-to-b from-gray-900 to-gray-600 font-serif relative overflow-hidden text-white transition-colors duration-300">
       {/* Background Orbs */}
       <div className="absolute top-[-15%] left-[-10%] w-[50%] h-[50%] rounded-full bg-sky-500/10 blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-15%] right-[-10%] w-[50%] h-[50%] rounded-full bg-amber-500/5 blur-[120px] pointer-events-none" />
@@ -151,7 +153,7 @@ export default function Profile() {
                 ) : userEmoji ? (
                   <Image src={userEmoji} alt="avatar" width={128} height={128} className="object-cover w-full h-full" priority />
                 ) : (
-                  <MdPerson className="text-6xl text-gray-500" />
+                  <MdPerson className="text-6xl text-gray-400" />
                 )}
               </div>
 
@@ -174,7 +176,7 @@ export default function Profile() {
             </div>
 
             <h2 className="text-2xl font-bold text-white mb-2">{user.displayName || "Unknown User"}</h2>
-            <div className="flex items-center gap-2 text-gray-400 text-sm bg-black/20 px-4 py-2 rounded-full">
+            <div className="flex items-center gap-2 text-gray-300 text-sm bg-white/10 px-4 py-2 rounded-full border border-white/5">
               <MdEmail className="text-sky-400" />
               <span>{user.email}</span>
             </div>
@@ -186,14 +188,14 @@ export default function Profile() {
                 onClick={() => setChangeName(!changename)}
                 className="w-full py-3 px-4 rounded-xl font-medium flex items-center justify-center gap-2 transition-all bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/20 text-white"
               >
-                {changename ? <><MdClose /> Cancel Edit</> : <><MdEdit /> Edit Profile</>}
+                {changename ? <><MdClose /> {t.profile.cancelEdit}</> : <><MdEdit /> {t.profile.editProfile}</>}
               </button>
 
               <button
                 onClick={handleSignOut}
                 className="w-full py-3 px-4 rounded-xl font-medium flex items-center justify-center gap-2 transition-all bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 hover:border-red-500/40"
               >
-                <MdLogout /> Sign Out
+                <MdLogout /> {t.signOut}
               </button>
             </div>
 
@@ -206,13 +208,13 @@ export default function Profile() {
             <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 shadow-2xl animate-in fade-in slide-in-from-bottom-4 duration-500">
               <h3 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
                 <MdEdit className="text-sky-400" />
-                Update Your Details
+                {t.profile.updateDetails}
               </h3>
 
               <div className="space-y-6">
                 {/* Name Input */}
                 <div>
-                  <label className="text-sm font-medium text-gray-400 block mb-2">Display Name</label>
+                  <label className="text-sm font-medium text-gray-400 block mb-2">{t.profile.displayName}</label>
                   <input
                     type="text"
                     value={displayName}
@@ -224,11 +226,11 @@ export default function Profile() {
 
                 {/* Image Upload */}
                 <div>
-                  <label className="text-sm font-medium text-gray-400 block mb-2">Profile Image</label>
+                  <label className="text-sm font-medium text-gray-400 block mb-2">{t.profile.profileImage}</label>
                   <div className="flex flex-wrap items-center gap-3">
                     <label className="flex items-center gap-2 px-5 py-3 bg-sky-500/10 hover:bg-sky-500/20 text-sky-400 border border-sky-500/20 rounded-xl cursor-pointer transition-all">
                       <MdPhotoCamera size={18} />
-                      <span className="text-sm font-medium">{profileImage ? profileImage.name : "Select Image"}</span>
+                      <span className="text-sm font-medium">{profileImage ? profileImage.name : t.profile.selectImage}</span>
                       <input
                         type="file"
                         accept="image/*"
@@ -242,7 +244,7 @@ export default function Profile() {
                         onClick={() => setProfileImage(null)}
                         className="px-4 py-3 text-sm text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-xl transition-colors"
                       >
-                        Clear Selection
+                        {t.profile.clearSelection}
                       </button>
                     )}
 
@@ -252,7 +254,7 @@ export default function Profile() {
                         disabled={saving}
                         className="px-4 py-3 text-sm text-red-400 hover:text-red-300 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 rounded-xl transition-colors"
                       >
-                        Remove Current Image
+                        {t.profile.removeCurrentImage}
                       </button>
                     )}
                   </div>
@@ -260,8 +262,8 @@ export default function Profile() {
 
                 {/* Avatar Selection */}
                 <div>
-                  <label className="text-sm font-medium text-gray-400 block mb-3">Or Choose an Avatar</label>
-                  <div className="bg-black/20 p-4 rounded-2xl border border-white/5">
+                  <label className="text-sm font-medium text-gray-400 block mb-3">{t.profile.chooseAvatar}</label>
+                  <div className="bg-white/5 p-4 rounded-2xl border border-white/10">
                     <EmojiProfiles setUserEmoji={setUserEmoji} userEmogi={userEmoji} />
                   </div>
                 </div>
@@ -275,7 +277,7 @@ export default function Profile() {
                     }}
                     className="flex-1 py-3.5 rounded-xl border border-white/10 text-gray-300 hover:bg-white/5 font-medium transition-all"
                   >
-                    Cancel
+                    {t.cancel}
                   </button>
                   <button
                     onClick={handleUpdate}
@@ -285,17 +287,17 @@ export default function Profile() {
                     {saving ? (
                       <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                     ) : (
-                      <><MdSave size={18} /> Save Changes</>
+                      <><MdSave size={18} /> {t.profile.saveChanges}</>
                     )}
                   </button>
                 </div>
               </div>
             </div>
           ) : (
-            <div className="h-full flex flex-col items-center justify-center p-12 text-center text-gray-500 border border-dashed border-white/10 rounded-3xl bg-white/[0.02]">
-              <MdPerson size={64} className="text-gray-700 mb-4" />
-              <h3 className="text-xl font-medium text-gray-400 mb-2">Your Profile Dashboard</h3>
-              <p className="max-w-sm">Keep your details up to date to personalize your experience across the platform.</p>
+            <div className="h-full flex flex-col items-center justify-center p-12 text-center text-gray-400 border border-dashed border-white/10 rounded-3xl bg-white/5">
+              <MdPerson size={64} className="text-gray-600 mb-4" />
+              <h3 className="text-xl font-medium text-white mb-2">{t.profile.dashboard}</h3>
+              <p className="max-w-sm text-gray-300">{t.profile.dashboardDesc}</p>
             </div>
           )}
         </div>

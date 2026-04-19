@@ -203,19 +203,19 @@ export default function BackgroundRemovalPage() {
     };
 
     return (
-        <div className="min-h-full bg-transparent text-slate-900 dark:text-white font-sans transition-colors duration-300">
+        <div className="min-h-screen bg-gray-950 text-white font-sans">
 
             {/* ── Hero header ── */}
-            <div className="relative overflow-hidden border-b border-gray-200 dark:border-white/5 bg-gradient-to-br from-white via-gray-50 to-gray-100 dark:from-gray-900 dark:via-gray-950 dark:to-gray-900 px-4 py-12 sm:py-16 text-center">
+            <div className="relative overflow-hidden border-b border-white/5 bg-gradient-to-br from-gray-900 via-gray-950 to-gray-900 px-4 py-12 sm:py-16 text-center">
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(139,92,246,0.12),_transparent_60%)]" />
                 <div className="relative mx-auto max-w-2xl">
                     <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-violet-500/30 bg-violet-500/10 px-4 py-1.5 text-xs font-semibold text-violet-300 uppercase tracking-widest">
                         <Sparkles size={12} /> AI-Powered
                     </div>
-                    <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight bg-gradient-to-br from-slate-900 via-slate-700 to-slate-500 dark:from-white dark:via-gray-200 dark:to-gray-400 bg-clip-text text-transparent">
+                    <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight bg-gradient-to-br from-white via-gray-200 to-gray-400 bg-clip-text text-transparent">
                         Remove Background
                     </h1>
-                    <p className="mt-4 text-gray-500 dark:text-gray-400 text-sm sm:text-base max-w-md mx-auto">
+                    <p className="mt-4 text-gray-400 text-sm sm:text-base max-w-md mx-auto">
                         Drop any image and get a clean transparent PNG in seconds — fully in-browser, no upload needed.
                     </p>
                 </div>
