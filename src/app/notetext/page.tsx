@@ -121,8 +121,11 @@ export default function NoteTextPage() {
   const [showRenameModal, setShowRenameModal] = useState(false);
   const [renameValue, setRenameValue] = useState("");
   const [renameTarget, setRenameTarget] = useState<{ type: "folder" | "file"; id: string | number } | null>(null);
+  const [pages, setPages] = useState<string[]>([""]);
+  const [activePageIndex, setActivePageIndex] = useState(0);
+  const [activeEditorTools, setActiveEditorTools] = useState<any>(null);
 
-  const editorContainerRef = useRef<HTMLDivElement>(null);
+  const editorContainerRefs = useRef<(HTMLDivElement | null)[]>([]);
   const activeDocIdRef = useRef<number | null>(null);
 
   const {
@@ -170,21 +173,26 @@ export default function NoteTextPage() {
     }
   }, []);
 
+  const handlePageUpdate = (index: number, content: string) => {
+    setPages(prev => {
+      const next = [...prev];
+      next[index] = content;
+      return next;
+    });
+  };
+
+  const addNewPage = () => {
+    setPages(prev => {
+      const newIndex = prev.length;
+      setActivePageIndex(newIndex);
+      return [...prev, ""];
+    });
+  };
+
   const exportToPDF = useCallback(async () => {
-    if (!editorContainerRef.current || !title.trim()) return;
+    if (!title.trim()) return;
     setExporting(true);
     try {
-      const element = editorContainerRef.current.querySelector('.ProseMirror');
-      if (!element) {
-        throw new Error("Editor content not found");
-      }
-      const canvas = await html2canvas(element as HTMLElement, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        backgroundColor: "#ffffff",
-      });
-      const imgData = canvas.toDataURL("image/png");
       const pdf = new jsPDF({
         orientation: "portrait",
         unit: "mm",
@@ -192,12 +200,27 @@ export default function NoteTextPage() {
       });
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = pdf.internal.pageSize.getHeight();
-      const imgWidth = canvas.width;
-      const imgHeight = canvas.height;
-      const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
-      const imgX = (pdfWidth - imgWidth * ratio) / 2;
-      const imgY = 10;
-      pdf.addImage(imgData, "PNG", imgX, imgY, imgWidth * ratio, imgHeight * ratio);
+
+      for (let i = 0; i < pages.length; i++) {
+        if (i > 0) pdf.addPage();
+        const pageContainer = document.querySelector(`[data-page-index="${i}"]`);
+        if (!pageContainer) continue;
+        const element = pageContainer.querySelector('.ProseMirror');
+        if (!element) continue;
+        const canvas = await html2canvas(element as HTMLElement, {
+          scale: 2,
+          useCORS: true,
+          logging: false,
+          backgroundColor: "#ffffff",
+        });
+        const imgData = canvas.toDataURL("image/png");
+        const imgWidth = canvas.width;
+        const imgHeight = canvas.height;
+        const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
+        const imgX = (pdfWidth - imgWidth * ratio) / 2;
+        const imgY = 10;
+        pdf.addImage(imgData, "PNG", imgX, imgY, imgWidth * ratio, imgHeight * ratio);
+      }
       pdf.save(`${title || "document"}.pdf`);
       toast.success("PDF exported successfully!");
       setShowExportModal(false);
@@ -207,7 +230,7 @@ export default function NoteTextPage() {
     } finally {
       setExporting(false);
     }
-  }, [title]);
+  }, [title, pages]);
 
   const exportToText = useCallback(() => {
     if (!editor || !title.trim()) return;
@@ -385,7 +408,7 @@ export default function NoteTextPage() {
     if (!user?.email) return;
     setSaving(true);
     try {
-      const content = editor?.getHTML() || "";
+      const content = doc.content || "";
       const docToSave = { ...doc, content, folder_id: doc.folder_id };
       const res = await fetch("/api/documents", {
         method: "POST",
@@ -403,7 +426,7 @@ export default function NoteTextPage() {
   }, [user, loadDocs, editor, showAlert]);
 
   const handleSave = useCallback(() => {
-    if (!activeDoc || !editor) return;
+    if (!activeDoc) return;
     if (!user) {
       sessionStorage.setItem("redirectAfterLogin", window.location.pathname);
       showAlert({
@@ -415,11 +438,11 @@ export default function NoteTextPage() {
       });
       return;
     }
-    const content = editor.getHTML();
-    const updated: Doc = { ...activeDoc, title, content };
+    const fullContent = pages.join("<!-- PAGE_BREAK -->");
+    const updated: Doc = { ...activeDoc, title, content: fullContent };
     setActiveDoc(updated);
     saveDoc(updated);
-  }, [activeDoc, title, saveDoc, editor, user, showAlert]);
+  }, [activeDoc, title, pages, saveDoc, user, showAlert]);
 
   const handleNew = () => {
     if (!user) {
@@ -436,7 +459,9 @@ export default function NoteTextPage() {
     const doc: Doc = { id: Date.now(), title: "Untitled Document", content: "", folder_id: selectedFolderId };
     setActiveDoc(doc);
     setTitle(doc.title);
-    editor?.commands.clearContent();
+    setPages([""]);
+    setActivePageIndex(0);
+    editorContainerRefs.current = [];
   };
 
   useEffect(() => {
@@ -465,7 +490,7 @@ export default function NoteTextPage() {
     activeDocIdRef.current = doc.id;
     setActiveDoc(doc);
     setTitle(doc.title);
-    editor?.commands.setContent("<p>Loading...</p>");
+    setPages(["<p>Loading...</p>"]);
 
     if (!user?.email) return;
 
@@ -476,11 +501,14 @@ export default function NoteTextPage() {
         const fullDoc = data.document;
         if (fullDoc && activeDocIdRef.current === doc.id) {
           setActiveDoc(fullDoc);
-          if (fullDoc.content) {
-            editor?.commands.setContent(sanitizeHtml(fullDoc.content));
+          const content = fullDoc.content || "";
+          if (content.includes("<!-- PAGE_BREAK -->")) {
+            setPages(content.split("<!-- PAGE_BREAK -->"));
           } else {
-            editor?.commands.clearContent();
+            setPages([content]);
           }
+          setActivePageIndex(0);
+          editorContainerRefs.current = [];
         }
       }
     } catch (err) {
@@ -926,25 +954,32 @@ export default function NoteTextPage() {
               >
                 <MdLink size={18} />
               </button>
+
+              <div className="w-px h-6 bg-gray-200 dark:bg-gray-700 mx-1" />
+
+              <button
+                onClick={addNewPage}
+                title="Add New Paper (Page Break)"
+                className="h-8 px-2 flex items-center justify-center gap-1.5 rounded-lg hover:bg-white/5 text-sky-400 hover:text-sky-300 transition-all"
+              >
+                <MdNoteAdd size={18} />
+                <span className="text-[10px] font-bold uppercase tracking-wider">New Paper</span>
+              </button>
             </div>
 
-            <div className="flex-1 overflow-auto p-4 sm:p-8 flex justify-center">
-              <div
-                ref={editorContainerRef}
-                className="bg-white shadow-2xl shrink-0 tiptap-editor-container w-full max-w-[900px] min-h-[1123px] max-md:min-h-[700px]"
-              >
-                <div className="text-center px-4 sm:px-8 pt-4 sm:pt-8 pb-4">
-                  <input
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    className="w-full text-center text-3xl font-bold bg-transparent text-gray-800 border-b-2 border-transparent hover:border-gray-300 focus:border-sky-500 transition-colors px-1 py-2 outline-none"
-                    placeholder="Document Title"
-                  />
-                </div>
-                <div onKeyDown={handleKeyDown}>
-                  <EditorContent editor={editor} />
-                </div>
-              </div>
+            <div className="flex-1 overflow-auto p-4 sm:p-8 flex flex-col items-center gap-10">
+              {pages.map((pageContent, index) => (
+                <NoteSheet
+                  key={`${activeDoc?.id || "new"}-${index}`}
+                  index={index}
+                  content={pageContent}
+                  onUpdate={handlePageUpdate}
+                  onFocus={(tools) => setActiveEditorTools(tools)}
+                  isFirst={index === 0}
+                  title={title}
+                  setTitle={setTitle}
+                />
+              ))}
             </div>
           </>
         ) : selectedFolderId ? (
@@ -1078,54 +1113,57 @@ export default function NoteTextPage() {
       </div>
 
       <style jsx global>{`
-        .tiptap-editor-container .ProseMirror {
+        .tiptap-paper-sheet .ProseMirror {
           outline: none;
-          padding: 32px;
+          padding: 60px 80px;
           font-size: 16px;
           line-height: 1.7;
-          min-height: 1123px;
+          min-height: 1000px;
           font-family: Georgia, 'Times New Roman', serif;
         }
+        .tiptap-paper-sheet .ProseMirror:focus {
+          outline: none;
+        }
         @media (max-width: 768px) {
-          .tiptap-editor-container .ProseMirror {
+          .tiptap-paper-sheet .ProseMirror {
             padding: 16px;
             min-height: 700px;
           }
-          .tiptap-editor-container .ProseMirror h1 { font-size: 24px; }
-          .tiptap-editor-container .ProseMirror h2 { font-size: 20px; }
-          .tiptap-editor-container .ProseMirror h3 { font-size: 18px; }
+          .tiptap-paper-sheet .ProseMirror h1 { font-size: 24px; }
+          .tiptap-paper-sheet .ProseMirror h2 { font-size: 20px; }
+          .tiptap-paper-sheet .ProseMirror h3 { font-size: 18px; }
         }
-        .tiptap-editor-container .ProseMirror p {
+        .tiptap-paper-sheet .ProseMirror p {
           margin: 0 0 1em 0;
         }
-        .tiptap-editor-container .ProseMirror ul,
-        .tiptap-editor-container .ProseMirror ol {
+        .tiptap-paper-sheet .ProseMirror ul,
+        .tiptap-paper-sheet .ProseMirror ol {
           padding-left: 1.5em;
           margin: 1em 0;
         }
-        .tiptap-editor-container .ProseMirror li {
+        .tiptap-paper-sheet .ProseMirror li {
           margin: 0.25em 0;
         }
-        .tiptap-editor-container .ProseMirror ul li {
+        .tiptap-paper-sheet .ProseMirror ul li {
           list-style-type: disc;
         }
-        .tiptap-editor-container .ProseMirror ol li {
+        .tiptap-paper-sheet .ProseMirror ol li {
           list-style-type: decimal;
         }
-        .tiptap-editor-container .ProseMirror ul ul li {
+        .tiptap-paper-sheet .ProseMirror ul ul li {
           list-style-type: circle;
         }
-        .tiptap-editor-container .ProseMirror ol ol li {
+        .tiptap-paper-sheet .ProseMirror ol ol li {
           list-style-type: lower-alpha;
         }
-        .tiptap-editor-container .ProseMirror blockquote {
+        .tiptap-paper-sheet .ProseMirror blockquote {
           border-left: 4px solid #38bdf8;
           padding-left: 16px;
           margin: 16px 0;
           font-style: italic;
           color: #64748b;
         }
-        .tiptap-editor-container .ProseMirror pre {
+        .tiptap-paper-sheet .ProseMirror pre {
           background: #1e293b;
           color: #e2e8f0;
           padding: 16px;
@@ -1133,45 +1171,80 @@ export default function NoteTextPage() {
           font-family: monospace;
           overflow: auto;
         }
-        .tiptap-editor-container .ProseMirror code {
+        .tiptap-paper-sheet .ProseMirror code {
           background: #f1f5f9;
           padding: 2px 4px;
           border-radius: 4px;
           font-family: monospace;
         }
-        .tiptap-editor-container .ProseMirror hr {
+        .tiptap-paper-sheet .ProseMirror hr {
           border: none;
-          border-top: 2px solid #e2e8f0;
-          margin: 24px 0;
+          height: 48px;
+          margin: 48px -80px;
+          background: #111827; /* Dark workspace background */
+          position: relative;
+          cursor: default;
         }
-        .tiptap-editor-container .ProseMirror h1 {
+        .tiptap-paper-sheet .ProseMirror hr::before {
+          content: '';
+          position: absolute;
+          top: -15px;
+          left: 0;
+          right: 0;
+          height: 15px;
+          background: linear-gradient(to top, rgba(0,0,0,0.15), transparent);
+          pointer-events: none;
+        }
+        .tiptap-paper-sheet .ProseMirror hr::after {
+          content: '';
+          position: absolute;
+          bottom: -15px;
+          left: 0;
+          right: 0;
+          height: 15px;
+          background: linear-gradient(to bottom, rgba(0,0,0,0.15), transparent);
+          pointer-events: none;
+        }
+        .tiptap-paper-sheet .ProseMirror hr::before {
+          content: 'PAGE BREAK';
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          background: transparent;
+          font-size: 9px;
+          font-weight: 800;
+          color: #374151;
+          letter-spacing: 0.3em;
+          opacity: 0.5;
+        }
+        .tiptap-paper-sheet .ProseMirror h1 {
           font-size: 32px;
           font-weight: bold;
           margin: 24px 0 16px;
         }
-        .tiptap-editor-container .ProseMirror h2 {
+        .tiptap-paper-sheet .ProseMirror h2 {
           font-size: 24px;
           font-weight: bold;
           margin: 20px 0 12px;
         }
-        .tiptap-editor-container .ProseMirror h3 {
+        .tiptap-paper-sheet .ProseMirror h3 {
           font-size: 20px;
           font-weight: bold;
           margin: 16px 0 8px;
         }
-        .tiptap-editor-container .ProseMirror img {
+        .tiptap-paper-sheet .ProseMirror img {
           max-width: 100%;
           height: auto;
           border-radius: 8px;
           margin: 16px 0;
           cursor: pointer;
         }
-        .tiptap-editor-container .ProseMirror a {
+        .tiptap-paper-sheet .ProseMirror a {
           color: #0ea5e9;
           text-decoration: underline;
           cursor: pointer;
         }
-        .tiptap-editor-container .ProseMirror a:hover {
+        .tiptap-paper-sheet .ProseMirror a:hover {
           color: #0284c7;
         }
       `}</style>
@@ -1383,6 +1456,90 @@ export default function NoteTextPage() {
           </div>
         </div>
       )}
+
+      {/* Floating Action Button for Multi-page support */}
+      {activeDoc && (
+        <button
+          onClick={addNewPage}
+          className="fixed bottom-8 right-8 w-14 h-14 bg-gradient-to-br from-sky-400 to-sky-600 hover:from-sky-500 hover:to-sky-700 text-white rounded-full shadow-[0_8px_30px_rgb(14,165,233,0.4)] flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95 z-40 group border border-white/20"
+          title="Add New Paper"
+        >
+          <MdAdd size={30} className="group-hover:rotate-90 transition-transform duration-300" />
+          <span className="absolute right-full mr-4 px-3 py-1.5 bg-gray-900/80 backdrop-blur-md text-white text-xs font-bold rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap border border-white/10 pointer-events-none">
+            Add New Paper
+          </span>
+        </button>
+      )}
+    </div>
+  );
+}
+
+interface NoteSheetProps {
+  index: number;
+  content: string;
+  onUpdate: (index: number, content: string) => void;
+  onFocus: (tools: any) => void;
+  isFirst: boolean;
+  title: string;
+  setTitle: (title: string) => void;
+}
+
+function NoteSheet({ index, content, onUpdate, onFocus, isFirst, title, setTitle }: NoteSheetProps) {
+  const tools = useTipTapEditor();
+  const { editor, EditorContent, handleKeyDown } = tools;
+  const indexRef = useRef(index);
+
+  useEffect(() => {
+    indexRef.current = index;
+  }, [index]);
+
+  useEffect(() => {
+    if (editor && editor.getHTML() !== content) {
+      editor.commands.setContent(sanitizeHtml(content));
+    }
+  }, [editor, content]);
+
+  useEffect(() => {
+    if (!editor) return;
+    const updateHandler = () => {
+      onUpdate(indexRef.current, editor.getHTML());
+    };
+    editor.on('update', updateHandler);
+    return () => { editor.off('update', updateHandler); };
+  }, [editor, onUpdate]);
+
+  const handleInternalFocus = () => {
+    onFocus(tools);
+  };
+
+  useEffect(() => {
+    if (isFirst && editor) {
+      onFocus(tools);
+    }
+  }, [isFirst, !!editor]);
+
+  return (
+    <div
+      data-page-index={index}
+      className="tiptap-paper-sheet bg-white shadow-2xl shrink-0 w-[794px] min-h-[1123px] relative flex flex-col transition-all duration-300 hover:shadow-sky-500/10"
+      onClick={handleInternalFocus}
+    >
+      {isFirst && (
+        <div className="text-center px-4 sm:px-8 pt-10 pb-4">
+          <input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            className="w-full text-center text-4xl font-bold bg-transparent text-gray-800 border-b-2 border-transparent hover:border-gray-200 focus:border-sky-500 transition-all px-1 py-4 outline-none font-serif tracking-tight"
+            placeholder="Document Title"
+          />
+        </div>
+      )}
+      <div className="flex-1" onKeyDown={handleKeyDown}>
+        <EditorContent editor={editor} className="h-full" />
+      </div>
+      <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] opacity-50 select-none">
+        Page {index + 1}
+      </div>
     </div>
   );
 }

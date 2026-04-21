@@ -148,7 +148,6 @@ export default function RootLayout({
               <MainLayoutWrapper>
                 {children}
               </MainLayoutWrapper>
-              <TimerPopup />
             </AppProvider>
           </AosClientWrapper>
         </Providers>

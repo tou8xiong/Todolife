@@ -241,6 +241,10 @@ export function useTipTapEditor() {
     }
   }, [editor]);
 
+  const insertPageBreak = useCallback(() => {
+    editor?.chain().focus().setHorizontalRule().run();
+  }, [editor]);
+
   return {
     editor,
     EditorContent,
@@ -268,5 +272,6 @@ export function useTipTapEditor() {
     insertImage,
     insertImageFromFile,
     insertLink,
+    insertPageBreak,
   };
 }
