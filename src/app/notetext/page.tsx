@@ -113,6 +113,8 @@ export default function NoteTextPage() {
   const [showImageModal, setShowImageModal] = useState(false);
   const [showLinkModal, setShowLinkModal] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
+  const [showMoveModal, setShowMoveModal] = useState(false);
+  const [moveTargetFolder, setMoveTargetFolder] = useState<string | null>(null);
   const [imageUrl, setImageUrl] = useState("");
   const [linkUrl, setLinkUrl] = useState("");
   const [imageContextMenu, setImageContextMenu] = useState<{ x: number; y: number; src: string } | null>(null);
@@ -129,29 +131,52 @@ export default function NoteTextPage() {
   const activeDocIdRef = useRef<number | null>(null);
 
   const {
-    editor,
+    editor: globalEditor,
     EditorContent,
-    currentFontFamily,
-    currentFontSize,
-    isBulletList,
-    isOrderedList,
-    activeFormats,
-    toggleBold,
-    toggleItalic,
-    toggleUnderline,
-    toggleStrike,
-    setFontFamily,
-    setFontSize,
-    setTextColor,
-    setHighlight,
-    setTextAlign,
-    toggleBulletList,
-    toggleOrderedList,
-    handleKeyDown,
-    insertImage,
-    insertImageFromFile,
-    insertLink,
+    currentFontFamily: globalFontFamily,
+    currentFontSize: globalFontSize,
+    isBulletList: globalBulletList,
+    isOrderedList: globalOrderedList,
+    activeFormats: globalActiveFormats,
+    toggleBold: globalToggleBold,
+    toggleItalic: globalToggleItalic,
+    toggleUnderline: globalToggleUnderline,
+    toggleStrike: globalToggleStrike,
+    setFontFamily: globalSetFontFamily,
+    setFontSize: globalSetFontSize,
+    setTextColor: globalSetTextColor,
+    setHighlight: globalSetHighlight,
+    setTextAlign: globalSetTextAlign,
+    toggleBulletList: globalToggleBulletList,
+    toggleOrderedList: globalToggleOrderedList,
+    handleKeyDown: globalHandleKeyDown,
+    insertImage: globalInsertImage,
+    insertImageFromFile: globalInsertImageFromFile,
+    insertLink: globalInsertLink,
   } = useTipTapEditor();
+
+  const activeTools = activeEditorTools;
+  const editor = activeTools?.editor ?? globalEditor;
+  const currentFontFamily = activeTools?.currentFontFamily ?? globalFontFamily;
+  const currentFontSize = activeTools?.currentFontSize ?? globalFontSize;
+  const isBulletList = activeTools?.isBulletList ?? globalBulletList;
+  const isOrderedList = activeTools?.isOrderedList ?? globalOrderedList;
+  const activeFormats = activeTools?.activeFormats ?? globalActiveFormats;
+  const toggleBold = activeTools?.toggleBold ?? globalToggleBold;
+  const toggleItalic = activeTools?.toggleItalic ?? globalToggleItalic;
+  const toggleUnderline = activeTools?.toggleUnderline ?? globalToggleUnderline;
+  const toggleStrike = activeTools?.toggleStrike ?? globalToggleStrike;
+  const setFontFamily = activeTools?.setFontFamily ?? globalSetFontFamily;
+  const setFontSize = activeTools?.setFontSize ?? globalSetFontSize;
+  const setTextColor = activeTools?.setTextColor ?? globalSetTextColor;
+  const setHighlight = activeTools?.setHighlight ?? globalSetHighlight;
+  const setTextAlign = activeTools?.setTextAlign ?? globalSetTextAlign;
+  const toggleBulletList = activeTools?.toggleBulletList ?? globalToggleBulletList;
+  const toggleOrderedList = activeTools?.toggleOrderedList ?? globalToggleOrderedList;
+  const handleKeyDown = activeTools?.handleKeyDown ?? globalHandleKeyDown;
+  const insertImage = activeTools?.insertImage ?? globalInsertImage;
+  const insertImageFromFile = activeTools?.insertImageFromFile ?? globalInsertImageFromFile;
+  const insertLink = activeTools?.insertLink ?? globalInsertLink;
 
   const loadDocs = useCallback(async (email: string) => {
     try {
@@ -551,6 +576,8 @@ export default function NoteTextPage() {
 
   const selectedFolder = folders.find((f) => f.id === selectedFolderId);
 
+  const [textColorPreview, setTextColorPreview] = useState("#000000");
+  const [highlightColorPreview, setHighlightColorPreview] = useState("#ffff00");
   const colorInputRef = useRef<HTMLInputElement>(null);
   const highlightInputRef = useRef<HTMLInputElement>(null);
 
@@ -742,6 +769,13 @@ export default function NoteTextPage() {
               <div className="ml-auto flex items-center gap-2">
                 <span className="text-xs text-gray-400 hidden sm:block">Ctrl+S to save</span>
                 <button
+                  onClick={() => { setMoveTargetFolder(activeDoc?.folder_id || null); setShowMoveModal(true); }}
+                  className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 text-white text-sm font-medium rounded-xl transition-all border border-white/10"
+                >
+                  <MdFolder size={16} />
+                  Move
+                </button>
+                <button
                   onClick={() => setShowExportModal(true)}
                   className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 text-white text-sm font-medium rounded-xl transition-all border border-white/10"
                 >
@@ -837,13 +871,13 @@ export default function NoteTextPage() {
                   className="w-8 h-8 flex flex-col items-center justify-center rounded-lg hover:bg-white/5 transition-colors"
                 >
                   <span className="text-sm font-bold text-white leading-none">A</span>
-                  <span className="w-5 h-1.5 rounded-sm mt-0.5 shadow-sm border border-white/10" style={{ backgroundColor: "#000000" }} />
+                  <span className="w-5 h-1.5 rounded-sm mt-0.5 shadow-sm border border-white/10" style={{ backgroundColor: textColorPreview }} />
                 </button>
                 <input
                   ref={colorInputRef}
                   type="color"
-                  value="#000000"
-                  onChange={(e) => setTextColor(e.target.value)}
+                  value={textColorPreview}
+                  onChange={(e) => { setTextColorPreview(e.target.value); setTextColor(e.target.value); }}
                   className="absolute opacity-0 w-0 h-0 pointer-events-none"
                 />
               </div>
@@ -854,15 +888,15 @@ export default function NoteTextPage() {
                   title="Highlight Color"
                   className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/5 transition-colors"
                 >
-                  <span className="text-xs font-bold px-1 py-0.5 rounded shadow-sm" style={{ backgroundColor: "#ffff00", color: "#000" }}>
+                  <span className="text-xs font-bold px-1 py-0.5 rounded shadow-sm" style={{ backgroundColor: highlightColorPreview, color: "#000" }}>
                     H
                   </span>
                 </button>
                 <input
                   ref={highlightInputRef}
                   type="color"
-                  value="#ffff00"
-                  onChange={(e) => setHighlight(e.target.value)}
+                  value={highlightColorPreview}
+                  onChange={(e) => { setHighlightColorPreview(e.target.value); setHighlight(e.target.value); }}
                   className="absolute opacity-0 w-0 h-0 pointer-events-none"
                 />
               </div>
@@ -1113,12 +1147,12 @@ export default function NoteTextPage() {
       </div>
 
       <style jsx global>{`
-        .tiptap-paper-sheet .ProseMirror {
+.tiptap-paper-sheet .ProseMirror {
           outline: none;
-          padding: 60px 80px;
+          padding: 60px 100px;
           font-size: 16px;
-          line-height: 1.7;
-          min-height: 1000px;
+          line-height: 1.4;
+          min-height: 1100px;
           font-family: Georgia, 'Times New Roman', serif;
         }
         .tiptap-paper-sheet .ProseMirror:focus {
@@ -1134,7 +1168,7 @@ export default function NoteTextPage() {
           .tiptap-paper-sheet .ProseMirror h3 { font-size: 18px; }
         }
         .tiptap-paper-sheet .ProseMirror p {
-          margin: 0 0 1em 0;
+          margin: 0 0 0.5em 0;
         }
         .tiptap-paper-sheet .ProseMirror ul,
         .tiptap-paper-sheet .ProseMirror ol {
@@ -1383,6 +1417,92 @@ export default function NoteTextPage() {
         </div>
       )}
 
+      {showMoveModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
+          <div className="bg-gray-900/90 backdrop-blur-xl rounded-2xl shadow-2xl w-[90%] max-w-sm p-6 flex flex-col gap-4 border border-white/10">
+            <h2 className="text-lg font-bold text-white">Move Document</h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Select a folder to move this document to</p>
+            
+            <div className="flex flex-col gap-2 mt-2 max-h-60 overflow-y-auto">
+              <button
+                onClick={() => setMoveTargetFolder(null)}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all border ${
+                  moveTargetFolder === null
+                    ? "bg-sky-500/20 border-sky-500 text-sky-400"
+                    : "bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                }`}
+              >
+                <MdFolder size={20} className="text-gray-400" />
+                <span className="text-sm font-medium">No Folder</span>
+              </button>
+
+              {folders.map((folder, index) => {
+                const folderColor = getFolderColor(index);
+                const isSelected = moveTargetFolder === folder.id;
+                return (
+                  <button
+                    key={folder.id}
+                    onClick={() => setMoveTargetFolder(folder.id)}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all border ${
+                      isSelected
+                        ? "bg-sky-500/20 border-sky-500"
+                        : "bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    }`}
+                  >
+                    <span className={`p-1.5 rounded-lg ${folderColor.bg}`}>
+                      <MdFolder size={18} className={folderColor.text} />
+                    </span>
+                    <span className={`text-sm font-medium ${isSelected ? "text-sky-400" : "text-gray-700 dark:text-gray-300"}`}>
+                      {folder.name}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {folders.length === 0 && (
+              <p className="text-sm text-gray-500 text-center py-4">No folders available</p>
+            )}
+
+            <div className="flex gap-3 mt-2">
+              <button
+                onClick={() => setShowMoveModal(false)}
+                className="flex-1 px-4 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 font-medium transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={async () => {
+                  if (!user?.email || !activeDoc) return;
+                  try {
+                    const updatedDoc = { ...activeDoc, folder_id: moveTargetFolder };
+                    const res = await fetch("/api/documents", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ email: user.email, document: updatedDoc }),
+                    });
+                    if (res.ok) {
+                      setActiveDoc(updatedDoc);
+                      await loadDocs(user.email);
+                      setSelectedFolderId(moveTargetFolder);
+                      toast.success("Document moved successfully");
+                      setShowMoveModal(false);
+                    } else {
+                      toast.error("Failed to move document");
+                    }
+                  } catch {
+                    toast.error("Failed to move document");
+                  }
+                }}
+                className="flex-1 px-4 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-medium transition-colors"
+              >
+                Move
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {contextMenu && (
         <div
           className="fixed z-50 bg-white dark:bg-gray-900 rounded-xl shadow-xl border border-gray-200 dark:border-gray-700 py-1 min-w-[160px] overflow-hidden"
@@ -1521,7 +1641,7 @@ function NoteSheet({ index, content, onUpdate, onFocus, isFirst, title, setTitle
   return (
     <div
       data-page-index={index}
-      className="tiptap-paper-sheet bg-white shadow-2xl shrink-0 w-[794px] min-h-[1123px] relative flex flex-col transition-all duration-300 hover:shadow-sky-500/10"
+      className="tiptap-paper-sheet bg-white shadow-2xl shrink-0 w-[900px] min-h-[1200px] relative flex flex-col transition-all duration-300 hover:shadow-sky-500/10"
       onClick={handleInternalFocus}
     >
       {isFirst && (
