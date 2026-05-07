@@ -1037,7 +1037,7 @@ export default function NoteTextPage() {
                       <button
                         key={doc.id}
                         onClick={() => handleOpen(doc)}
-                        className={`group relative p-5 rounded-2xl ${color.bg} border-2 ${color.border} hover:shadow-xl hover:scale-[1.02] transition-all duration-200 text-left`}
+                        className={`group relative p-5 rounded-2xl bg-transparent border-2 ${color.border} hover:shadow-xl hover:scale-[1.02] transition-all duration-200 text-left`}
                       >
                         <div className="flex items-start gap-3">
                           <div className={`p-2 rounded-xl bg-white/80 dark:bg-gray-800/80 shadow-sm`}>
@@ -1109,7 +1109,7 @@ export default function NoteTextPage() {
                         key={doc.id}
                         onClick={() => handleOpen(doc)}
                         onContextMenu={(e) => handleContextMenu(e, "file", doc.id)}
-                        className={`group relative p-5 rounded-2xl ${color.bg} border-2 ${color.border} hover:shadow-xl hover:scale-[1.02] transition-all duration-200 text-left`}
+                        className={`group relative p-5 rounded-2xl bg-transparent border-2 ${color.border} hover:shadow-xl hover:scale-[1.02] transition-all duration-200 text-left`}
                       >
                         <div className="flex items-start gap-3">
                           <div className={`p-2.5 rounded-xl bg-white/80 dark:bg-gray-800/80 shadow-sm`}>
@@ -1422,15 +1422,14 @@ export default function NoteTextPage() {
           <div className="bg-gray-900/90 backdrop-blur-xl rounded-2xl shadow-2xl w-[90%] max-w-sm p-6 flex flex-col gap-4 border border-white/10">
             <h2 className="text-lg font-bold text-white">Move Document</h2>
             <p className="text-sm text-gray-500 dark:text-gray-400">Select a folder to move this document to</p>
-            
+
             <div className="flex flex-col gap-2 mt-2 max-h-60 overflow-y-auto">
               <button
                 onClick={() => setMoveTargetFolder(null)}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all border ${
-                  moveTargetFolder === null
-                    ? "bg-sky-500/20 border-sky-500 text-sky-400"
-                    : "bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
-                }`}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all border ${moveTargetFolder === null
+                  ? "bg-sky-500/20 border-sky-500 text-sky-400"
+                  : "bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                  }`}
               >
                 <MdFolder size={20} className="text-gray-400" />
                 <span className="text-sm font-medium">No Folder</span>
@@ -1443,11 +1442,10 @@ export default function NoteTextPage() {
                   <button
                     key={folder.id}
                     onClick={() => setMoveTargetFolder(folder.id)}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all border ${
-                      isSelected
-                        ? "bg-sky-500/20 border-sky-500"
-                        : "bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700"
-                    }`}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all border ${isSelected
+                      ? "bg-sky-500/20 border-sky-500"
+                      : "bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700"
+                      }`}
                   >
                     <span className={`p-1.5 rounded-lg ${folderColor.bg}`}>
                       <MdFolder size={18} className={folderColor.text} />
