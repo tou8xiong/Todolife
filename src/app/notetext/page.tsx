@@ -17,8 +17,6 @@ import {
 import { LuFileDown } from "react-icons/lu";
 import { useTipTapEditor } from "@/hooks/useTipTapEditor";
 import { EditorContent } from "@tiptap/react";
-import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
 
 interface Doc {
   id: number;
@@ -218,35 +216,31 @@ export default function NoteTextPage() {
     if (!title.trim()) return;
     setExporting(true);
     try {
-      const pdf = new jsPDF({
-        orientation: "portrait",
-        unit: "mm",
-        format: "a4",
+      // Send pages content to Puppeteer API
+      const response = await fetch('/api/export-pdf', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title,
+          pages,
+        }),
       });
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
 
-      for (let i = 0; i < pages.length; i++) {
-        if (i > 0) pdf.addPage();
-        const pageContainer = document.querySelector(`[data-page-index="${i}"]`);
-        if (!pageContainer) continue;
-        const element = pageContainer.querySelector('.ProseMirror');
-        if (!element) continue;
-        const canvas = await html2canvas(element as HTMLElement, {
-          scale: 2,
-          useCORS: true,
-          logging: false,
-          backgroundColor: "#ffffff",
-        });
-        const imgData = canvas.toDataURL("image/png");
-        const imgWidth = canvas.width;
-        const imgHeight = canvas.height;
-        const ratio = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
-        const imgX = (pdfWidth - imgWidth * ratio) / 2;
-        const imgY = 10;
-        pdf.addImage(imgData, "PNG", imgX, imgY, imgWidth * ratio, imgHeight * ratio);
+      if (!response.ok) {
+        throw new Error('Failed to generate PDF');
       }
-      pdf.save(`${title || "document"}.pdf`);
+
+      // Download the PDF
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${title || "document"}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+
       toast.success("PDF exported successfully!");
       setShowExportModal(false);
     } catch (err) {
@@ -258,10 +252,15 @@ export default function NoteTextPage() {
   }, [title, pages]);
 
   const exportToText = useCallback(() => {
-    if (!editor || !title.trim()) return;
+    if (!title.trim()) return;
     try {
-      const content = editor.getText();
-      const blob = new Blob([`${title}\n\n${content}`], { type: "text/plain" });
+      const allContent = pages.map((pageHtml) => {
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = pageHtml;
+        return tempDiv.textContent || tempDiv.innerText || '';
+      }).join('\n\n--- Page Break ---\n\n');
+
+      const blob = new Blob([`${title}\n\n${allContent}`], { type: "text/plain" });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
@@ -1383,43 +1382,59 @@ export default function NoteTextPage() {
       {showExportModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
           <div className="bg-gray-900/90 backdrop-blur-xl rounded-2xl shadow-2xl w-[90%] max-w-sm p-6 flex flex-col gap-4 border border-white/10">
-            <h2 className="text-lg font-bold text-white">Export Document</h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400">Choose a format to export your document</p>
-            <div className="flex flex-col gap-3 mt-2">
-              <button
-                onClick={exportToPDF}
-                disabled={exporting}
-                className="flex items-center gap-3 px-4 py-4 rounded-xl bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all border border-gray-200 dark:border-gray-700"
-              >
-                <div className="w-10 h-10 rounded-lg bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-                  <span className="text-red-500 text-lg font-bold">PDF</span>
+            {exporting ? (
+              <div className="flex flex-col items-center justify-center py-12">
+                <div className="relative">
+                  <div className="w-16 h-16 border-4 border-sky-200 dark:border-sky-900 rounded-full"></div>
+                  <div className="w-16 h-16 border-4 border-sky-500 border-t-transparent rounded-full animate-spin absolute top-0 left-0"></div>
                 </div>
-                <div className="text-left">
-                  <p className="text-sm font-semibold text-gray-800 dark:text-white">Export as PDF</p>
-                  <p className="text-xs text-gray-500">Preserves formatting and images</p>
+                <h3 className="text-lg font-bold text-white mt-6">Exporting Document</h3>
+                <p className="text-sm text-gray-400 mt-2">Please wait while we prepare your file...</p>
+                <div className="mt-4 flex items-center gap-2 text-xs text-gray-500">
+                  <div className="w-2 h-2 bg-sky-500 rounded-full animate-pulse"></div>
+                  <span>Processing pages</span>
                 </div>
-              </button>
-              <button
-                onClick={exportToText}
-                className="flex items-center gap-3 px-4 py-4 rounded-xl bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all border border-gray-200 dark:border-gray-700"
-              >
-                <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                  <span className="text-blue-500 text-lg font-bold">TXT</span>
+              </div>
+            ) : (
+              <>
+                <h2 className="text-lg font-bold text-white">Export Document</h2>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Choose a format to export your document</p>
+                <div className="flex flex-col gap-3 mt-2">
+                  <button
+                    onClick={exportToPDF}
+                    className="flex items-center gap-3 px-4 py-4 rounded-xl bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all border border-gray-200 dark:border-gray-700"
+                  >
+                    <div className="w-10 h-10 rounded-lg bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                      <span className="text-red-500 text-lg font-bold">PDF</span>
+                    </div>
+                    <div className="text-left">
+                      <p className="text-sm font-semibold text-gray-800 dark:text-white">Export as PDF</p>
+                      <p className="text-xs text-gray-500">Preserves formatting and images</p>
+                    </div>
+                  </button>
+                  <button
+                    onClick={exportToText}
+                    className="flex items-center gap-3 px-4 py-4 rounded-xl bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all border border-gray-200 dark:border-gray-700"
+                  >
+                    <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                      <span className="text-blue-500 text-lg font-bold">TXT</span>
+                    </div>
+                    <div className="text-left">
+                      <p className="text-sm font-semibold text-gray-800 dark:text-white">Export as Text</p>
+                      <p className="text-xs text-gray-500">Plain text file</p>
+                    </div>
+                  </button>
                 </div>
-                <div className="text-left">
-                  <p className="text-sm font-semibold text-gray-800 dark:text-white">Export as Text</p>
-                  <p className="text-xs text-gray-500">Plain text file</p>
+                <div className="flex gap-3 mt-2">
+                  <button
+                    onClick={() => setShowExportModal(false)}
+                    className="flex-1 px-4 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 font-medium transition-colors"
+                  >
+                    Cancel
+                  </button>
                 </div>
-              </button>
-            </div>
-            <div className="flex gap-3 mt-2">
-              <button
-                onClick={() => setShowExportModal(false)}
-                className="flex-1 px-4 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 font-medium transition-colors"
-              >
-                Cancel
-              </button>
-            </div>
+              </>
+            )}
           </div>
         </div>
       )}
