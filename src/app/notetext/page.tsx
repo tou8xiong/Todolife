@@ -999,9 +999,14 @@ export default function NoteTextPage() {
                 <MdNoteAdd size={18} />
                 <span className="text-[10px] font-bold uppercase tracking-wider">New Paper</span>
               </button>
+
+              <div className="ml-auto flex items-center gap-1.5 text-xs font-medium text-gray-400 bg-white/5 px-3 py-1.5 rounded-lg border border-white/10">
+                <MdDescription size={14} />
+                <span>{pages.length} {pages.length === 1 ? 'Page' : 'Pages'}</span>
+              </div>
             </div>
 
-            <div className="flex-1 overflow-auto p-4 sm:p-8 flex flex-col items-center gap-10">
+            <div className="flex-1 overflow-auto p-4 sm:p-8 flex flex-col items-center gap-10 relative">
               {pages.map((pageContent, index) => (
                 <NoteSheet
                   key={`${activeDoc?.id || "new"}-${index}`}
@@ -1012,6 +1017,8 @@ export default function NoteTextPage() {
                   isFirst={index === 0}
                   title={title}
                   setTitle={setTitle}
+                  activeDoc={activeDoc}
+                  allPages={pages}
                 />
               ))}
             </div>
@@ -1600,9 +1607,11 @@ interface NoteSheetProps {
   isFirst: boolean;
   title: string;
   setTitle: (title: string) => void;
+  activeDoc: Doc | null;
+  allPages: string[];
 }
 
-function NoteSheet({ index, content, onUpdate, onFocus, isFirst, title, setTitle }: NoteSheetProps) {
+function NoteSheet({ index, content, onUpdate, onFocus, isFirst, title, setTitle, activeDoc, allPages }: NoteSheetProps) {
   const tools = useTipTapEditor();
   const { editor, EditorContent, handleKeyDown } = tools;
   const indexRef = useRef(index);
@@ -1650,6 +1659,19 @@ function NoteSheet({ index, content, onUpdate, onFocus, isFirst, title, setTitle
             className="w-full text-center text-4xl font-bold bg-transparent text-gray-800 border-b-2 border-transparent hover:border-gray-200 focus:border-sky-500 transition-all px-1 py-4 outline-none font-serif tracking-tight"
             placeholder="Document Title"
           />
+          <div className="flex items-center justify-center gap-4 mt-3 text-sm text-gray-700">
+            {activeDoc?.updated_at && (
+              <span className="flex items-center gap-1">
+                <span className="font-semibold">Last updated:</span>
+                <span>{formatDate(activeDoc.updated_at)}</span>
+              </span>
+            )}
+            <span className="text-gray-400">•</span>
+            <span className="flex items-center gap-1">
+              <span className="font-semibold">Size:</span>
+              <span>{Math.ceil(allPages.join('').length / 1024)} KB</span>
+            </span>
+          </div>
         </div>
       )}
       <div className="flex-1" onKeyDown={handleKeyDown}>
