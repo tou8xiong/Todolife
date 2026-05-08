@@ -10,6 +10,10 @@ function isValidEmail(email: string): boolean {
 // GET /api/documents?email=user@example.com&id=optional_id
 export async function GET(req: NextRequest) {
   try {
+    if (!supabase) {
+      return NextResponse.json({ error: "Database not configured" }, { status: 503 });
+    }
+
     const email = req.nextUrl.searchParams.get("email");
     const id = req.nextUrl.searchParams.get("id");
     if (!email || !isValidEmail(email)) return NextResponse.json({ documents: [] });
@@ -39,6 +43,10 @@ export async function GET(req: NextRequest) {
 // POST /api/documents  { email, document }
 export async function POST(req: NextRequest) {
   try {
+    if (!supabase) {
+      return NextResponse.json({ error: "Database not configured" }, { status: 503 });
+    }
+
     const { email, document: doc } = await req.json();
     if (!email || !isValidEmail(email)) return NextResponse.json({ error: "Valid email required" }, { status: 400 });
     if (!doc?.id) return NextResponse.json({ error: "Document id required" }, { status: 400 });
@@ -64,6 +72,10 @@ export async function POST(req: NextRequest) {
 // DELETE /api/documents?id=123&email=user@example.com
 export async function DELETE(req: NextRequest) {
   try {
+    if (!supabase) {
+      return NextResponse.json({ error: "Database not configured" }, { status: 503 });
+    }
+
     const id = req.nextUrl.searchParams.get("id");
     const email = req.nextUrl.searchParams.get("email");
     if (!id || !email || !isValidEmail(email)) return NextResponse.json({ error: "Valid ID and email required" }, { status: 400 });
