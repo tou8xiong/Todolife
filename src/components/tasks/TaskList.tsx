@@ -290,7 +290,7 @@ export default function TaskList() {
                                                 : "bg-white border-amber-400"}`}>
                                 <div className="flex items-start gap-2">
                                     <h2 className={`text-lg sm:text-xl font-bold break-words flex-1 min-w-0
-                                    ${urgency === "missed" ? "text-gray-400 dark:text-gray-500 line-through" : urgency === "critical" ? "text-red-700 dark:text-red-400" : urgency === "warning" ? "text-orange-600 dark:text-orange-400" : "text-slate-800 dark:text-gray-100"}`}>
+                                    ${urgency === "missed" ? "text-gray-400 dark:text-gray-500 line-through" : urgency === "critical" ? "text-red-700 dark:text-red-400" : urgency === "warning" ? "text-orange-600 dark:text-orange-400" : "text-slate-800"}`}>
                                         {task.title}
                                     </h2>
                                     <span className={`px-3 py-1 rounded-full text-[10px] sm:text-xs font-bold uppercase tracking-wider border shrink-0 ${getPriorityColor(task.priority || "")}`}>

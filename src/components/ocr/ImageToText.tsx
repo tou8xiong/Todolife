@@ -22,6 +22,7 @@ export default function ImageToText() {
     const [history, setHistory] = useState<HistoryItem[]>([]);
     const [showHistory, setShowHistory] = useState(false);
     const [imageName, setImageName] = useState<string>("");
+    const [showImagePreview, setShowImagePreview] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Load history from localStorage on mount
@@ -84,7 +85,18 @@ export default function ImageToText() {
                 }
             );
 
-            const text = result.data.text;
+            const text = result.data.text.trim();
+
+            // Check if no text was extracted
+            if (!text || text.length === 0) {
+                toast.error("No text found in the image. Please upload an image with readable text.");
+                setSelectedImage(null);
+                if (fileInputRef.current) {
+                    fileInputRef.current.value = "";
+                }
+                return;
+            }
+
             setExtractedText(text);
             setEditedText(text);
 
@@ -162,16 +174,16 @@ export default function ImageToText() {
     };
 
     return (
-        <div className="w-full h-screen flex flex-col bg-gradient-to-b from-gray-900 via-gray-800 to-gray-700">
+        <div className="w-full min-h-screen flex flex-col bg-gradient-to-b from-gray-900 via-gray-800 to-gray-700">
             <div className="flex-1 overflow-y-auto p-4 sm:p-6">
-                <div className="max-w-4xl mx-auto">
+                <div className="max-w-6xl mx-auto">
                     {/* Header */}
                     <div className="mb-6">
-                        <div className="flex items-center justify-between mb-2">
-                            <div className="flex items-center gap-3">
-                                <FileText className="w-8 h-8 text-blue-400" />
-                                <h1 className="text-2xl sm:text-3xl font-bold text-white font-serif">
-                                    Image to Text
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-2">
+                            <div className="flex items-center gap-2 sm:gap-3">
+                                <FileText className="w-6 h-6 sm:w-8 sm:h-8 text-blue-400" />
+                                <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-white font-serif">
+                                    IMAGE2TEXT
                                 </h1>
                                 <div className="relative">
                                     <button
@@ -179,7 +191,7 @@ export default function ImageToText() {
                                         onMouseLeave={() => setShowTooltip(false)}
                                         className="p-1 rounded-full hover:bg-gray-700 transition-colors"
                                     >
-                                        <Info className="w-5 h-5 text-blue-400" />
+                                        <Info className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" />
                                     </button>
                                     {showTooltip && (
                                         <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-64 bg-gray-800 border border-gray-600 rounded-lg shadow-xl p-3 z-50">
@@ -199,10 +211,10 @@ export default function ImageToText() {
                             </div>
                             <button
                                 onClick={() => setShowHistory(!showHistory)}
-                                className="flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-white transition-all border border-gray-600"
+                                className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-white transition-all border border-gray-600 text-sm"
                             >
-                                <History className="w-5 h-5 text-blue-400" />
-                                <span className="text-sm font-semibold">History</span>
+                                <History className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" />
+                                <span className="font-semibold">History</span>
                                 {history.length > 0 && (
                                     <span className="bg-blue-500 text-white text-xs rounded-full px-2 py-0.5">
                                         {history.length}
@@ -210,7 +222,7 @@ export default function ImageToText() {
                                 )}
                             </button>
                         </div>
-                        <p className="text-gray-300 text-sm sm:text-base">
+                        <p className="text-gray-300 text-xs sm:text-sm">
                             Upload an image and extract text using OCR technology
                         </p>
                     </div>
@@ -283,7 +295,7 @@ export default function ImageToText() {
                     ) : (
                         <>
                             {/* Upload Section */}
-                            <div className="bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-2xl border border-gray-700 p-4 sm:p-6 mb-4">
+                            <div className="mb-4">
                                 <input
                                     type="file"
                                     ref={fileInputRef}
@@ -296,9 +308,9 @@ export default function ImageToText() {
                                 {!selectedImage ? (
                                     <label
                                         htmlFor="image-upload"
-                                        className="flex flex-col items-center justify-center w-full h-48 sm:h-64 border-2 border-dashed border-gray-600 rounded-xl cursor-pointer hover:border-blue-400 transition-all duration-300 hover:bg-gray-700/50"
+                                        className="flex flex-col items-center justify-center w-full h-48 sm:h-64 border-2 bg-white/5 border-dashed border-white/25 rounded-xl cursor-pointer hover:border-blue-500 transition-all duration-300 bg-gray-800/50"
                                     >
-                                        <Upload className="w-12 h-12 sm:w-16 sm:h-16 text-gray-400 mb-4" />
+                                        <Upload className="w-12 h-12 sm:w-16 sm:h-16 text-blue-400 mb-4" />
                                         <p className="text-gray-300 text-base sm:text-lg font-semibold mb-2">
                                             Click to upload image
                                         </p>
@@ -306,17 +318,17 @@ export default function ImageToText() {
                                             PNG, JPG, JPEG up to 10MB
                                         </p>
                                     </label>
-                                ) : (
+                                ) : !extractedText ? (
                                     <div className="space-y-4">
-                                        <div className="relative rounded-xl overflow-hidden border border-gray-600">
+                                        <div className="relative rounded-xl overflow-hidden border-2 border-dashed border-blue-400 bg-gray-800/50">
                                             <img
                                                 src={selectedImage}
                                                 alt="Uploaded"
-                                                className="w-full h-auto max-h-96 object-contain bg-gray-900"
+                                                className="w-full h-auto max-h-96 object-contain"
                                             />
                                         </div>
 
-                                        {isProcessing ? (
+                                        {isProcessing && (
                                             <div className="space-y-2">
                                                 <div className="flex items-center justify-center gap-2 text-blue-400">
                                                     <Loader2 className="w-5 h-5 animate-spin" />
@@ -329,83 +341,130 @@ export default function ImageToText() {
                                                     />
                                                 </div>
                                             </div>
-                                        ) : (
-                                            <label
-                                                htmlFor="image-upload"
-                                                className="flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold transition-all shadow-md cursor-pointer"
-                                            >
-                                                <Upload className="w-5 h-5" />
-                                                Upload New Image
-                                            </label>
                                         )}
                                     </div>
-                                )}
+                                ) : null}
                             </div>
 
-                            {/* Extracted Text Section */}
+                            {/* Extracted Text Section - Main Section */}
                             {extractedText && (
-                                <div className="bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-2xl border border-gray-700 p-4 sm:p-6">
-                                    <div className="flex items-center justify-between mb-4">
-                                        <div className="flex items-center gap-2">
-                                            <CheckCircle className="w-5 h-5 text-green-400" />
-                                            <h2 className="text-lg sm:text-xl font-bold text-white">
-                                                Extracted Text
-                                            </h2>
+                                <div className="space-y-4">
+                                    {/* Small Image Preview */}
+                                    <div className="flex items-center gap-3">
+                                        <div
+                                            onClick={() => setShowImagePreview(true)}
+                                            className="relative w-20 h-20 rounded-lg overflow-hidden border-2 border-gray-600 hover:border-blue-400 cursor-pointer transition-all group"
+                                        >
+                                            <img
+                                                src={selectedImage!}
+                                                alt="Preview"
+                                                className="w-full h-full object-cover"
+                                            />
+                                            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                                <ImageIcon className="w-6 h-6 text-white" />
+                                            </div>
                                         </div>
-                                        <div className="flex gap-2">
-                                            {!isEditing ? (
-                                                <>
-                                                    <button
-                                                        onClick={handleEdit}
-                                                        className="flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold transition-all shadow-md text-sm"
-                                                    >
-                                                        <Edit2 className="w-4 h-4" />
-                                                        Edit
-                                                    </button>
-                                                    <button
-                                                        onClick={copyToClipboard}
-                                                        className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold transition-all shadow-md text-sm"
-                                                    >
-                                                        <Copy className="w-4 h-4" />
-                                                        Copy
-                                                    </button>
-                                                </>
+                                        <div className="flex-1">
+                                            <p className="text-gray-400 text-xs">Click image to preview</p>
+                                            <p className="text-gray-300 text-sm font-semibold">{imageName}</p>
+                                        </div>
+                                        <label
+                                            htmlFor="image-upload"
+                                            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold transition-all shadow-md cursor-pointer text-sm"
+                                        >
+                                            <Upload className="w-4 h-4" />
+                                            New Image
+                                        </label>
+                                    </div>
+
+                                    {/* Extracted Text - Main Content */}
+                                    <div className="bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-2xl border border-gray-700 p-4 sm:p-6">
+                                        <div className="flex items-center justify-between mb-4">
+                                            <div className="flex items-center gap-2">
+                                                <CheckCircle className="w-5 h-5 text-green-400" />
+                                                <h2 className="text-lg sm:text-xl font-bold text-white">
+                                                    Extracted Text
+                                                </h2>
+                                            </div>
+                                            <div className="flex gap-2">
+                                                {!isEditing ? (
+                                                    <>
+                                                        <button
+                                                            onClick={handleEdit}
+                                                            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold transition-all shadow-md text-sm"
+                                                        >
+                                                            <Edit2 className="w-4 h-4" />
+                                                            Edit
+                                                        </button>
+                                                        <button
+                                                            onClick={copyToClipboard}
+                                                            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold transition-all shadow-md text-sm"
+                                                        >
+                                                            <Copy className="w-4 h-4" />
+                                                            Copy
+                                                        </button>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <button
+                                                            onClick={handleCancelEdit}
+                                                            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-600 hover:bg-gray-700 text-white font-semibold transition-all shadow-md text-sm"
+                                                        >
+                                                            <X className="w-4 h-4" />
+                                                            Cancel
+                                                        </button>
+                                                        <button
+                                                            onClick={handleSaveEdit}
+                                                            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white font-semibold transition-all shadow-md text-sm"
+                                                        >
+                                                            <Save className="w-4 h-4" />
+                                                            Save
+                                                        </button>
+                                                    </>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-600 max-h-96 overflow-y-auto hide-scrollbar">
+                                            {isEditing ? (
+                                                <textarea
+                                                    value={editedText}
+                                                    onChange={(e) => setEditedText(e.target.value)}
+                                                    className="w-full min-h-[300px] bg-transparent text-gray-200 text-sm sm:text-base resize-none focus:outline-none"
+                                                    placeholder="Edit your text here..."
+                                                />
                                             ) : (
-                                                <>
-                                                    <button
-                                                        onClick={handleCancelEdit}
-                                                        className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-600 hover:bg-gray-700 text-white font-semibold transition-all shadow-md text-sm"
-                                                    >
-                                                        <X className="w-4 h-4" />
-                                                        Cancel
-                                                    </button>
-                                                    <button
-                                                        onClick={handleSaveEdit}
-                                                        className="flex items-center gap-2 px-3 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white font-semibold transition-all shadow-md text-sm"
-                                                    >
-                                                        <Save className="w-4 h-4" />
-                                                        Save
-                                                    </button>
-                                                </>
+                                                <pre className="text-gray-200 text-sm sm:text-base whitespace-pre-wrap">
+                                                    {extractedText}
+                                                </pre>
                                             )}
                                         </div>
                                     </div>
-
-                                    <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-600 max-h-96 overflow-y-auto">
-                                        {isEditing ? (
-                                            <textarea
-                                                value={editedText}
-                                                onChange={(e) => setEditedText(e.target.value)}
-                                                className="w-full min-h-[300px] bg-transparent text-gray-200 text-sm sm:text-base font-mono resize-none focus:outline-none"
-                                                placeholder="Edit your text here..."
-                                            />
-                                        ) : (
-                                            <pre className="text-gray-200 text-sm sm:text-base whitespace-pre-wrap font-mono">
-                                                {extractedText}
-                                            </pre>
-                                        )}
-                                    </div>
                                 </div>
+                            )}
+
+                            {/* Image Preview Modal */}
+                            {showImagePreview && (
+                                <>
+                                    <div
+                                        className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
+                                        onClick={() => setShowImagePreview(false)}
+                                    >
+                                        <div className="relative max-w-4xl max-h-[90vh] w-full">
+                                            <button
+                                                onClick={() => setShowImagePreview(false)}
+                                                className="absolute -top-10 right-0 p-2 rounded-full bg-gray-800 hover:bg-gray-700 text-white transition-all"
+                                            >
+                                                <X className="w-6 h-6" />
+                                            </button>
+                                            <img
+                                                src={selectedImage!}
+                                                alt="Full preview"
+                                                className="w-full h-full object-contain rounded-lg"
+                                            />
+                                        </div>
+                                    </div>
+                                </>
                             )}
                         </>
                     )}

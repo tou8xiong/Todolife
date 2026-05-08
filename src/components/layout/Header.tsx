@@ -34,6 +34,7 @@ const drawerNav: NavGroup[] = [
       { href: "/noteidea", labelKey: "ideaNotes", icon: BookOpen },
       { href: "/pdfeditor", labelKey: "pdfAnnotator", icon: FileText },
       { href: "/background-removal", labelKey: "removeBg", icon: ImageIcon },
+      { href: "/imagetotext", labelKey: "imageToText", icon: FileText },
       { href: "/agent", labelKey: "agent", icon: TbRobot },
     ],
   },
