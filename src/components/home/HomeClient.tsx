@@ -41,68 +41,6 @@ function FloatingDots() {
   );
 }
 
-function MouseFollower() {
-  const [positions, setPositions] = useState<{ x: number; y: number }[]>([]);
-  const [isVisible, setIsVisible] = useState(false);
-  const [isDesktop, setIsDesktop] = useState(false);
-
-  useEffect(() => {
-    const checkDesktop = () => {
-      setIsDesktop(window.innerWidth >= 1024);
-    };
-    checkDesktop();
-    window.addEventListener("resize", checkDesktop);
-    return () => window.removeEventListener("resize", checkDesktop);
-  }, []);
-  
-  const handleMouseMove = useCallback((e: MouseEvent) => {
-    setPositions(prev => {
-      const newPos = { x: e.clientX, y: e.clientY };
-      const updated = [newPos, ...prev].slice(0, 40);
-      return updated;
-    });
-    if (!isVisible) setIsVisible(true);
-  }, [isVisible]);
-
-  const handleMouseLeave = useCallback(() => {
-    setIsVisible(false);
-  }, []);
-
-  useEffect(() => {
-    window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("mouseleave", handleMouseLeave);
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mouseleave", handleMouseLeave);
-    };
-  }, [handleMouseMove, handleMouseLeave]);
-
-  if (!isDesktop || !isVisible || positions.length === 0) return null;
-
-  return (
-    <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
-      {positions.map((pos, i) => {
-        const size = Math.max(2, 10 - i * 0.25);
-        const opacity = Math.max(0.1, 0.8 - i * 0.02);
-        return (
-          <div
-            key={i}
-            className="absolute rounded-full"
-            style={{
-              width: size,
-              height: size,
-              left: pos.x - size / 2,
-              top: pos.y - size / 2,
-              background: `radial-gradient(circle, rgba(147, 197, 253, ${opacity}), rgba(251, 191, 36, ${opacity * 0.6}))`,
-              boxShadow: `0 0 ${size * 2}px rgba(59, 130, 246, ${opacity * 0.5}), 0 0 ${size * 3}px rgba(251, 191, 36, ${opacity * 0.3})`,
-              transition: 'left 0.05s ease-out, top 0.05s ease-out',
-            }}
-          />
-        );
-      })}
-    </div>
-  );
-}
 
 function WaveText({ text, className = "" }: { text: string; className?: string }) {
   return (
@@ -185,7 +123,6 @@ export default function HomeClient() {
         }
       `}</style>
 
-      {mounted && <MouseFollower />}
       {mounted && <FloatingDots />}
 
       <div className="min-h-screen sm:py-4 w-full flex flex-col lg:flex-row justify-center gap-2 relative z-10">

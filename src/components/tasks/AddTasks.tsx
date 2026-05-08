@@ -131,7 +131,7 @@ export default function AddTasks() {
                 message="The date and time you selected is already in the past. Please choose a future date and time."
                 onClose={() => setAlertOpen(false)}
             />
-            <div className="sm:w-[700px] w-full mx-1 min-h-[calc(100vh-220px)] bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-2xl border border-gray-700 flex flex-col">
+            <div className="sm:w-[700px] sm:h-[750px] mt-[10px] w-full mx-1 bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-2xl border border-gray-700 flex flex-col">
 
                 <div className="text-center pt-3 pb-2">
                     <h1 className="text-lg font-bold text-white font-serif tracking-tight">
@@ -140,7 +140,7 @@ export default function AddTasks() {
                     <p className="text-gray-300 text-xs mt-0.5">Fill in the details below</p>
                 </div>
 
-                <form className="px-4 sm:px-6 pb-4 space-y-3 flex-1">
+                <form className="px-4 sm:px-6 pb-4 space-y-3">
 
                     <div className="space-y-1">
                         <label className="text-xs font-semibold text-gray-300 uppercase tracking-wide">{t.tasks.taskTitle}</label>
