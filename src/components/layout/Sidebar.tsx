@@ -5,6 +5,7 @@ import { BsLayoutSidebarInset } from "react-icons/bs";
 import { MdDashboard, MdTimer, MdPictureAsPdf, MdPhotoSizeSelectActual } from "react-icons/md";
 import { GiNotebook } from "react-icons/gi";
 import { TbRobot } from "react-icons/tb";
+import { FileText } from "lucide-react";
 
 import { useAppContext } from "@/context/AppContext";
 
@@ -16,6 +17,7 @@ const navItems = [
     { href: "/noteidea", key: "ideaNotes", icon: GiNotebook },
     { href: "/pdfeditor", key: "pdfAnnotator", icon: MdPictureAsPdf },
     { href: "/background-removal", key: "removeBg", icon: MdPhotoSizeSelectActual },
+    { href: "/imagetotext", key: "imageToText", icon: FileText },
     { href: "/agent", key: "agent", icon: TbRobot },
 ];
 
