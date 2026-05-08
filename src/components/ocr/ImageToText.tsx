@@ -316,7 +316,7 @@ export default function ImageToText() {
                                             />
                                         </div>
 
-                                        {isProcessing && (
+                                        {isProcessing ? (
                                             <div className="space-y-2">
                                                 <div className="flex items-center justify-center gap-2 text-blue-400">
                                                     <Loader2 className="w-5 h-5 animate-spin" />
@@ -329,6 +329,14 @@ export default function ImageToText() {
                                                     />
                                                 </div>
                                             </div>
+                                        ) : (
+                                            <label
+                                                htmlFor="image-upload"
+                                                className="flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-semibold transition-all shadow-md cursor-pointer"
+                                            >
+                                                <Upload className="w-5 h-5" />
+                                                Upload New Image
+                                            </label>
                                         )}
                                     </div>
                                 )}
