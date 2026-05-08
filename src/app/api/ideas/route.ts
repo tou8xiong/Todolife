@@ -10,6 +10,10 @@ function isValidEmail(email: string): boolean {
 // GET /api/ideas?email=user@example.com
 export async function GET(req: NextRequest) {
   try {
+    if (!supabase) {
+      return NextResponse.json({ error: "Database not configured" }, { status: 503 });
+    }
+
     const email = req.nextUrl.searchParams.get("email");
     if (!email || !isValidEmail(email)) return NextResponse.json({ ideas: [] });
 
@@ -31,6 +35,10 @@ export async function GET(req: NextRequest) {
 // POST /api/ideas  { email, ideas }
 export async function POST(req: NextRequest) {
   try {
+    if (!supabase) {
+      return NextResponse.json({ error: "Database not configured" }, { status: 503 });
+    }
+
     const { email, ideas } = await req.json();
     if (!email || !isValidEmail(email)) return NextResponse.json({ error: "Valid email required" }, { status: 400 });
 

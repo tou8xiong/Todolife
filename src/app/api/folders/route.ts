@@ -10,6 +10,10 @@ function isValidEmail(email: string): boolean {
 // GET /api/folders?email=user@example.com
 export async function GET(req: NextRequest) {
   try {
+    if (!supabase) {
+      return NextResponse.json({ error: "Database not configured" }, { status: 503 });
+    }
+
     const email = req.nextUrl.searchParams.get("email");
     if (!email || !isValidEmail(email)) return NextResponse.json({ folders: [] });
 
@@ -31,6 +35,10 @@ export async function GET(req: NextRequest) {
 // POST /api/folders  { email, folder }
 export async function POST(req: NextRequest) {
   try {
+    if (!supabase) {
+      return NextResponse.json({ error: "Database not configured" }, { status: 503 });
+    }
+
     const { email, folder } = await req.json();
     if (!email || !isValidEmail(email)) return NextResponse.json({ error: "Valid email required" }, { status: 400 });
 
@@ -60,6 +68,10 @@ export async function POST(req: NextRequest) {
 // DELETE /api/folders?id=uuid&email=user@example.com
 export async function DELETE(req: NextRequest) {
   try {
+    if (!supabase) {
+      return NextResponse.json({ error: "Database not configured" }, { status: 503 });
+    }
+
     const id = req.nextUrl.searchParams.get("id");
     const email = req.nextUrl.searchParams.get("email");
     if (!id || !email || !isValidEmail(email)) return NextResponse.json({ error: "Valid ID and email required" }, { status: 400 });
@@ -82,6 +94,10 @@ export async function DELETE(req: NextRequest) {
 // PATCH /api/folders  { email, folder }
 export async function PATCH(req: NextRequest) {
   try {
+    if (!supabase) {
+      return NextResponse.json({ error: "Database not configured" }, { status: 503 });
+    }
+
     const { email, folder } = await req.json();
     if (!email || !isValidEmail(email)) return NextResponse.json({ error: "Valid email required" }, { status: 400 });
     if (!folder?.id) return NextResponse.json({ error: "Folder id required" }, { status: 400 });

@@ -6,6 +6,10 @@ export const dynamic = "force-dynamic";
 // GET /api/profile?email=user@example.com
 export async function GET(req: NextRequest) {
   try {
+    if (!supabase) {
+      return NextResponse.json({ error: "Database not configured" }, { status: 503 });
+    }
+
     const email = req.nextUrl.searchParams.get("email");
     if (!email) return NextResponse.json({ profileImage: null, emoji: null });
 
@@ -33,6 +37,10 @@ export async function GET(req: NextRequest) {
 // POST /api/profile  { email, profileImage?, emoji? }
 export async function POST(req: NextRequest) {
   try {
+    if (!supabase) {
+      return NextResponse.json({ error: "Database not configured" }, { status: 503 });
+    }
+
     const { email, profileImage, emoji } = await req.json();
     if (!email) return NextResponse.json({ error: "Email required" }, { status: 400 });
 
