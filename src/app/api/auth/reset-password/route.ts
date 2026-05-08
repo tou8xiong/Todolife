@@ -2,20 +2,42 @@ import { NextRequest, NextResponse } from "next/server";
 import admin from "firebase-admin";
 import { Resend } from "resend";
 
-if (!admin.apps.length) {
-  admin.initializeApp({
+function initializeFirebaseAdmin() {
+  if (admin.apps.length) {
+    return admin.app();
+  }
+
+  const projectId = process.env.FIREBASE_PROJECT_ID;
+  const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+  const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n");
+
+  if (!projectId || !clientEmail || !privateKey) {
+    return null;
+  }
+
+  return admin.initializeApp({
     credential: admin.credential.cert({
-      projectId: process.env.FIREBASE_PROJECT_ID,
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n"),
+      projectId,
+      clientEmail,
+      privateKey,
     }),
   });
 }
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 export async function POST(req: NextRequest) {
   try {
+    const firebaseApp = initializeFirebaseAdmin();
+    if (!firebaseApp) {
+      return NextResponse.json({ error: "Service not configured" }, { status: 503 });
+    }
+
+    const resendApiKey = process.env.RESEND_API_KEY;
+    if (!resendApiKey) {
+      return NextResponse.json({ error: "Email service not configured" }, { status: 503 });
+    }
+
+    const resend = new Resend(resendApiKey);
+
     const { email } = await req.json();
 
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
