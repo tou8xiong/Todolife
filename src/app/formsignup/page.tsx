@@ -407,11 +407,11 @@ export default function FormSignUp() {
                   </div>
                   <span className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed">
                     I agree to the{" "}
-                    <Link href="#" className="text-violet-600 hover:text-violet-700 dark:text-violet-400 dark:hover:text-violet-300 font-medium">
+                    <Link href="/terms" target="_blank" className="text-violet-600 hover:text-violet-700 dark:text-violet-400 dark:hover:text-violet-300 font-medium underline">
                       Terms of Service
                     </Link>{" "}
                     and{" "}
-                    <Link href="#" className="text-violet-600 hover:text-violet-700 dark:text-violet-400 dark:hover:text-violet-300 font-medium">
+                    <Link href="/privacy" target="_blank" className="text-violet-600 hover:text-violet-700 dark:text-violet-400 dark:hover:text-violet-300 font-medium underline">
                       Privacy Policy
                     </Link>
                   </span>
