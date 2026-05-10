@@ -1,7 +1,7 @@
 "use client";
 
 import { ChangeEvent, useEffect, useRef, useState } from "react";
-import { Download, ImageIcon, Sparkles, Trash2, UploadCloud, X } from "lucide-react";
+import { Download, ImageIcon, Sparkles, Trash2, UploadCloud, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import { removeBackground, preload } from "@imgly/background-removal";
 import { useAppContext } from "@/context/AppContext";
@@ -29,6 +29,7 @@ export default function BackgroundRemovalPage() {
     const resultRef = useRef<HTMLDivElement | null>(null);
     const fileInputRef = useRef<HTMLInputElement | null>(null);
     const [restored, setRestored] = useState(false);
+    const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
     // Restore data on mount after login
     useEffect(() => {
@@ -203,25 +204,128 @@ export default function BackgroundRemovalPage() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-950 text-white font-sans">
+        <div className="min-h-screen bg-gray-950 text-white font-sans flex">
 
-            {/* ── Hero header ── */}
-            <div className="relative overflow-hidden border-b border-white/5 bg-gradient-to-br from-gray-900 via-gray-950 to-gray-900 px-4 py-12 sm:py-16 text-center">
-                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(139,92,246,0.12),_transparent_60%)]" />
-                <div className="relative mx-auto max-w-2xl">
-                    <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-violet-500/30 bg-violet-500/10 px-4 py-1.5 text-xs font-semibold text-violet-300 uppercase tracking-widest">
-                        <Sparkles size={12} /> AI-Powered
-                    </div>
-                    <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight bg-gradient-to-br from-white via-gray-200 to-gray-400 bg-clip-text text-transparent">
-                        Remove Background
-                    </h1>
-                    <p className="mt-4 text-gray-400 text-sm sm:text-base max-w-md mx-auto">
-                        Drop any image and get a clean transparent PNG in seconds — fully in-browser, no upload needed.
-                    </p>
+            {/* Collapsible Aside */}
+            <aside className={`${sidebarCollapsed ? 'w-16' : 'w-64 lg:w-80'} bg-gray-900 border-r border-white/5 flex flex-col transition-all duration-300 relative`}>
+                {/* Toggle Button */}
+                <button
+                    onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+                    className="absolute -right-3 top-6 z-10 w-6 h-6 bg-violet-600 hover:bg-violet-500 rounded-full flex items-center justify-center shadow-lg transition-all"
+                    title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+                >
+                    {sidebarCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+                </button>
+
+                <div className={`${sidebarCollapsed ? 'p-3' : 'p-6'} flex flex-col gap-6 overflow-hidden`}>
+                    {!sidebarCollapsed ? (
+                        <>
+                            <div className="space-y-3">
+                                <div className="inline-flex items-center gap-2 rounded-full border border-violet-500/30 bg-violet-500/10 px-3 py-1 text-xs font-semibold text-violet-300 uppercase tracking-widest">
+                                    <Sparkles size={12} /> AI-Powered
+                                </div>
+                                <h1 className="text-2xl font-extrabold tracking-tight bg-gradient-to-br from-white via-gray-200 to-gray-400 bg-clip-text text-transparent">
+                                    Remove Background
+                                </h1>
+                                <p className="text-gray-400 text-xs">
+                                    Drop any image and get a clean transparent PNG in seconds — fully in-browser, no upload needed.
+                                </p>
+                            </div>
+
+                            {/* Steps */}
+                            <div className="space-y-3">
+                                {(() => {
+                                    const activeStep = resultPreview ? 3 : loading ? 2 : sourcePreview ? 1 : 0;
+                                    const steps = [
+                                        { step: "01", title: "Upload", desc: "Drop or pick any image" },
+                                        { step: "02", title: "Process", desc: "AI removes the background" },
+                                        { step: "03", title: "Download", desc: "Save transparent PNG" },
+                                    ];
+                                    return steps.map(({ step, title, desc }, i) => {
+                                        const stepNum = i + 1;
+                                        const isActive = activeStep === stepNum;
+                                        const isDone = activeStep > stepNum;
+                                        return (
+                                            <div
+                                                key={step}
+                                                className={`rounded-xl px-4 py-3 border transition-all duration-500
+                                                    ${isActive ? "bg-violet-500/15 border-violet-500/50 shadow-lg shadow-violet-900/20"
+                                                        : isDone ? "bg-green-500/10 border-green-500/30"
+                                                            : "bg-white/[0.03] border-white/[0.07]"}`}
+                                            >
+                                                <p className={`text-xs font-bold mb-1 transition-colors ${isActive ? "text-violet-400" : isDone ? "text-green-400" : "text-gray-600"}`}>
+                                                    {isDone ? "✓" : step}
+                                                </p>
+                                                <p className={`text-sm font-semibold transition-colors ${isActive ? "text-white" : isDone ? "text-green-300" : "text-gray-500"}`}>
+                                                    {title}
+                                                </p>
+                                                <p className={`text-xs mt-0.5 transition-colors ${isActive ? "text-violet-300/80" : isDone ? "text-green-500/70" : "text-gray-600"}`}>
+                                                    {desc}
+                                                </p>
+                                                {isActive && loading && (
+                                                    <span className="mt-2 inline-block h-3 w-3 animate-spin rounded-full border-2 border-violet-400 border-t-transparent" />
+                                                )}
+                                            </div>
+                                        );
+                                    });
+                                })()}
+                            </div>
+
+                            {/* Supported formats */}
+                            <div className="space-y-2">
+                                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Supported Formats</p>
+                                <div className="flex flex-wrap gap-2">
+                                    {["PNG", "JPG", "WebP"].map((f) => (
+                                        <span key={f} className="rounded-full bg-white/5 border border-white/10 px-3 py-1 text-xs text-gray-400 font-medium">{f}</span>
+                                    ))}
+                                </div>
+                            </div>
+                        </>
+                    ) : (
+                        /* Collapsed - Icon Only */
+                        <div className="flex flex-col items-center gap-4 py-2">
+                            <div className="p-2 rounded-lg bg-violet-500/10 border border-violet-500/30" title="AI-Powered Background Removal">
+                                <Sparkles size={20} className="text-violet-400" />
+                            </div>
+
+                            {/* Step Icons */}
+                            {(() => {
+                                const activeStep = resultPreview ? 3 : loading ? 2 : sourcePreview ? 1 : 0;
+                                const steps = [
+                                    { icon: UploadCloud, title: "Upload" },
+                                    { icon: Sparkles, title: "Process" },
+                                    { icon: Download, title: "Download" },
+                                ];
+                                return steps.map((stepData, i) => {
+                                    const stepNum = i + 1;
+                                    const isActive = activeStep === stepNum;
+                                    const isDone = activeStep > stepNum;
+                                    const Icon = stepData.icon;
+                                    return (
+                                        <div
+                                            key={i}
+                                            className={`p-2 rounded-lg border transition-all duration-500 ${
+                                                isActive ? "bg-violet-500/15 border-violet-500/50"
+                                                    : isDone ? "bg-green-500/10 border-green-500/30"
+                                                        : "bg-white/[0.03] border-white/[0.07]"
+                                            }`}
+                                            title={stepData.title}
+                                        >
+                                            <Icon size={18} className={`${
+                                                isActive ? "text-violet-400" : isDone ? "text-green-400" : "text-gray-600"
+                                            }`} />
+                                        </div>
+                                    );
+                                });
+                            })()}
+                        </div>
+                    )}
                 </div>
-            </div>
+            </aside>
 
-            <div className="mx-auto max-w-5xl px-4 py-10 sm:py-14 space-y-8">
+            {/* Main Content */}
+            <div className="flex-1 overflow-y-auto">
+                <div className="mx-auto max-w-5xl px-4 py-10 sm:py-14 space-y-8">
 
                 {/* ── Upload zone ── */}
                 {!sourcePreview ? (
@@ -349,47 +453,7 @@ export default function BackgroundRemovalPage() {
                     </div>
                 )}
 
-                {/* ── Steps strip ── */}
-                {(() => {
-                    const activeStep = resultPreview ? 3 : loading ? 2 : sourcePreview ? 1 : 0;
-                    const steps = [
-                        { step: "01", title: "Upload", desc: "Drop or pick any image" },
-                        { step: "02", title: "Process", desc: "AI removes the background" },
-                        { step: "03", title: "Download", desc: "Save transparent PNG" },
-                    ];
-                    return (
-                        <div className="grid grid-cols-3 gap-3 pt-2">
-                            {steps.map(({ step, title, desc }, i) => {
-                                const stepNum = i + 1;
-                                const isActive = activeStep === stepNum;
-                                const isDone = activeStep > stepNum;
-                                return (
-                                    <div
-                                        key={step}
-                                        className={`rounded-2xl px-4 py-4 text-center border transition-all duration-500
-                                            ${isActive ? "bg-violet-500/15 border-violet-500/50 scale-[1.03] shadow-lg shadow-violet-900/20"
-                                                : isDone ? "bg-green-500/10 border-green-500/30"
-                                                    : "bg-white/[0.03] border-white/[0.07]"}`}
-                                    >
-                                        <p className={`text-xs font-bold mb-1 transition-colors ${isActive ? "text-violet-400" : isDone ? "text-green-400" : "text-gray-600"}`}>
-                                            {isDone ? "✓" : step}
-                                        </p>
-                                        <p className={`text-sm font-semibold transition-colors ${isActive ? "text-white" : isDone ? "text-green-300" : "text-gray-500"}`}>
-                                            {title}
-                                        </p>
-                                        <p className={`text-xs mt-0.5 transition-colors ${isActive ? "text-violet-300/80" : isDone ? "text-green-500/70" : "text-gray-600"}`}>
-                                            {desc}
-                                        </p>
-                                        {isActive && loading && (
-                                            <span className="mt-2 inline-block h-3 w-3 animate-spin rounded-full border-2 border-violet-400 border-t-transparent" />
-                                        )}
-                                    </div>
-                                );
-                            })}
-                        </div>
-                    );
-                })()}
-
+                </div>
             </div>
         </div>
     );

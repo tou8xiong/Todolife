@@ -1,7 +1,7 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
 import Tesseract from "tesseract.js";
-import { Upload, Image as ImageIcon, Copy, Trash2, FileText, Loader2, CheckCircle, Info, Edit2, Save, History, X, ArrowLeft } from "lucide-react";
+import { Upload, Image as ImageIcon, Copy, Trash2, FileText, Loader2, CheckCircle, Info, Edit2, Save, History, X, ArrowLeft, Languages } from "lucide-react";
 import { toast } from "sonner";
 
 interface HistoryItem {
@@ -11,18 +11,32 @@ interface HistoryItem {
     imageName?: string;
 }
 
+const SUPPORTED_LANGUAGES = [
+    { code: 'eng', name: 'English' },
+    { code: 'lao', name: 'Lao' },
+    { code: 'tha', name: 'Thai' },
+    { code: 'chi_sim', name: 'Chinese (Simplified)' },
+    { code: 'chi_tra', name: 'Chinese (Traditional)' },
+    { code: 'jpn', name: 'Japanese' },
+    { code: 'kor', name: 'Korean' },
+    { code: 'vie', name: 'Vietnamese' },
+    { code: 'fra', name: 'French' },
+    { code: 'deu', name: 'German' },
+    { code: 'spa', name: 'Spanish' },
+];
+
 export default function ImageToText() {
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
     const [extractedText, setExtractedText] = useState<string>("");
     const [isProcessing, setIsProcessing] = useState(false);
     const [progress, setProgress] = useState(0);
-    const [showTooltip, setShowTooltip] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [editedText, setEditedText] = useState<string>("");
     const [history, setHistory] = useState<HistoryItem[]>([]);
     const [showHistory, setShowHistory] = useState(false);
     const [imageName, setImageName] = useState<string>("");
     const [showImagePreview, setShowImagePreview] = useState(false);
+    const [selectedLanguage, setSelectedLanguage] = useState<string>('eng');
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Load history from localStorage on mount
@@ -75,9 +89,9 @@ export default function ImageToText() {
         try {
             const result = await Tesseract.recognize(
                 imageData,
-                'eng',
+                selectedLanguage,
                 {
-                    logger: (m) => {
+                    logger: (m: { status: string; progress: number }) => {
                         if (m.status === 'recognizing text') {
                             setProgress(Math.round(m.progress * 100));
                         }
@@ -186,41 +200,37 @@ export default function ImageToText() {
                                     IMAGE2TEXT
                                 </h1>
                                 <div className="relative">
-                                    <button
-                                        onMouseEnter={() => setShowTooltip(true)}
-                                        onMouseLeave={() => setShowTooltip(false)}
-                                        className="p-1 rounded-full hover:bg-gray-700 transition-colors"
-                                    >
-                                        <Info className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" />
-                                    </button>
-                                    {showTooltip && (
-                                        <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 w-64 bg-gray-800 border border-gray-600 rounded-lg shadow-xl p-3 z-50">
-                                            <div className="text-xs text-gray-300 space-y-1">
-                                                <p className="font-semibold text-blue-300 mb-2">Tips for better results:</p>
-                                                <ul className="list-disc list-inside space-y-1">
-                                                    <li>Use clear, high-resolution images</li>
-                                                    <li>Ensure good lighting and contrast</li>
-                                                    <li>Avoid blurry or distorted images</li>
-                                                    <li>Text should be horizontal and readable</li>
-                                                </ul>
-                                            </div>
-                                            <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-0 h-0 border-l-8 border-r-8 border-b-8 border-transparent border-b-gray-600"></div>
-                                        </div>
-                                    )}
+                                    <Info className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" />
                                 </div>
                             </div>
-                            <button
-                                onClick={() => setShowHistory(!showHistory)}
-                                className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-white transition-all border border-gray-600 text-sm"
-                            >
-                                <History className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" />
-                                <span className="font-semibold">History</span>
-                                {history.length > 0 && (
-                                    <span className="bg-blue-500 text-white text-xs rounded-full px-2 py-0.5">
-                                        {history.length}
-                                    </span>
-                                )}
-                            </button>
+                            <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg bg-gray-700 border border-gray-600">
+                                    <Languages className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" />
+                                    <select
+                                        value={selectedLanguage}
+                                        onChange={(e) => setSelectedLanguage(e.target.value)}
+                                        className="bg-transparent text-white text-sm font-semibold focus:outline-none cursor-pointer"
+                                    >
+                                        {SUPPORTED_LANGUAGES.map((lang) => (
+                                            <option key={lang.code} value={lang.code} className="bg-gray-800">
+                                                {lang.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                                <button
+                                    onClick={() => setShowHistory(!showHistory)}
+                                    className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-white transition-all border border-gray-600 text-sm"
+                                >
+                                    <History className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" />
+                                    <span className="font-semibold">History</span>
+                                    {history.length > 0 && (
+                                        <span className="bg-blue-500 text-white text-xs rounded-full px-2 py-0.5">
+                                            {history.length}
+                                        </span>
+                                    )}
+                                </button>
+                            </div>
                         </div>
                         <p className="text-gray-300 text-xs sm:text-sm">
                             Upload an image and extract text using OCR technology
