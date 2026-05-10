@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from "react";
 import Tesseract from "tesseract.js";
 import { Upload, Image as ImageIcon, Copy, Trash2, FileText, Loader2, CheckCircle, Info, Edit2, Save, History, X, ArrowLeft, Languages } from "lucide-react";
 import { toast } from "sonner";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface HistoryItem {
     id: string;
@@ -26,6 +27,7 @@ const SUPPORTED_LANGUAGES = [
 ];
 
 export default function ImageToText() {
+    const { t } = useLanguage();
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
     const [extractedText, setExtractedText] = useState<string>("");
     const [isProcessing, setIsProcessing] = useState(false);
@@ -103,7 +105,7 @@ export default function ImageToText() {
 
             // Check if no text was extracted
             if (!text || text.length === 0) {
-                toast.error("No text found in the image. Please upload an image with readable text.");
+                toast.error(t.imageToText?.status?.error || "No text found in the image. Please upload an image with readable text.");
                 setSelectedImage(null);
                 if (fileInputRef.current) {
                     fileInputRef.current.value = "";
@@ -123,10 +125,10 @@ export default function ImageToText() {
             };
             setHistory(prev => [newHistoryItem, ...prev]);
 
-            toast.success("Text extracted successfully!");
+            toast.success(t.imageToText?.status?.success || "Text extracted successfully!");
         } catch (error) {
             console.error("OCR Error:", error);
-            toast.error("Failed to extract text from image");
+            toast.error(t.imageToText?.status?.error || "Failed to extract text from image");
         } finally {
             setIsProcessing(false);
         }
@@ -136,7 +138,7 @@ export default function ImageToText() {
         const textToCopy = isEditing ? editedText : extractedText;
         if (textToCopy) {
             navigator.clipboard.writeText(textToCopy);
-            toast.success("Text copied to clipboard!");
+            toast.success(t.imageToText?.status?.copied || "Text copied to clipboard!");
         }
     };
 
@@ -158,7 +160,7 @@ export default function ImageToText() {
             return updated;
         });
 
-        toast.success("Text updated successfully!");
+        toast.success(t.toast?.success?.updated || "Text updated successfully!");
     };
 
     const handleCancelEdit = () => {
@@ -171,20 +173,20 @@ export default function ImageToText() {
         setEditedText(item.text);
         setIsEditing(true);
         setShowHistory(false);
-        toast.success("History item loaded!");
+        toast.success(t.toast?.success?.saved || "History item loaded!");
     };
 
     const deleteHistoryItem = (id: string) => {
         const updatedHistory = history.filter(item => item.id !== id);
         setHistory(updatedHistory);
         localStorage.setItem('ocr-history', JSON.stringify(updatedHistory));
-        toast.success("History item deleted!");
+        toast.success(t.toast?.success?.deleted || "History item deleted!");
     };
 
     const clearHistory = () => {
         setHistory([]);
         localStorage.removeItem('ocr-history');
-        toast.success("History cleared!");
+        toast.success(t.toast?.success?.deleted || "History cleared!");
     };
 
     return (

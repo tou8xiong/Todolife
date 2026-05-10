@@ -180,6 +180,209 @@ export const translations = {
       priorityLevel: "Priority Level",
       savingTask: "Saving task...",
     },
+
+    // ── Background Removal ────────────────────────────────────────────────
+    backgroundRemoval: {
+      title: "Remove Background",
+      description: "Drop any image and get a clean transparent PNG in seconds",
+      aiPowered: "AI-Powered",
+      fullyInBrowser: "fully in-browser, no upload needed",
+      steps: {
+        upload: "Upload",
+        process: "Process",
+        download: "Download",
+        uploadDesc: "Drop or pick any image",
+        processDesc: "AI removes the background",
+        downloadDesc: "Save transparent PNG",
+      },
+      buttons: {
+        removeBackground: "Remove Background",
+        downloadPng: "Download PNG",
+        newImage: "New Image",
+        processing: "Processing...",
+      },
+      formats: {
+        title: "Supported Formats",
+        jpeg: "JPEG",
+        png: "PNG",
+        webp: "WebP",
+      },
+      dropzone: {
+        dragDrop: "Drag & drop an image here",
+        or: "or",
+        clickToUpload: "Click to upload",
+        supportedFormats: "Supports JPG, PNG, WebP",
+      },
+      status: {
+        processing: "Processing image...",
+        success: "Background removed successfully!",
+        error: "Failed to remove background",
+      },
+    },
+
+    // ── Image to Text (OCR) ───────────────────────────────────────────────
+    imageToText: {
+      title: "Image to Text",
+      subtitle: "Extract Text from Images",
+      description: "Upload an image and extract text using OCR technology",
+      selectLanguage: "Select Language",
+      buttons: {
+        uploadImage: "Upload Image",
+        extractText: "Extract Text",
+        copyText: "Copy Text",
+        downloadText: "Download Text",
+        newImage: "New Image",
+        processing: "Processing...",
+      },
+      history: {
+        title: "Extraction History",
+        noHistory: "No extraction history yet",
+        clear: "Clear History",
+      },
+      tips: {
+        title: "Tips for Best Results",
+        tip1: "Use clear, high-resolution images",
+        tip2: "Ensure good lighting and contrast",
+        tip3: "Avoid blurry or distorted text",
+        tip4: "Select the correct language",
+      },
+      status: {
+        uploading: "Uploading image...",
+        processing: "Extracting text...",
+        success: "Text extracted successfully!",
+        error: "Failed to extract text",
+        copied: "Text copied to clipboard!",
+      },
+      languages: {
+        english: "English",
+        lao: "Lao",
+        thai: "Thai",
+        chinese: "Chinese",
+        japanese: "Japanese",
+        korean: "Korean",
+        vietnamese: "Vietnamese",
+        french: "French",
+        german: "German",
+        spanish: "Spanish",
+      },
+    },
+
+    // ── Forms & Validation ────────────────────────────────────────────────
+    forms: {
+      validation: {
+        required: "This field is required",
+        emailInvalid: "Enter a valid email address",
+        passwordMin: "Password must be at least 6 characters",
+        passwordMismatch: "Passwords do not match",
+        nameTooShort: "Name must be at least 2 characters",
+        invalidFormat: "Invalid format",
+      },
+      placeholders: {
+        email: "you@example.com",
+        password: "Enter your password",
+        confirmPassword: "Confirm your password",
+        name: "Your name",
+        search: "Search...",
+      },
+      labels: {
+        email: "Email",
+        password: "Password",
+        confirmPassword: "Confirm Password",
+        name: "Name",
+        rememberMe: "Remember me",
+      },
+    },
+
+    // ── Toast Notifications ───────────────────────────────────────────────
+    toast: {
+      success: {
+        saved: "Saved successfully!",
+        deleted: "Deleted successfully!",
+        copied: "Copied to clipboard!",
+        updated: "Updated successfully!",
+        uploaded: "Uploaded successfully!",
+        downloaded: "Downloaded successfully!",
+      },
+      error: {
+        saveFailed: "Failed to save",
+        deleteFailed: "Failed to delete",
+        updateFailed: "Failed to update",
+        uploadFailed: "Failed to upload",
+        downloadFailed: "Failed to download",
+        generic: "Something went wrong",
+      },
+      info: {
+        processing: "Processing...",
+        loading: "Loading...",
+      },
+    },
+
+    // ── Authentication ────────────────────────────────────────────────────
+    auth: {
+      login: {
+        title: "Welcome Back",
+        subtitle: "Sign in to your account",
+        button: "Sign In",
+        noAccount: "Don't have an account?",
+        signupLink: "Sign up",
+        forgotPassword: "Forgot password?",
+        orContinueWith: "Or continue with",
+      },
+      signup: {
+        title: "Create Account",
+        subtitle: "Sign up to get started",
+        button: "Sign Up",
+        hasAccount: "Already have an account?",
+        loginLink: "Sign in",
+        orContinueWith: "Or continue with",
+        agreeToTerms: "By signing up, you agree to our",
+        termsOfService: "Terms of Service",
+        and: "and",
+        privacyPolicy: "Privacy Policy",
+      },
+      social: {
+        google: "Continue with Google",
+        facebook: "Continue with Facebook",
+        github: "Continue with GitHub",
+      },
+    },
+
+    // ── Common UI Elements ────────────────────────────────────────────────
+    common: {
+      buttons: {
+        submit: "Submit",
+        cancel: "Cancel",
+        delete: "Delete",
+        edit: "Edit",
+        save: "Save",
+        close: "Close",
+        back: "Back",
+        next: "Next",
+        previous: "Previous",
+        confirm: "Confirm",
+        upload: "Upload",
+        download: "Download",
+        copy: "Copy",
+        share: "Share",
+        refresh: "Refresh",
+      },
+      status: {
+        loading: "Loading...",
+        processing: "Processing...",
+        success: "Success",
+        error: "Error",
+        pending: "Pending",
+        completed: "Completed",
+      },
+      time: {
+        justNow: "Just now",
+        minutesAgo: "minutes ago",
+        hoursAgo: "hours ago",
+        daysAgo: "days ago",
+        weeksAgo: "weeks ago",
+        monthsAgo: "months ago",
+      },
+    },
   },
 
   lo: {
@@ -357,6 +560,209 @@ export const translations = {
       taskType: "ປະເພດວຽກ",
       priorityLevel: "ລະດັບຄວາມສຳຄັນ",
       savingTask: "ກຳລັງບັນທຶກວຽກ...",
+    },
+
+    // ── Background Removal ────────────────────────────────────────────────
+    backgroundRemoval: {
+      title: "ລຶບພື້ນຫຼັງ",
+      description: "ວາງຮູບພາບແລະໄດ້ຮັບ PNG ໂປ່ງໃສພາຍໃນວິນາທີ",
+      aiPowered: "ຂັບເຄື່ອນດ້ວຍ AI",
+      fullyInBrowser: "ເຮັດວຽກໃນບຣາວເຊີ, ບໍ່ຕ້ອງອັບໂຫລດ",
+      steps: {
+        upload: "ອັບໂຫລດ",
+        process: "ປະມວນຜົນ",
+        download: "ດາວໂຫລດ",
+        uploadDesc: "ວາງຫຼືເລືອກຮູບພາບ",
+        processDesc: "AI ລຶບພື້ນຫຼັງ",
+        downloadDesc: "ບັນທຶກ PNG ໂປ່ງໃສ",
+      },
+      buttons: {
+        removeBackground: "ລຶບພື້ນຫຼັງ",
+        downloadPng: "ດາວໂຫລດ PNG",
+        newImage: "ຮູບໃໝ່",
+        processing: "ກຳລັງປະມວນຜົນ...",
+      },
+      formats: {
+        title: "ຮູບແບບທີ່ຮອງຮັບ",
+        jpeg: "JPEG",
+        png: "PNG",
+        webp: "WebP",
+      },
+      dropzone: {
+        dragDrop: "ລາກແລະວາງຮູບພາບທີ່ນີ້",
+        or: "ຫຼື",
+        clickToUpload: "ຄລິກເພື່ອອັບໂຫລດ",
+        supportedFormats: "ຮອງຮັບ JPG, PNG, WebP",
+      },
+      status: {
+        processing: "ກຳລັງປະມວນຜົນຮູບພາບ...",
+        success: "ລຶບພື້ນຫຼັງສຳເລັດ!",
+        error: "ລຶບພື້ນຫຼັງບໍ່ສຳເລັດ",
+      },
+    },
+
+    // ── Image to Text (OCR) ───────────────────────────────────────────────
+    imageToText: {
+      title: "ຮູບເປັນຂໍ້ຄວາມ",
+      subtitle: "ແຍກຂໍ້ຄວາມຈາກຮູບພາບ",
+      description: "ອັບໂຫລດຮູບພາບແລະແຍກຂໍ້ຄວາມດ້ວຍເທັກໂນໂລຊີ OCR",
+      selectLanguage: "ເລືອກພາສາ",
+      buttons: {
+        uploadImage: "ອັບໂຫລດຮູບພາບ",
+        extractText: "ແຍກຂໍ້ຄວາມ",
+        copyText: "ຄັດລອກຂໍ້ຄວາມ",
+        downloadText: "ດາວໂຫລດຂໍ້ຄວາມ",
+        newImage: "ຮູບໃໝ່",
+        processing: "ກຳລັງປະມວນຜົນ...",
+      },
+      history: {
+        title: "ປະຫວັດການແຍກຂໍ້ຄວາມ",
+        noHistory: "ຍັງບໍ່ມີປະຫວັດການແຍກຂໍ້ຄວາມ",
+        clear: "ລ້າງປະຫວັດ",
+      },
+      tips: {
+        title: "ຄຳແນະນຳສຳລັບຜົນລັບທີ່ດີທີ່ສຸດ",
+        tip1: "ໃຊ້ຮູບພາບທີ່ຊັດເຈນ, ຄວາມລະອຽດສູງ",
+        tip2: "ຮັບປະກັນແສງສະຫວ່າງແລະຄວາມຄົມຊັດດີ",
+        tip3: "ຫຼີກລ່ຽງຂໍ້ຄວາມທີ່ມົວຫຼືບິດເບືອນ",
+        tip4: "ເລືອກພາສາທີ່ຖືກຕ້ອງ",
+      },
+      status: {
+        uploading: "ກຳລັງອັບໂຫລດຮູບພາບ...",
+        processing: "ກຳລັງແຍກຂໍ້ຄວາມ...",
+        success: "ແຍກຂໍ້ຄວາມສຳເລັດ!",
+        error: "ແຍກຂໍ້ຄວາມບໍ່ສຳເລັດ",
+        copied: "ຄັດລອກຂໍ້ຄວາມແລ້ວ!",
+      },
+      languages: {
+        english: "ອັງກິດ",
+        lao: "ລາວ",
+        thai: "ໄທ",
+        chinese: "ຈີນ",
+        japanese: "ຍີ່ປຸ່ນ",
+        korean: "ເກົາຫຼີ",
+        vietnamese: "ຫວຽດນາມ",
+        french: "ຝຣັ່ງ",
+        german: "ເຢຍລະມັນ",
+        spanish: "ສະເປນ",
+      },
+    },
+
+    // ── Forms & Validation ────────────────────────────────────────────────
+    forms: {
+      validation: {
+        required: "ຕ້ອງຕື່ມຂໍ້ມູນນີ້",
+        emailInvalid: "ກະລຸນາໃສ່ອີເມວທີ່ຖືກຕ້ອງ",
+        passwordMin: "ລະຫັດຜ່ານຕ້ອງມີຢ່າງໜ້ອຍ 6 ຕົວອັກສອນ",
+        passwordMismatch: "ລະຫັດຜ່ານບໍ່ກົງກັນ",
+        nameTooShort: "ຊື່ຕ້ອງມີຢ່າງໜ້ອຍ 2 ຕົວອັກສອນ",
+        invalidFormat: "ຮູບແບບບໍ່ຖືກຕ້ອງ",
+      },
+      placeholders: {
+        email: "you@example.com",
+        password: "ໃສ່ລະຫັດຜ່ານຂອງທ່ານ",
+        confirmPassword: "ຢືນຢັນລະຫັດຜ່ານ",
+        name: "ຊື່ຂອງທ່ານ",
+        search: "ຄົ້ນຫາ...",
+      },
+      labels: {
+        email: "ອີເມວ",
+        password: "ລະຫັດຜ່ານ",
+        confirmPassword: "ຢືນຢັນລະຫັດຜ່ານ",
+        name: "ຊື່",
+        rememberMe: "ຈື່ຂ້ອຍໄວ້",
+      },
+    },
+
+    // ── Toast Notifications ───────────────────────────────────────────────
+    toast: {
+      success: {
+        saved: "ບັນທຶກສຳເລັດ!",
+        deleted: "ລຶບສຳເລັດ!",
+        copied: "ຄັດລອກແລ້ວ!",
+        updated: "ອັບເດດສຳເລັດ!",
+        uploaded: "ອັບໂຫລດສຳເລັດ!",
+        downloaded: "ດາວໂຫລດສຳເລັດ!",
+      },
+      error: {
+        saveFailed: "ບັນທຶກບໍ່ສຳເລັດ",
+        deleteFailed: "ລຶບບໍ່ສຳເລັດ",
+        updateFailed: "ອັບເດດບໍ່ສຳເລັດ",
+        uploadFailed: "ອັບໂຫລດບໍ່ສຳເລັດ",
+        downloadFailed: "ດາວໂຫລດບໍ່ສຳເລັດ",
+        generic: "ມີບາງຢ່າງຜິດພາດ",
+      },
+      info: {
+        processing: "ກຳລັງປະມວນຜົນ...",
+        loading: "ກຳລັງໂຫລດ...",
+      },
+    },
+
+    // ── Authentication ────────────────────────────────────────────────────
+    auth: {
+      login: {
+        title: "ຍິນດີຕ້ອນຮັບກັບຄືນ",
+        subtitle: "ເຂົ້າສູ່ລະບົບບັນຊີຂອງທ່ານ",
+        button: "ເຂົ້າສູ່ລະບົບ",
+        noAccount: "ຍັງບໍ່ມີບັນຊີ?",
+        signupLink: "ລົງທະບຽນ",
+        forgotPassword: "ລືມລະຫັດຜ່ານ?",
+        orContinueWith: "ຫຼືສືບຕໍ່ດ້ວຍ",
+      },
+      signup: {
+        title: "ສ້າງບັນຊີ",
+        subtitle: "ລົງທະບຽນເພື່ອເລີ່ມຕົ້ນ",
+        button: "ລົງທະບຽນ",
+        hasAccount: "ມີບັນຊີແລ້ວ?",
+        loginLink: "ເຂົ້າສູ່ລະບົບ",
+        orContinueWith: "ຫຼືສືບຕໍ່ດ້ວຍ",
+        agreeToTerms: "ໂດຍການລົງທະບຽນ, ທ່ານຍອມຮັບ",
+        termsOfService: "ເງື່ອນໄຂການໃຊ້ບໍລິການ",
+        and: "ແລະ",
+        privacyPolicy: "ນະໂຍບາຍຄວາມເປັນສ່ວນຕົວ",
+      },
+      social: {
+        google: "ສືບຕໍ່ດ້ວຍ Google",
+        facebook: "ສືບຕໍ່ດ້ວຍ Facebook",
+        github: "ສືບຕໍ່ດ້ວຍ GitHub",
+      },
+    },
+
+    // ── Common UI Elements ────────────────────────────────────────────────
+    common: {
+      buttons: {
+        submit: "ສົ່ງ",
+        cancel: "ຍົກເລີກ",
+        delete: "ລຶບ",
+        edit: "ແກ້ໄຂ",
+        save: "ບັນທຶກ",
+        close: "ປິດ",
+        back: "ກັບຄືນ",
+        next: "ຕໍ່ໄປ",
+        previous: "ກ່ອນໜ້າ",
+        confirm: "ຢືນຢັນ",
+        upload: "ອັບໂຫລດ",
+        download: "ດາວໂຫລດ",
+        copy: "ຄັດລອກ",
+        share: "ແບ່ງປັນ",
+        refresh: "ໂຫລດໃໝ່",
+      },
+      status: {
+        loading: "ກຳລັງໂຫລດ...",
+        processing: "ກຳລັງປະມວນຜົນ...",
+        success: "ສຳເລັດ",
+        error: "ຜິດພາດ",
+        pending: "ກຳລັງດຳເນີນ",
+        completed: "ສຳເລັດແລ້ວ",
+      },
+      time: {
+        justNow: "ຕອນນີ້",
+        minutesAgo: "ນາທີກ່ອນ",
+        hoursAgo: "ຊົ່ວໂມງກ່ອນ",
+        daysAgo: "ມື້ກ່ອນ",
+        weeksAgo: "ອາທິດກ່ອນ",
+        monthsAgo: "ເດືອນກ່ອນ",
+      },
     },
   },
 };

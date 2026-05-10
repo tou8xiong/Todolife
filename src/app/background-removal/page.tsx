@@ -8,6 +8,7 @@ import { useAppContext } from "@/context/AppContext";
 import { useRouter } from "next/navigation";
 import { saveTempData, loadTempData, clearTempData, dataUrlToBlob } from "@/lib/tempData";
 import { useAlert } from "@/hooks/useAlert";
+import { useLanguage } from "@/context/LanguageContext";
 
 const BG_CONFIG = {
     device: "gpu" as const,
@@ -19,6 +20,7 @@ export default function BackgroundRemovalPage() {
     const { user } = useAppContext();
     const router = useRouter();
     const { showAlert } = useAlert();
+    const { t } = useLanguage();
     const [sourcePreview, setSourcePreview] = useState<string | null>(null);
     const [resultPreview, setResultPreview] = useState<string | null>(null);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -175,7 +177,7 @@ export default function BackgroundRemovalPage() {
 
     const handleRemove = async () => {
         if (!selectedFile) {
-            toast.error("Please choose an image first.");
+            toast.error(t.backgroundRemoval?.status?.error || "Please choose an image first.");
             return;
         }
         setLoading(true);
@@ -184,10 +186,10 @@ export default function BackgroundRemovalPage() {
             const resultUrl = URL.createObjectURL(resultBlob as Blob);
             setResultPreview(resultUrl);
             setProgress(100);
-            toast.success("Background removed!");
+            toast.success(t.backgroundRemoval?.status?.success || "Background removed!");
         } catch (error) {
             console.error(error);
-            toast.error("Background removal failed. Try a different image.");
+            toast.error(t.backgroundRemoval?.status?.error || "Background removal failed. Try a different image.");
         } finally {
             setLoading(false);
         }
@@ -222,13 +224,13 @@ export default function BackgroundRemovalPage() {
                         <>
                             <div className="space-y-3">
                                 <div className="inline-flex items-center gap-2 rounded-full border border-violet-500/30 bg-violet-500/10 px-3 py-1 text-xs font-semibold text-violet-300 uppercase tracking-widest">
-                                    <Sparkles size={12} /> AI-Powered
+                                    <Sparkles size={12} /> {t.backgroundRemoval?.aiPowered || "AI-Powered"}
                                 </div>
                                 <h1 className="text-2xl font-extrabold tracking-tight bg-gradient-to-br from-white via-gray-200 to-gray-400 bg-clip-text text-transparent">
-                                    Remove Background
+                                    {t.backgroundRemoval?.title || "Remove Background"}
                                 </h1>
                                 <p className="text-gray-400 text-xs">
-                                    Drop any image and get a clean transparent PNG in seconds — fully in-browser, no upload needed.
+                                    {t.backgroundRemoval?.description || "Drop any image and get a clean transparent PNG in seconds"} — {t.backgroundRemoval?.fullyInBrowser || "fully in-browser, no upload needed"}.
                                 </p>
                             </div>
 
@@ -237,9 +239,9 @@ export default function BackgroundRemovalPage() {
                                 {(() => {
                                     const activeStep = resultPreview ? 3 : loading ? 2 : sourcePreview ? 1 : 0;
                                     const steps = [
-                                        { step: "01", title: "Upload", desc: "Drop or pick any image" },
-                                        { step: "02", title: "Process", desc: "AI removes the background" },
-                                        { step: "03", title: "Download", desc: "Save transparent PNG" },
+                                        { step: "01", title: t.backgroundRemoval?.steps?.upload || "Upload", desc: t.backgroundRemoval?.steps?.uploadDesc || "Drop or pick any image" },
+                                        { step: "02", title: t.backgroundRemoval?.steps?.process || "Process", desc: t.backgroundRemoval?.steps?.processDesc || "AI removes the background" },
+                                        { step: "03", title: t.backgroundRemoval?.steps?.download || "Download", desc: t.backgroundRemoval?.steps?.downloadDesc || "Save transparent PNG" },
                                     ];
                                     return steps.map(({ step, title, desc }, i) => {
                                         const stepNum = i + 1;
@@ -273,7 +275,7 @@ export default function BackgroundRemovalPage() {
 
                             {/* Supported formats */}
                             <div className="space-y-2">
-                                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Supported Formats</p>
+                                <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">{t.backgroundRemoval?.formats?.title || "Supported Formats"}</p>
                                 <div className="flex flex-wrap gap-2">
                                     {["PNG", "JPG", "WebP"].map((f) => (
                                         <span key={f} className="rounded-full bg-white/5 border border-white/10 px-3 py-1 text-xs text-gray-400 font-medium">{f}</span>
@@ -284,7 +286,7 @@ export default function BackgroundRemovalPage() {
                     ) : (
                         /* Collapsed - Icon Only */
                         <div className="flex flex-col items-center gap-4 py-2">
-                            <div className="p-2 rounded-lg bg-violet-500/10 border border-violet-500/30" title="AI-Powered Background Removal">
+                            <div className="p-2 rounded-lg bg-violet-500/10 border border-violet-500/30" title={t.backgroundRemoval?.aiPowered || "AI-Powered Background Removal"}>
                                 <Sparkles size={20} className="text-violet-400" />
                             </div>
 
@@ -292,9 +294,9 @@ export default function BackgroundRemovalPage() {
                             {(() => {
                                 const activeStep = resultPreview ? 3 : loading ? 2 : sourcePreview ? 1 : 0;
                                 const steps = [
-                                    { icon: UploadCloud, title: "Upload" },
-                                    { icon: Sparkles, title: "Process" },
-                                    { icon: Download, title: "Download" },
+                                    { icon: UploadCloud, title: t.backgroundRemoval?.steps?.upload || "Upload" },
+                                    { icon: Sparkles, title: t.backgroundRemoval?.steps?.process || "Process" },
+                                    { icon: Download, title: t.backgroundRemoval?.steps?.download || "Download" },
                                 ];
                                 return steps.map((stepData, i) => {
                                     const stepNum = i + 1;
@@ -346,9 +348,9 @@ export default function BackgroundRemovalPage() {
                         </div>
                         <div className="text-center">
                             <p className="text-base font-semibold text-white">
-                                {dragOver ? "Drop it here!" : "Drop image here or click to browse"}
+                                {dragOver ? "Drop it here!" : (t.backgroundRemoval?.dropzone?.dragDrop || "Drag & drop an image here")}
                             </p>
-                            <p className="mt-1 text-sm text-gray-500">PNG, JPG, WebP supported</p>
+                            <p className="mt-1 text-sm text-gray-500">{t.backgroundRemoval?.dropzone?.supportedFormats || "PNG, JPG, WebP supported"}</p>
                         </div>
                         <div className="flex gap-2">
                             {["PNG", "JPG", "WebP"].map((f) => (
@@ -366,7 +368,7 @@ export default function BackgroundRemovalPage() {
                             {/* Original */}
                             <div className="rounded-2xl bg-white/[0.04] border border-white/10 overflow-hidden">
                                 <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
-                                    <span className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Original</span>
+                                    <span className="text-xs font-semibold text-gray-400 uppercase tracking-widest">{t.backgroundRemoval?.dropzone?.dragDrop?.includes("Original") ? "Original" : "Original"}</span>
                                     <button
                                         onClick={handleReset}
                                         className="rounded-lg p-1.5 text-gray-500 hover:bg-white/10 hover:text-white transition-colors"
@@ -391,7 +393,7 @@ export default function BackgroundRemovalPage() {
                                             onClick={handleDownload}
                                             className="flex items-center gap-1.5 rounded-lg bg-violet-600 hover:bg-violet-500 px-3 py-1.5 text-xs font-semibold text-white transition-colors"
                                         >
-                                            <Download size={13} /> Download PNG
+                                            <Download size={13} /> {t.backgroundRemoval?.buttons?.downloadPng || "Download PNG"}
                                         </button>
                                     </div>
                                     <div className="relative flex items-center justify-center p-4 min-h-[220px] sm:min-h-[300px]"
@@ -412,7 +414,7 @@ export default function BackgroundRemovalPage() {
                                 <div className="flex items-center justify-between text-sm">
                                     <span className="text-gray-300 font-medium flex items-center gap-2">
                                         <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-violet-400 border-t-transparent" />
-                                        Removing background…
+                                        {t.backgroundRemoval?.status?.processing || "Removing background…"}
                                     </span>
                                     <span className="text-violet-400 font-semibold tabular-nums">{progress}%</span>
                                 </div>
@@ -433,14 +435,14 @@ export default function BackgroundRemovalPage() {
                                 className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-violet-900/30 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 <Sparkles size={16} />
-                                {loading ? "Processing…" : "Remove Background"}
+                                {loading ? (t.backgroundRemoval?.buttons?.processing || "Processing…") : (t.backgroundRemoval?.buttons?.removeBackground || "Remove Background")}
                             </button>
                             <button
                                 onClick={() => { handleReset(); setTimeout(() => fileInputRef.current?.click(), 50); }}
                                 disabled={loading}
                                 className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 px-6 py-3 text-sm font-semibold text-gray-300 transition-all active:scale-95 disabled:opacity-50"
                             >
-                                <ImageIcon size={16} /> New Image
+                                <ImageIcon size={16} /> {t.backgroundRemoval?.buttons?.newImage || "New Image"}
                             </button>
                             <button
                                 onClick={handleReset}

@@ -142,13 +142,17 @@ export default function RootLayout({
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
         <Providers>
           <AosClientWrapper>
-            <AppProvider>
-              <Header />
-              <Sidebar />
-              <MainLayoutWrapper>
-                {children}
-              </MainLayoutWrapper>
-            </AppProvider>
+            <LanguageProvider>
+              <ThemeProvider>
+                <AppProvider>
+                  <Header />
+                  <Sidebar />
+                  <MainLayoutWrapper>
+                    {children}
+                  </MainLayoutWrapper>
+                </AppProvider>
+              </ThemeProvider>
+            </LanguageProvider>
           </AosClientWrapper>
         </Providers>
       </body>
