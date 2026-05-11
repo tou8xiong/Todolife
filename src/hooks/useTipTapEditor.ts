@@ -72,10 +72,48 @@ export function useTipTapEditor() {
     ],
     content: "",
     editorProps: {
+      transformPastedHTML: (html: string) => {
+        // Parse the HTML
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+
+        // Remove background colors and other unwanted styles from all elements
+        const allElements = doc.querySelectorAll('*');
+        allElements.forEach((el) => {
+          if (el instanceof HTMLElement) {
+            // Remove inline background styles
+            el.style.removeProperty('background');
+            el.style.removeProperty('background-color');
+            el.style.removeProperty('background-image');
+
+            // Remove classes that might contain background styles
+            el.removeAttribute('class');
+
+            // Keep only text color if it's not white/light (which would be invisible on white paper)
+            const color = el.style.color;
+            if (color) {
+              const rgb = color.match(/\d+/g);
+              if (rgb && rgb.length >= 3) {
+                const r = parseInt(rgb[0]);
+                const g = parseInt(rgb[1]);
+                const b = parseInt(rgb[2]);
+                // If text is too light (would be invisible on white), make it black
+                if (r > 200 && g > 200 && b > 200) {
+                  el.style.color = '#000000';
+                }
+              }
+            }
+          }
+        });
+
+        // Return the cleaned HTML
+        return doc.body.innerHTML;
+      },
       handlePaste: (view, event) => {
         const items = event.clipboardData?.items;
         if (!items) return false;
 
+        // Handle image paste
         for (let i = 0; i < items.length; i++) {
           const item = items[i];
           if (item.type.indexOf('image') !== -1) {
@@ -230,7 +268,7 @@ export function useTipTapEditor() {
     if (e.key === "Enter" && !e.shiftKey) {
       const { selection } = editor.state;
       const { $from } = selection;
-      
+
       // Check if we're in an empty list item
       if (isBulletList || isOrderedList) {
         const node = $from.node();
