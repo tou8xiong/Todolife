@@ -1159,6 +1159,8 @@ export default function NoteTextPage() {
           font-size: 16px;
           line-height: 1.4;
           min-height: 1100px;
+          color: #111827;
+          caret-color: #111827;
           font-family: Georgia, 'Times New Roman', serif;
         }
         .tiptap-paper-sheet .ProseMirror:focus {
