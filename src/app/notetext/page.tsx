@@ -482,7 +482,7 @@ export default function NoteTextPage() {
     saveDoc(updated);
   }, [activeDoc, title, pages, saveDoc, user, showAlert]);
 
-  const handleNew = () => {
+  const handleNew = async () => {
     if (!user) {
       sessionStorage.setItem("redirectAfterLogin", window.location.pathname);
       showAlert({
@@ -494,14 +494,27 @@ export default function NoteTextPage() {
       });
       return;
     }
+    if (!user?.email) return;
+
     const doc: Doc = { id: Date.now(), title: "Untitled Document", content: "", folder_id: selectedFolderId };
+    try {
+      const res = await fetch("/api/documents", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: user.email, document: doc }),
+      });
+      if (!res.ok) throw new Error();
+    } catch {
+      toast.error("Failed to create document");
+      return;
+    }
+
     setActiveDoc(doc);
     setTitle(doc.title);
     setPages([""]);
     setActivePageIndex(0);
     editorContainerRefs.current = [];
 
-    // Update URL with new document
     const folderId = selectedFolderId || 'all';
     router.push(`/notetext/${folderId}/${doc.id}`, { scroll: false });
   };
