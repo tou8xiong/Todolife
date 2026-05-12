@@ -94,3 +94,31 @@ export async function DELETE(req: NextRequest) {
     return NextResponse.json({ error: "Failed to delete document" }, { status: 500 });
   }
 }
+
+// PATCH /api/documents  { email, document }
+export async function PATCH(req: NextRequest) {
+  try {
+    if (!supabase) {
+      return NextResponse.json({ error: "Database not configured" }, { status: 503 });
+    }
+
+    const { email, document: doc } = await req.json();
+    if (!email || !isValidEmail(email)) return NextResponse.json({ error: "Valid email required" }, { status: 400 });
+    if (!doc?.id) return NextResponse.json({ error: "Document id required" }, { status: 400 });
+
+    const { data, error } = await supabase
+      .from("documents")
+      .update({ title: doc.title.trim() || "Untitled Document", updated_at: new Date().toISOString() })
+      .eq("id", Number(doc.id))
+      .eq("user_email", email)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return NextResponse.json({ document: data });
+  } catch (err: any) {
+    console.error("[PATCH /api/documents]", err?.message ?? err);
+    return NextResponse.json({ error: "Failed to update document" }, { status: 500 });
+  }
+}

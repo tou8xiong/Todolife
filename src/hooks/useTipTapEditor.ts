@@ -81,24 +81,35 @@ export function useTipTapEditor() {
         const allElements = doc.querySelectorAll('*');
         allElements.forEach((el) => {
           if (el instanceof HTMLElement) {
-            // Remove inline background styles
-            el.style.removeProperty('background');
-            el.style.removeProperty('background-color');
-            el.style.removeProperty('background-image');
+            // Store the text color before clearing styles
+            const textColor = el.style.color;
 
-            // Remove classes that might contain background styles
+            // Remove ALL inline styles first
+            el.removeAttribute('style');
+
+            // Remove all classes that might contain background styles
             el.removeAttribute('class');
 
-            // Keep only text color if it's not white/light (which would be invisible on white paper)
-            const color = el.style.color;
-            if (color) {
-              const rgb = color.match(/\d+/g);
+            // Remove other attributes that might affect styling
+            el.removeAttribute('bgcolor');
+            el.removeAttribute('background');
+
+            // Explicitly set background to transparent to override any inherited styles
+            el.style.background = 'transparent';
+            el.style.backgroundColor = 'transparent';
+
+            // Restore only the text color if it's dark enough to be visible on white
+            if (textColor) {
+              const rgb = textColor.match(/\d+/g);
               if (rgb && rgb.length >= 3) {
                 const r = parseInt(rgb[0]);
                 const g = parseInt(rgb[1]);
                 const b = parseInt(rgb[2]);
-                // If text is too light (would be invisible on white), make it black
-                if (r > 200 && g > 200 && b > 200) {
+                // Only keep dark colors (visible on white background)
+                if (r < 200 || g < 200 || b < 200) {
+                  el.style.color = textColor;
+                } else {
+                  // If text is too light, make it black for visibility
                   el.style.color = '#000000';
                 }
               }

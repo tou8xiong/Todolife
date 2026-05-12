@@ -360,8 +360,8 @@ export default function NoteTextPage() {
     if (!user || !renameTarget || renameTarget.type !== "folder" || !renameValue.trim()) return;
     try {
       const res = await fetch(
-        `/api/folders?id=${renameTarget.id}&email=${encodeURIComponent(user.email)}`,
-        { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ name: renameValue.trim() }) }
+        `/api/folders`,
+        { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: user.email, folder: { id: renameTarget.id, name: renameValue.trim() } }) }
       );
       if (res.ok) {
         await loadFolders(user.email);
@@ -380,8 +380,8 @@ export default function NoteTextPage() {
     if (!user || !renameTarget || renameTarget.type !== "file" || !renameValue.trim()) return;
     try {
       const res = await fetch(
-        `/api/documents?id=${renameTarget.id}&email=${encodeURIComponent(user.email)}`,
-        { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ title: renameValue.trim() }) }
+        `/api/documents`,
+        { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email: user.email, document: { id: renameTarget.id, title: renameValue.trim() } }) }
       );
       if (res.ok) {
         await loadDocs(user.email);
@@ -1221,43 +1221,38 @@ export default function NoteTextPage() {
         }
         .tiptap-paper-sheet .ProseMirror hr {
           border: none;
-          height: 48px;
-          margin: 48px -80px;
-          background: #111827; /* Dark workspace background */
+          height: 2px;
+          margin: 48px 0;
+          background: transparent;
           position: relative;
           cursor: default;
         }
         .tiptap-paper-sheet .ProseMirror hr::before {
-          content: '';
+          content: 'PAGE BREAK';
           position: absolute;
-          top: -15px;
-          left: 0;
-          right: 0;
-          height: 15px;
-          background: linear-gradient(to top, rgba(0,0,0,0.15), transparent);
-          pointer-events: none;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          background: white;
+          padding: 0 12px;
+          font-size: 9px;
+          font-weight: 800;
+          color: #9ca3af;
+          letter-spacing: 0.3em;
+          opacity: 0.5;
+          white-space: nowrap;
+          z-index: 1;
         }
         .tiptap-paper-sheet .ProseMirror hr::after {
           content: '';
           position: absolute;
-          bottom: -15px;
+          top: 50%;
           left: 0;
           right: 0;
-          height: 15px;
-          background: linear-gradient(to bottom, rgba(0,0,0,0.15), transparent);
-          pointer-events: none;
-        }
-        .tiptap-paper-sheet .ProseMirror hr::before {
-          content: 'PAGE BREAK';
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          background: transparent;
-          font-size: 9px;
-          font-weight: 800;
-          color: #374151;
-          letter-spacing: 0.3em;
-          opacity: 0.5;
+          height: 1px;
+          background: #e5e7eb;
+          transform: translateY(-50%);
+          z-index: 0;
         }
         .tiptap-paper-sheet .ProseMirror h1 {
           font-size: 32px;
