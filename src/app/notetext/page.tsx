@@ -1182,7 +1182,7 @@ export default function NoteTextPage() {
                       <div
                         key={doc.id}
                         onClick={() => handleOpen(doc)}
-                        className={`group relative p-5 rounded-2xl bg-transparent border-2 ${color.border} hover:shadow-xl hover:scale-[1.02] transition-all duration-200 cursor-pointer`}
+                        className={`group relative p-5 rounded-2xl bg-white/5 backdrop-blur-md border ${color.border} hover:shadow-xl hover:scale-[1.02] transition-all duration-200 cursor-pointer`}
                       >
                         <div className="flex items-start gap-3">
                           <div className={`p-2 rounded-xl bg-white/80 dark:bg-gray-800/80 shadow-sm`}>
@@ -1254,7 +1254,7 @@ export default function NoteTextPage() {
                         key={doc.id}
                         onClick={() => handleOpen(doc)}
                         onContextMenu={(e) => handleContextMenu(e, "file", doc.id)}
-                        className={`group relative p-5 rounded-2xl bg-transparent border-2 ${color.border} hover:shadow-xl hover:scale-[1.02] transition-all duration-200 text-left`}
+                        className={`group relative p-5 rounded-2xl bg-white/5 backdrop-blur-md border ${color.border} hover:shadow-xl hover:scale-[1.02] transition-all duration-200 text-left cursor-pointer`}
                       >
                         <div className="flex items-start gap-3">
                           <div className={`p-2.5 rounded-xl bg-white/80 dark:bg-gray-800/80 shadow-sm`}>

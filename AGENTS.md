@@ -37,8 +37,8 @@ Before writing new code, examine existing files in the project to understand:
 
 ### 6. Preview & Confirm Before Editing
 - Before any edit, show a preview using a code block with the appropriate language tag (e.g., `typescript`, `python`, `javascript`)
-- Use `# ── Existing ──` for unchanged context lines
-- Use `+ ── New ──` for lines to be added, each suffixed with `// NEW` (JS/TS/C/etc.) or `# NEW` (Python/shell)
+- Use `# ── EXISTING (to be removed) ──` for lines being replaced
+- Use `# ── NEW (to be added) ──` for replacement lines, with changed keywords bolded
 - After preview, use the question tool with selectable options (Yes, apply it / No, cancel)
 - Never edit without explicit approval
 
