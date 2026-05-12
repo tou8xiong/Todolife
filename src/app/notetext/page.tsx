@@ -104,6 +104,7 @@ export default function NoteTextPage() {
   const [activeDoc, setActiveDoc] = useState<Doc | null>(null);
   const [title, setTitle] = useState("");
   const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
   const [showNewFolderInput, setShowNewFolderInput] = useState(false);
@@ -407,11 +408,14 @@ export default function NoteTextPage() {
   }, []);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (u) => {
+    const unsubscribe = onAuthStateChanged(auth, async (u) => {
       setUser(u);
       if (u?.email) {
-        loadDocs(u.email);
-        loadFolders(u.email);
+        setLoading(true);
+        await Promise.all([loadDocs(u.email), loadFolders(u.email)]);
+        setLoading(false);
+      } else {
+        setLoading(false);
       }
     });
     return () => unsubscribe();
@@ -449,6 +453,16 @@ export default function NoteTextPage() {
     }
   }, [user, loadDocs, editor, showAlert]);
 
+  const isPageBlank = (pageContent: string): boolean => {
+    // Remove HTML tags and check if there's any meaningful text
+    const text = pageContent.replace(/<[^>]*>/g, '').trim();
+    return text === '';
+  };
+
+  const removeBlankPages = (pagesList: string[]): string[] => {
+    return pagesList.filter(page => !isPageBlank(page));
+  };
+
   const handleSave = useCallback(() => {
     if (!activeDoc) return;
     if (!user) {
@@ -462,6 +476,7 @@ export default function NoteTextPage() {
       });
       return;
     }
+    // Save without removing blank pages to prevent data loss
     const fullContent = pages.join("<!-- PAGE_BREAK -->");
     const updated: Doc = { ...activeDoc, title, content: fullContent };
     setActiveDoc(updated);
@@ -486,6 +501,10 @@ export default function NoteTextPage() {
     setPages([""]);
     setActivePageIndex(0);
     editorContainerRefs.current = [];
+
+    // Update URL with new document
+    const folderId = selectedFolderId || 'all';
+    router.push(`/notetext/${folderId}/${doc.id}`, { scroll: false });
   };
 
   useEffect(() => {
@@ -499,7 +518,27 @@ export default function NoteTextPage() {
     return () => window.removeEventListener("keydown", onKey);
   }, [handleSave]);
 
-  const handleOpen = async (doc: Doc) => {
+  // Auto-save when leaving the page (DISABLED to prevent data loss)
+  // useEffect(() => {
+  //   const handleBeforeUnload = () => {
+  //     if (activeDoc && user) {
+  //       const nonBlankPages = removeBlankPages(pages);
+  //       if (nonBlankPages.length > 0) {
+  //         const fullContent = nonBlankPages.join("<!-- PAGE_BREAK -->");
+  //         const updated: Doc = { ...activeDoc, title, content: fullContent };
+  //         // Use sendBeacon for reliable save on page unload
+  //         const blob = new Blob([JSON.stringify({ email: user.email, document: updated })], { type: 'application/json' });
+  //         navigator.sendBeacon('/api/documents', blob);
+  //       }
+  //     }
+  //   };
+
+  //   window.addEventListener("beforeunload", handleBeforeUnload);
+  //   return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  // }, [activeDoc, user, pages, title]);
+
+
+  const handleOpen = useCallback(async (doc: Doc) => {
     if (!user) {
       sessionStorage.setItem("redirectAfterLogin", window.location.pathname);
       showAlert({
@@ -511,35 +550,88 @@ export default function NoteTextPage() {
       });
       return;
     }
+
     activeDocIdRef.current = doc.id;
     setActiveDoc(doc);
     setTitle(doc.title);
     setPages(["<p>Loading...</p>"]);
 
+    // Update URL with folder and doc IDs
+    const folderId = doc.folder_id || 'all';
+    router.push(`/notetext/${folderId}/${doc.id}`, { scroll: false });
+
     if (!user?.email) return;
 
     try {
+      console.log("Fetching document:", doc.id);
       const res = await fetch(`/api/documents?email=${encodeURIComponent(user.email)}&id=${doc.id}`);
+      console.log("Response status:", res.status);
       if (res.ok) {
         const data = await res.json();
         const fullDoc = data.document;
+        console.log("Loaded document:", {
+          id: fullDoc?.id,
+          title: fullDoc?.title,
+          contentLength: fullDoc?.content?.length,
+          contentPreview: fullDoc?.content?.substring(0, 100)
+        });
         if (fullDoc && activeDocIdRef.current === doc.id) {
           setActiveDoc(fullDoc);
           const content = fullDoc.content || "";
           if (content.includes("<!-- PAGE_BREAK -->")) {
-            setPages(content.split("<!-- PAGE_BREAK -->"));
+            const splitPages = content.split("<!-- PAGE_BREAK -->");
+            console.log("Split into pages:", splitPages.length);
+            setPages(splitPages.length > 0 ? splitPages : [""]);
           } else {
-            setPages([content]);
+            console.log("Single page document, content length:", content.length);
+            setPages(content ? [content] : [""]);
           }
           setActivePageIndex(0);
           editorContainerRefs.current = [];
+        } else {
+          console.log("Document mismatch or no fullDoc:", {
+            hasFullDoc: !!fullDoc,
+            activeDocIdRef: activeDocIdRef.current,
+            docId: doc.id
+          });
         }
+      } else {
+        console.error("Failed to load document, status:", res.status);
+        toast.error("Failed to load document");
+        setPages([""]);
       }
     } catch (err) {
       console.error("Failed to load document content", err);
       toast.error("Failed to load document content");
+      setPages([""]);
     }
-  };
+  }, [user, router, showAlert]);
+
+  // Load document from URL parameters (only on initial load)
+  const hasLoadedFromUrl = useRef(false);
+  useEffect(() => {
+    if (!user?.email || docs.length === 0 || hasLoadedFromUrl.current) return;
+
+    // Parse URL path: /notetext/[folderId]/[docId]
+    const pathParts = window.location.pathname.split('/').filter(Boolean);
+    if (pathParts.length >= 3 && pathParts[0] === 'notetext') {
+      const folderId = pathParts[1] === 'all' ? null : pathParts[1];
+      const docId = pathParts[2];
+
+      if (docId) {
+        const doc = docs.find(d => d.id === Number(docId));
+        if (doc) {
+          handleOpen(doc);
+          hasLoadedFromUrl.current = true;
+        }
+      }
+
+      if (folderId) {
+        setSelectedFolderId(folderId);
+        setExpandedFolders(prev => new Set(prev).add(folderId));
+      }
+    }
+  }, [user?.email, docs.length, handleOpen, docs]);
 
   const handleDelete = async (id: number) => {
     if (!user) {
@@ -581,6 +673,37 @@ export default function NoteTextPage() {
   const highlightInputRef = useRef<HTMLInputElement>(null);
 
   return (
+    <>
+      {loading ? (
+        <div className="flex h-[calc(100vh-4rem)] bg-linear-to-b from-gray-900 to-gray-600 overflow-hidden">
+          <div className="w-64 sm:w-72 shrink-0 bg-white/5 backdrop-blur-xl border-r border-white/10 flex flex-col max-md:hidden">
+            <div className="p-4 border-b border-gray-200 dark:border-gray-800">
+              <div className="h-6 bg-white/10 rounded animate-pulse mb-4"></div>
+              <div className="space-y-2">
+                <div className="h-10 bg-white/10 rounded-xl animate-pulse"></div>
+                <div className="h-10 bg-white/10 rounded-xl animate-pulse"></div>
+              </div>
+            </div>
+            <div className="flex-1 p-3 space-y-2">
+              {[1, 2, 3, 4].map(i => (
+                <div key={i} className="h-10 bg-white/10 rounded-xl animate-pulse"></div>
+              ))}
+            </div>
+          </div>
+          <div className="flex-1 flex flex-col">
+            <div className="p-6 border-b border-white/10">
+              <div className="h-8 bg-white/10 rounded animate-pulse w-1/3"></div>
+            </div>
+            <div className="flex-1 p-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {[1, 2, 3, 4, 5, 6].map(i => (
+                  <div key={i} className="h-32 bg-white/10 rounded-2xl animate-pulse"></div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
     <div className="flex h-[calc(100vh-4rem)] bg-linear-to-b from-gray-900 to-gray-600 overflow-hidden font-serif">
       <div className="w-64 sm:w-72 shrink-0 bg-white/5 backdrop-blur-xl border-r border-white/10 flex flex-col max-md:hidden">
         <div className="p-4 border-b border-gray-200 dark:border-gray-800">
@@ -649,7 +772,11 @@ export default function NoteTextPage() {
 
         <div className="flex-1 overflow-y-auto p-3 space-y-1">
           <button
-            onClick={() => { setSelectedFolderId(null); setActiveDoc(null); }}
+            onClick={() => {
+              setSelectedFolderId(null);
+              setActiveDoc(null);
+              router.push('/notetext', { scroll: false });
+            }}
             className={`w-full text-left px-3 py-2.5 rounded-xl text-sm font-medium transition-all flex items-center gap-3 group
               ${selectedFolderId === null && !activeDoc
                 ? "bg-white/10 text-white border border-white/20"
@@ -1040,10 +1167,10 @@ export default function NoteTextPage() {
                   {displayedDocs.map((doc, index) => {
                     const color = getFileColor(index);
                     return (
-                      <button
+                      <div
                         key={doc.id}
                         onClick={() => handleOpen(doc)}
-                        className={`group relative p-5 rounded-2xl bg-transparent border-2 ${color.border} hover:shadow-xl hover:scale-[1.02] transition-all duration-200 text-left`}
+                        className={`group relative p-5 rounded-2xl bg-transparent border-2 ${color.border} hover:shadow-xl hover:scale-[1.02] transition-all duration-200 cursor-pointer`}
                       >
                         <div className="flex items-start gap-3">
                           <div className={`p-2 rounded-xl bg-white/80 dark:bg-gray-800/80 shadow-sm`}>
@@ -1064,7 +1191,7 @@ export default function NoteTextPage() {
                             <MdDelete size={16} />
                           </button>
                         </div>
-                      </button>
+                      </div>
                     );
                   })}
                 </div>
@@ -1608,6 +1735,8 @@ export default function NoteTextPage() {
         </button>
       )}
     </div>
+      )}
+    </>
   );
 }
 
