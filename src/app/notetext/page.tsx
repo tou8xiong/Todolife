@@ -104,7 +104,7 @@ export default function NoteTextPage() {
   const [activeDoc, setActiveDoc] = useState<Doc | null>(null);
   const [title, setTitle] = useState("");
   const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
   const [showNewFolderInput, setShowNewFolderInput] = useState(false);
@@ -409,14 +409,13 @@ export default function NoteTextPage() {
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (u) => {
+      console.log("Auth state changed:", u?.email);
       setUser(u);
       if (u?.email) {
-        setLoading(true);
         await Promise.all([loadDocs(u.email), loadFolders(u.email)]);
-        setLoading(false);
-      } else {
-        setLoading(false);
+        console.log("Finished loading docs and folders");
       }
+      setInitialLoading(false);
     });
     return () => unsubscribe();
   }, [loadDocs, loadFolders]);
@@ -674,7 +673,7 @@ export default function NoteTextPage() {
 
   return (
     <>
-      {loading ? (
+      {initialLoading ? (
         <div className="flex h-[calc(100vh-4rem)] bg-linear-to-b from-gray-900 to-gray-600 overflow-hidden">
           <div className="w-64 sm:w-72 shrink-0 bg-white/5 backdrop-blur-xl border-r border-white/10 flex flex-col max-md:hidden">
             <div className="p-4 border-b border-gray-200 dark:border-gray-800">
