@@ -4,7 +4,6 @@ import Link from "next/link";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 import { useAlert } from "@/hooks/useAlert";
 import {
   MdFormatBold, MdFormatItalic, MdFormatUnderlined, MdFormatStrikethrough,
@@ -96,7 +95,6 @@ function formatDate(dateStr?: string) {
 }
 
 export default function NoteTextPage() {
-  const router = useRouter();
   const { showAlert } = useAlert();
   const [docs, setDocs] = useState<Doc[]>([]);
   const [folders, setFolders] = useState<Folder[]>([]);
@@ -104,8 +102,12 @@ export default function NoteTextPage() {
   const [activeDoc, setActiveDoc] = useState<Doc | null>(null);
   const [title, setTitle] = useState("");
   const [user, setUser] = useState<any>(null);
-  const [initialLoading, setInitialLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(() => {
+    if (typeof window === "undefined") return true;
+    return !sessionStorage.getItem("notetext_loaded");
+  });
   const [saving, setSaving] = useState(false);
+  const [contentLoading, setContentLoading] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
   const [showNewFolderInput, setShowNewFolderInput] = useState(false);
   const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set());
@@ -413,8 +415,8 @@ export default function NoteTextPage() {
       setUser(u);
       if (u?.email) {
         await Promise.all([loadDocs(u.email), loadFolders(u.email)]);
-        console.log("Finished loading docs and folders");
       }
+      sessionStorage.setItem("notetext_loaded", "1");
       setInitialLoading(false);
     });
     return () => unsubscribe();
@@ -516,7 +518,7 @@ export default function NoteTextPage() {
     editorContainerRefs.current = [];
 
     const folderId = selectedFolderId || 'all';
-    router.push(`/notetext/${folderId}/${doc.id}`, { scroll: false });
+    window.history.pushState(null, '', `/notetext/${folderId}/${doc.id}`);
   };
 
   useEffect(() => {
@@ -566,49 +568,33 @@ export default function NoteTextPage() {
     activeDocIdRef.current = doc.id;
     setActiveDoc(doc);
     setTitle(doc.title);
-    setPages(["<p>Loading...</p>"]);
+    setPages([""]);
+    setContentLoading(true);
 
-    // Update URL with folder and doc IDs
+    // Update URL without triggering a remount
     const folderId = doc.folder_id || 'all';
-    router.push(`/notetext/${folderId}/${doc.id}`, { scroll: false });
+    window.history.pushState(null, '', `/notetext/${folderId}/${doc.id}`);
 
     if (!user?.email) return;
 
     try {
-      console.log("Fetching document:", doc.id);
       const res = await fetch(`/api/documents?email=${encodeURIComponent(user.email)}&id=${doc.id}`);
-      console.log("Response status:", res.status);
       if (res.ok) {
         const data = await res.json();
         const fullDoc = data.document;
-        console.log("Loaded document:", {
-          id: fullDoc?.id,
-          title: fullDoc?.title,
-          contentLength: fullDoc?.content?.length,
-          contentPreview: fullDoc?.content?.substring(0, 100)
-        });
         if (fullDoc && activeDocIdRef.current === doc.id) {
           setActiveDoc(fullDoc);
           const content = fullDoc.content || "";
           if (content.includes("<!-- PAGE_BREAK -->")) {
             const splitPages = content.split("<!-- PAGE_BREAK -->");
-            console.log("Split into pages:", splitPages.length);
             setPages(splitPages.length > 0 ? splitPages : [""]);
           } else {
-            console.log("Single page document, content length:", content.length);
             setPages(content ? [content] : [""]);
           }
           setActivePageIndex(0);
           editorContainerRefs.current = [];
-        } else {
-          console.log("Document mismatch or no fullDoc:", {
-            hasFullDoc: !!fullDoc,
-            activeDocIdRef: activeDocIdRef.current,
-            docId: doc.id
-          });
         }
       } else {
-        console.error("Failed to load document, status:", res.status);
         toast.error("Failed to load document");
         setPages([""]);
       }
@@ -616,8 +602,10 @@ export default function NoteTextPage() {
       console.error("Failed to load document content", err);
       toast.error("Failed to load document content");
       setPages([""]);
+    } finally {
+      setContentLoading(false);
     }
-  }, [user, router, showAlert]);
+  }, [user, showAlert]);
 
   // Load document from URL parameters (only on initial load)
   const hasLoadedFromUrl = useRef(false);
@@ -787,7 +775,7 @@ export default function NoteTextPage() {
             onClick={() => {
               setSelectedFolderId(null);
               setActiveDoc(null);
-              router.push('/notetext', { scroll: false });
+              window.history.pushState(null, '', '/notetext');
             }}
             className={`w-full text-left px-3 py-2.5 rounded-xl text-sm font-medium transition-all flex items-center gap-3 group
               ${selectedFolderId === null && !activeDoc
@@ -816,7 +804,7 @@ export default function NoteTextPage() {
             return (
               <div key={folder.id} className="space-y-0.5">
                 <button
-                  onClick={() => { setSelectedFolderId(folder.id); setActiveDoc(null); toggleFolderExpand(folder.id); }}
+                  onClick={() => { setSelectedFolderId(folder.id); setActiveDoc(null); setContentLoading(true); setTimeout(() => setContentLoading(false), 300); toggleFolderExpand(folder.id); }}
                   onContextMenu={(e) => handleContextMenu(e, "folder", folder.id)}
                   className={`w-full text-left px-3 py-2.5 rounded-xl text-sm font-medium transition-all flex items-center gap-2 group
                     ${isSelected
@@ -895,7 +883,18 @@ export default function NoteTextPage() {
       </div>
 
       <div className="flex-1 flex flex-col overflow-hidden">
-        {activeDoc ? (
+        {contentLoading ? (
+          <div className="flex-1 overflow-auto p-6 sm:p-10">
+            <div className="max-w-6xl mx-auto space-y-4">
+              <div className="h-8 bg-white/10 rounded animate-pulse w-1/3 mb-6" />
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {[1, 2, 3, 4, 5, 6].map(i => (
+                  <div key={i} className="h-32 bg-white/10 rounded-2xl animate-pulse" />
+                ))}
+              </div>
+            </div>
+          </div>
+        ) : activeDoc ? (
           <>
             <div className="bg-white/5 backdrop-blur-md border-b border-white/10 px-6 py-4 flex items-center gap-4 shrink-0">
               {selectedFolder && (

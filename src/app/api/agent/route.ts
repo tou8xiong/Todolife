@@ -5,13 +5,14 @@ function wait(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-async function generateWithRetry(messages: any[], maxRetries = 3) {
+// Valid Gemini models — gemini-2.5-flash as primary, gemini-2.0-flash as fallback
+const MODELS = ["gemini-2.5-flash", "gemini-2.0-flash", "gemini-1.5-flash"];
+
+async function generateWithGemini(messages: any[], maxRetries = 3): Promise<string> {
   const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
 
-  const models = ["gemini-2.5-flash", "gemini-2.5-flash-lite"];
-
   for (let attempt = 0; attempt < maxRetries; attempt++) {
-    for (const modelName of models) {
+    for (const modelName of MODELS) {
       try {
         const model = genAI.getGenerativeModel({ model: modelName });
 
@@ -31,26 +32,27 @@ async function generateWithRetry(messages: any[], maxRetries = 3) {
 
         const result = await model.generateContent(fullPrompt);
         const text = result.response.text();
-
         if (text) return text;
 
       } catch (error: any) {
-        const is503 = error?.status === 503 || error?.message?.includes("503");
-        const isQuota = error?.status === 429 || error?.message?.includes("quota");
+        const status = error?.status ?? error?.httpErrorCode;
+        const msg = error?.message ?? "";
 
-        if (isQuota) {
+        if (status === 429 || msg.includes("quota") || msg.includes("RESOURCE_EXHAUSTED")) {
           if (attempt < maxRetries - 1) {
-            const waitTime = (attempt + 1) * 5000;
-            console.log(`Quota exceeded, waiting ${waitTime}ms before retry...`);
-            await wait(waitTime);
-            continue;
+            await wait((attempt + 1) * 5000);
+            break; // retry whole attempt with next model
           }
           throw new Error("API quota exceeded. Please wait a few minutes and try again.");
         }
 
-        if (is503) {
-          console.log(`${modelName} unavailable (503), retrying...`);
+        if (status === 503 || msg.includes("503") || msg.includes("overloaded")) {
           await wait(2000);
+          continue; // try next model
+        }
+
+        // Model not found — try next model silently
+        if (status === 404 || msg.includes("not found") || msg.includes("404")) {
           continue;
         }
 
@@ -62,6 +64,25 @@ async function generateWithRetry(messages: any[], maxRetries = 3) {
   throw new Error("All models unavailable. Please try again later.");
 }
 
+async function generateWithPythonBackend(messages: any[]): Promise<string> {
+  const backendUrl = process.env.PYTHON_BACKEND_URL;
+  if (!backendUrl) throw new Error("Python backend URL not configured");
+
+  const res = await fetch(`${backendUrl}/api/agent`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ messages }),
+  });
+
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail ?? `Python backend error: ${res.status}`);
+  }
+
+  const data = await res.json();
+  return data.result;
+}
+
 export async function POST(req: NextRequest) {
   const { messages } = await req.json();
 
@@ -69,12 +90,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Messages are required" }, { status: 400 });
   }
 
-  if (!process.env.GEMINI_API_KEY) {
-    return NextResponse.json({ error: "Gemini API key not configured" }, { status: 500 });
-  }
-
   try {
-    const result = await generateWithRetry(messages);
+    // Use Python backend if configured, otherwise use Gemini directly
+    const result = process.env.PYTHON_BACKEND_URL
+      ? await generateWithPythonBackend(messages)
+      : await generateWithGemini(messages);
+
     return NextResponse.json({ result });
   } catch (err: any) {
     console.error("Agent error:", err.message);
