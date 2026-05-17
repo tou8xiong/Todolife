@@ -26,16 +26,17 @@ export default function Sidebar() {
     const { forceExpandSidebar, toggleSidebar } = useAppContext();
     const { t } = useLanguage();
     const compactPages = ["/notetext", "/background-removal"];
-    const isCompact = compactPages.some(p => pathname.startsWith(p)) && !forceExpandSidebar;
+    const isCompactPage = compactPages.some(p => pathname.startsWith(p));
+    const isCompact = isCompactPage && !forceExpandSidebar;
 
     return (
         <aside className={`hidden md:flex fixed left-0 top-16 h-[calc(100vh-4rem)] ${isCompact ? 'w-16 items-center' : 'w-45'} bg-gray-900 z-40 border-r border-amber-400/20 flex-col transition-all duration-300`}>
 
             {/* Top icon */}
             <div
-                onClick={isCompact ? toggleSidebar : undefined}
-                className={`flex justify-center items-center py-5 border-b border-gray-700/50 ${isCompact ? 'w-full cursor-pointer hover:bg-gray-800 transition-colors' : ''}`}
-                title={isCompact ? 'Toggle Sidebar' : undefined}
+                onClick={isCompactPage ? toggleSidebar : undefined}
+                className={`flex justify-center items-center py-5 border-b border-gray-700/50 ${isCompactPage ? 'w-full cursor-pointer hover:bg-gray-800 transition-colors' : ''}`}
+                title={isCompactPage ? 'Toggle Sidebar' : undefined}
             >
                 <BsLayoutSidebarInset size={22} className="text-amber-400" />
             </div>

@@ -31,36 +31,62 @@ export default function AnnotationItem({
     // Draw annotation (pen strokes) — no x/y position, covers full container
     if (ann.type === "draw") {
         const pathD = ann.points.map((p, i) => `${i === 0 ? "M" : "L"}${p.x},${p.y}`).join(" ");
+        // Compute bounding box (in normalized 0-1 coords) for selection rect
+        const xs = ann.points.map((p) => p.x);
+        const ys = ann.points.map((p) => p.y);
+        const minX = Math.max(0, Math.min(...xs) - 0.01);
+        const maxX = Math.min(1, Math.max(...xs) + 0.01);
+        const minY = Math.max(0, Math.min(...ys) - 0.01);
+        const maxY = Math.min(1, Math.max(...ys) + 0.01);
+
         return (
-            <svg
-                style={{
-                    position: "absolute", left: 0, top: 0,
-                    width: "100%", height: "100%",
-                    zIndex: isSelected ? 20 : 10,
-                    pointerEvents: "none",
-                    overflow: "visible",
-                }}
-                viewBox="0 0 1 1"
-                preserveAspectRatio="none"
-            >
-                <path
-                    d={pathD}
-                    stroke={ann.color}
-                    strokeWidth={ann.strokeWidth}
-                    fill="none"
-                    vectorEffect="non-scaling-stroke"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    style={{ pointerEvents: "stroke", cursor: "pointer" }}
-                    onMouseDown={(e) => onMouseDown(e as unknown as React.MouseEvent, ann)}
-                    onClick={(e) => onClick(e as unknown as React.MouseEvent, ann)}
-                />
+            <>
+                <svg
+                    style={{
+                        position: "absolute", left: 0, top: 0,
+                        width: "100%", height: "100%",
+                        zIndex: isSelected ? 20 : 10,
+                        pointerEvents: "none",
+                        overflow: "visible",
+                    }}
+                    viewBox="0 0 1 1"
+                    preserveAspectRatio="none"
+                >
+                    <path
+                        d={pathD}
+                        stroke={ann.color}
+                        strokeWidth={ann.strokeWidth}
+                        fill="none"
+                        vectorEffect="non-scaling-stroke"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        style={{ pointerEvents: "stroke", cursor: "pointer" }}
+                        onMouseDown={(e) => onMouseDown(e as unknown as React.MouseEvent, ann)}
+                        onClick={(e) => onClick(e as unknown as React.MouseEvent, ann)}
+                    />
+                </svg>
                 {isSelected && (
-                    <foreignObject x="0" y="0" width="20" height="20" style={{ overflow: "visible" }}>
-                        {deleteBtn}
-                    </foreignObject>
+                    <div
+                        style={{
+                            position: "absolute",
+                            left: `${minX * 100}%`,
+                            top: `${minY * 100}%`,
+                            width: `${(maxX - minX) * 100}%`,
+                            height: `${(maxY - minY) * 100}%`,
+                            border: "2px dashed #f59e0b",
+                            background: "rgba(245, 158, 11, 0.08)",
+                            borderRadius: 4,
+                            zIndex: 21,
+                            pointerEvents: "none",
+                            boxShadow: "0 0 0 2px rgba(245, 158, 11, 0.25)",
+                        }}
+                    >
+                        <div style={{ position: "absolute", top: -10, right: -10, pointerEvents: "auto" }}>
+                            {deleteBtn}
+                        </div>
+                    </div>
                 )}
-            </svg>
+            </>
         );
     }
 
@@ -72,6 +98,9 @@ export default function AnnotationItem({
         zIndex: isSelected ? 20 : 10,
         userSelect: "none",
         outline: isSelected ? "2px dashed #f59e0b" : undefined,
+        outlineOffset: isSelected ? "2px" : undefined,
+        boxShadow: isSelected ? "0 0 0 4px rgba(245, 158, 11, 0.25)" : undefined,
+        background: isSelected && ann.type === "text" ? "rgba(245, 158, 11, 0.08)" : undefined,
         borderRadius: 2,
     };
 

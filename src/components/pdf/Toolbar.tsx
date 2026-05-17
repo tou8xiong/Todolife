@@ -56,7 +56,7 @@ export default function Toolbar({
     };
 
     return (
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow p-3 flex flex-col gap-2">
+        <div className="bg-white dark:bg-gray-800 px-4 sm:px-6 py-3 flex flex-col gap-2">
 
             {/* Row 1: tools + right controls */}
             <div className="flex flex-wrap items-center gap-2">

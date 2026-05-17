@@ -5,7 +5,12 @@ import Toolbar from "@/components/pdf/Toolbar";
 import AnnotationItem from "@/components/pdf/AnnotationItem";
 import DownloadModal from "@/components/pdf/DownloadModal";
 import ConverterDownloadModal, { ConverterSizeOption } from "@/components/pdf/ConverterDownloadModal";
-import { UploadCloud, FileText, FileImage, FileType2 } from "lucide-react";
+import {
+    UploadCloud, FileText, FileImage, FileType2,
+    Download, ArrowUp, ZoomIn, ZoomOut, Maximize2,
+    Undo2, Redo2, Type as TypeIcon, Pen, Image as ImageLucide,
+    Trash2, Info, List, X as XIcon, GripHorizontal,
+} from "lucide-react";
 import { useAppContext } from "@/context/AppContext";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -78,9 +83,71 @@ export default function PdfEditor() {
     const containerRefs = useRef<(HTMLDivElement | null)[]>([]);
     const dragRef = useRef<DragState | null>(null);
     const penDrawRef = useRef<{ pageIndex: number; points: { x: number; y: number }[] } | null>(null);
+    const dragStartSnapshotRef = useRef<Annotation[] | null>(null);
+
+    // Zoom (1.0 = 100%, range 0.5–2.5)
+    const [zoom, setZoom] = useState(1.0);
+
+    // Undo / redo history
+    const historyRef = useRef<Annotation[][]>([]);
+    const futureRef = useRef<Annotation[][]>([]);
+    const [historyTick, setHistoryTick] = useState(0); // re-render undo/redo buttons
+
+    // FAB / scroll-to-top
+    const [showScrollTop, setShowScrollTop] = useState(false);
+
+    // Drag-and-drop a new file directly onto the viewer
+    const [viewerDragOver, setViewerDragOver] = useState(false);
+
+    // Floating annotations modal
+    const [showAnnotationsModal, setShowAnnotationsModal] = useState(false);
+    const [modalPos, setModalPos] = useState<{ x: number; y: number }>({ x: 80, y: 140 });
+    const modalDragRef = useRef<{ startX: number; startY: number; origX: number; origY: number } | null>(null);
 
     const selectedAnnotation = annotations.find((a) => a.id === selectedId) ?? null;
     const hasFile = fileType !== null;
+
+    // ── Undo / redo helpers ────────────────────────────────────────────────
+    const pushHistory = useCallback((snapshot: Annotation[]) => {
+        historyRef.current.push(snapshot);
+        if (historyRef.current.length > 50) historyRef.current.shift();
+        futureRef.current = [];
+        setHistoryTick((t) => t + 1);
+    }, []);
+
+    const undo = useCallback(() => {
+        setAnnotations((curr) => {
+            if (historyRef.current.length === 0) return curr;
+            const prev = historyRef.current.pop()!;
+            futureRef.current.push(curr);
+            setHistoryTick((t) => t + 1);
+            return prev;
+        });
+        setSelectedId(null);
+    }, []);
+
+    const redo = useCallback(() => {
+        setAnnotations((curr) => {
+            if (futureRef.current.length === 0) return curr;
+            const next = futureRef.current.pop()!;
+            historyRef.current.push(curr);
+            setHistoryTick((t) => t + 1);
+            return next;
+        });
+        setSelectedId(null);
+    }, []);
+
+    // Clear history when file changes
+    useEffect(() => {
+        historyRef.current = [];
+        futureRef.current = [];
+        setHistoryTick((t) => t + 1);
+    }, [fileType, pdfBytes]);
+
+    // ── Zoom helpers ───────────────────────────────────────────────────────
+    const zoomIn = useCallback(() => setZoom((z) => Math.min(2.5, +(z + 0.1).toFixed(2))), []);
+    const zoomOut = useCallback(() => setZoom((z) => Math.max(0.5, +(z - 0.1).toFixed(2))), []);
+    const zoomFit = useCallback(() => setZoom(1.0), []);
 
     // Restore data on mount after login
     useEffect(() => {
@@ -129,29 +196,53 @@ export default function PdfEditor() {
     }, []);
 
     // ── Render PDF ─────────────────────────────────────────────────────────
-    const renderPdf = useCallback(async () => {
-        if (!pdfBytes) return;
-        setLoading(true);
-        try {
-            const pdfjsLib = await import("pdfjs-dist");
-            pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
-            const pdf = await pdfjsLib.getDocument({ data: pdfBytes.slice(0) }).promise;
-            setNumPages(pdf.numPages);
-            for (let i = 1; i <= pdf.numPages; i++) {
-                const page = await pdf.getPage(i);
-                const canvas = canvasRefs.current[i - 1];
-                if (!canvas) continue;
-                const viewport = page.getViewport({ scale: 1.5 });
-                canvas.width = viewport.width;
-                canvas.height = viewport.height;
-                await page.render({ canvasContext: canvas.getContext("2d")!, canvas, viewport }).promise;
+    const pdfDocRef = useRef<any>(null);
+
+    // 1) Load PDF and set page count when bytes change
+    useEffect(() => {
+        if (!pdfBytes) { pdfDocRef.current = null; return; }
+        let cancelled = false;
+        (async () => {
+            setLoading(true);
+            try {
+                const pdfjsLib = await import("pdfjs-dist");
+                pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
+                const pdf = await pdfjsLib.getDocument({ data: pdfBytes.slice(0) }).promise;
+                if (cancelled) return;
+                pdfDocRef.current = pdf;
+                canvasRefs.current = new Array(pdf.numPages).fill(null);
+                setNumPages(pdf.numPages);
+            } catch (err) {
+                console.error("Failed to load PDF:", err);
+                setLoading(false);
             }
-        } finally {
-            setLoading(false);
-        }
+        })();
+        return () => { cancelled = true; };
     }, [pdfBytes]);
 
-    useEffect(() => { renderPdf(); }, [renderPdf]);
+    // 2) Render pages once canvases are mounted (re-renders on zoom)
+    useEffect(() => {
+        const pdf = pdfDocRef.current;
+        if (!pdf || numPages === 0) return;
+        let cancelled = false;
+        (async () => {
+            try {
+                for (let i = 1; i <= numPages; i++) {
+                    if (cancelled) return;
+                    const canvas = canvasRefs.current[i - 1];
+                    if (!canvas) continue;
+                    const page = await pdf.getPage(i);
+                    const viewport = page.getViewport({ scale: 1.5 * zoom });
+                    canvas.width = viewport.width;
+                    canvas.height = viewport.height;
+                    await page.render({ canvasContext: canvas.getContext("2d")!, canvas, viewport }).promise;
+                }
+            } finally {
+                if (!cancelled) setLoading(false);
+            }
+        })();
+        return () => { cancelled = true; };
+    }, [numPages, zoom]);
 
     // ── File upload ────────────────────────────────────────────────────────
     const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -239,6 +330,7 @@ export default function PdfEditor() {
         const y = (e.clientY - rect.top) / rect.height;
 
         if (activeTool === "image" && pendingImage) {
+            pushHistory(annotations);
             setAnnotations((prev) => [
                 ...prev,
                 { id: Date.now(), type: "image", page: pageIndex + 1, x, y, width: 0.2, height: 0.15, dataUrl: pendingImage.dataUrl, mimeType: pendingImage.mimeType } as ImageAnnotation,
@@ -267,6 +359,7 @@ export default function PdfEditor() {
 
     const confirmText = () => {
         if (!placing || !newText.trim()) { setPlacing(null); return; }
+        pushHistory(annotations);
         setAnnotations((prev) => [
             ...prev,
             { id: Date.now(), type: "text", page: placing.page, x: placing.x, y: placing.y, text: newText, fontSize, color, bold } as TextAnnotation,
@@ -280,6 +373,7 @@ export default function PdfEditor() {
         if (ann.type === "draw") return; // draw annotations don't drag
         e.stopPropagation();
         e.preventDefault();
+        dragStartSnapshotRef.current = annotations;
         dragRef.current = {
             mode: "drag", id: ann.id, pageIndex,
             startMouseX: e.clientX, startMouseY: e.clientY,
@@ -293,6 +387,7 @@ export default function PdfEditor() {
     const handleResizeMouseDown = (e: React.MouseEvent, ann: ImageAnnotation, pageIndex: number) => {
         e.stopPropagation();
         e.preventDefault();
+        dragStartSnapshotRef.current = annotations;
         dragRef.current = {
             mode: "resize", id: ann.id, pageIndex,
             startMouseX: e.clientX, startMouseY: e.clientY,
@@ -344,23 +439,178 @@ export default function PdfEditor() {
         // Finalize pen stroke
         const pen = penDrawRef.current;
         if (pen && pen.pageIndex === pageIndex && pen.points.length >= 2) {
+            pushHistory(annotations);
             setAnnotations((prev) => [
                 ...prev,
                 { id: Date.now(), type: "draw", page: pageIndex + 1, points: pen.points, color, strokeWidth: penStrokeWidth } as DrawAnnotation,
             ]);
         }
+        // Finalize drag/resize → record the pre-move snapshot in history
+        if (dragRef.current?.moved && dragStartSnapshotRef.current) {
+            pushHistory(dragStartSnapshotRef.current);
+        }
+        dragStartSnapshotRef.current = null;
         penDrawRef.current = null;
         setLiveStroke(null);
         dragRef.current = null;
     };
 
     // ── Annotation CRUD ────────────────────────────────────────────────────
-    const updateAnnotation = (updated: Annotation) =>
+    const updateAnnotation = (updated: Annotation) => {
+        pushHistory(annotations);
         setAnnotations((prev) => prev.map((a) => (a.id === updated.id ? updated : a)));
+    };
 
     const deleteAnnotation = (id: number) => {
+        pushHistory(annotations);
         setAnnotations((prev) => prev.filter((a) => a.id !== id));
         setSelectedId(null);
+    };
+
+    // ── Jump to a page ─────────────────────────────────────────────────────
+    const scrollToPage = useCallback((pageIndex: number) => {
+        const el = containerRefs.current[pageIndex];
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, []);
+
+    // ── Scroll the viewport so an annotation is centered ───────────────────
+    const scrollToAnnotation = useCallback((ann: Annotation) => {
+        const el = containerRefs.current[ann.page - 1];
+        if (!el) return;
+        const rect = el.getBoundingClientRect();
+        let yNorm: number;
+        if (ann.type === "draw") {
+            const ys = ann.points.map((p) => p.y);
+            yNorm = (Math.min(...ys) + Math.max(...ys)) / 2;
+        } else {
+            yNorm = ann.y;
+        }
+        const pageTopAbs = rect.top + window.scrollY;
+        const targetY = pageTopAbs + yNorm * rect.height - window.innerHeight / 2;
+        window.scrollTo({ top: Math.max(0, targetY), behavior: "smooth" });
+    }, []);
+
+    // ── Mode switch ────────────────────────────────────────────────────────
+    const switchMode = (target: Mode) => {
+        setMode(target);
+        setPdfBytes(null); setAnnotations([]); setNumPages(0);
+        setSelectedId(null); setPendingImage(null);
+        setFileType(null); setDocContent(""); setImageData("");
+    };
+
+    // ── Download request (auth gate + open modal) ──────────────────────────
+    const requestDownload = () => {
+        if (!user) {
+            let pdfB64 = "";
+            if (pdfBytes) {
+                const bytes = new Uint8Array(pdfBytes);
+                let binary = "";
+                for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+                pdfB64 = btoa(binary);
+            }
+            saveTempData("pdfeditor", {
+                annotations, mode, fileType, docContent, imageData,
+                fileName, originalFileName, pdfBase64: pdfB64,
+            });
+            sessionStorage.setItem("redirectAfterLogin", window.location.pathname);
+            showAlert({
+                title: "Login Required",
+                message: "Please login to download your work.",
+                type: "warning",
+                confirmText: "Login",
+                linkToLogin: true,
+            });
+            return;
+        }
+        setDownloadModal(true);
+    };
+
+    // ── Drop a new file onto the viewer ────────────────────────────────────
+    const handleViewerDrop = (e: React.DragEvent<HTMLDivElement>) => {
+        e.preventDefault();
+        setViewerDragOver(false);
+        const file = e.dataTransfer.files?.[0];
+        if (!file) return;
+        const fakeEvent = { target: { files: e.dataTransfer.files } } as unknown as React.ChangeEvent<HTMLInputElement>;
+        handleFileUpload(fakeEvent);
+    };
+
+    // ── Keyboard shortcuts ─────────────────────────────────────────────────
+    useEffect(() => {
+        if (!hasFile || mode !== "annotator") return;
+        const onKey = (e: KeyboardEvent) => {
+            const target = e.target as HTMLElement | null;
+            const tag = target?.tagName;
+            const typing = tag === "INPUT" || tag === "TEXTAREA" || (target?.isContentEditable ?? false);
+
+            // Undo / redo work even when typing in toolbar inputs
+            if ((e.ctrlKey || e.metaKey) && !e.shiftKey && e.key.toLowerCase() === "z") {
+                e.preventDefault(); undo(); return;
+            }
+            if ((e.ctrlKey || e.metaKey) && (e.key.toLowerCase() === "y" || (e.shiftKey && e.key.toLowerCase() === "z"))) {
+                e.preventDefault(); redo(); return;
+            }
+            if (typing) return;
+
+            if (e.key === "Escape") {
+                setSelectedId(null);
+                setPlacing(null);
+                setPendingImage(null);
+                return;
+            }
+            if (e.key === "Delete" || e.key === "Backspace") {
+                if (selectedId != null) { e.preventDefault(); deleteAnnotation(selectedId); }
+                return;
+            }
+            const k = e.key.toLowerCase();
+            if (k === "t") { setActiveTool("text"); setPlacing(null); setPendingImage(null); setSelectedId(null); }
+            else if (k === "p") { setActiveTool("pen"); setPlacing(null); setPendingImage(null); setSelectedId(null); }
+            else if (k === "i") { setActiveTool("image"); setPlacing(null); setSelectedId(null); }
+            else if (k === "+" || k === "=") { e.preventDefault(); zoomIn(); }
+            else if (k === "-" || k === "_") { e.preventDefault(); zoomOut(); }
+            else if (k === "0") { e.preventDefault(); zoomFit(); }
+        };
+        window.addEventListener("keydown", onKey);
+        return () => window.removeEventListener("keydown", onKey);
+    }, [hasFile, mode, selectedId, undo, redo, zoomIn, zoomOut, zoomFit]);
+
+    // ── Scroll listener for FAB ────────────────────────────────────────────
+    useEffect(() => {
+        const onScroll = () => setShowScrollTop(window.scrollY > 300);
+        window.addEventListener("scroll", onScroll, { passive: true });
+        return () => window.removeEventListener("scroll", onScroll);
+    }, []);
+
+    // ── Annotations modal drag ─────────────────────────────────────────────
+    useEffect(() => {
+        const onMove = (e: MouseEvent) => {
+            const d = modalDragRef.current;
+            if (!d) return;
+            const x = d.origX + (e.clientX - d.startX);
+            const y = d.origY + (e.clientY - d.startY);
+            // Clamp inside viewport
+            const maxX = window.innerWidth - 100;
+            const maxY = window.innerHeight - 40;
+            setModalPos({
+                x: Math.max(-200, Math.min(maxX, x)),
+                y: Math.max(60, Math.min(maxY, y)),
+            });
+        };
+        const onUp = () => { modalDragRef.current = null; };
+        window.addEventListener("mousemove", onMove);
+        window.addEventListener("mouseup", onUp);
+        return () => {
+            window.removeEventListener("mousemove", onMove);
+            window.removeEventListener("mouseup", onUp);
+        };
+    }, []);
+
+    const startModalDrag = (e: React.MouseEvent) => {
+        e.preventDefault();
+        modalDragRef.current = {
+            startX: e.clientX, startY: e.clientY,
+            origX: modalPos.x, origY: modalPos.y,
+        };
     };
 
     // ── Download ───────────────────────────────────────────────────────────
@@ -694,7 +944,7 @@ export default function PdfEditor() {
     const renderPageContainer = (i: number) => (
         <div key={i} className="w-full flex flex-col items-center px-2 sm:px-4">
             {fileType === "pdf" && (
-                <div className="flex items-center w-full max-w-[816px] px-1 mb-1">
+                <div className="flex items-center w-full px-1 mb-1">
                     <span className="text-[9px] sm:text-[10px] font-mono text-gray-200 uppercase tracking-widest">
                         {`Page ${i + 1} / ${numPages}`}
                     </span>
@@ -702,9 +952,8 @@ export default function PdfEditor() {
             )}
             <div
                 ref={(el) => { containerRefs.current[i] = el; }}
-                className="relative bg-white shadow-2xl rounded-sm ring-1 ring-gray-200 dark:ring-gray-700 overflow-hidden w-full transition-all duration-300 mx-auto"
+                className="relative bg-white shadow-2xl ring-1 ring-gray-200 dark:ring-gray-700 overflow-hidden w-full transition-all duration-300"
                 style={{
-                    maxWidth: "816px",
                     cursor: activeTool === "pen" ? "crosshair" : activeTool === "image" && pendingImage ? "crosshair" : activeTool === "text" ? "text" : "default",
                 }}
                 onMouseDown={(e) => handleContainerMouseDown(e, i)}
@@ -800,7 +1049,7 @@ export default function PdfEditor() {
     );
 
     return (
-        <div className="min-h-screen bg-linear-to-b from-gray-900 to-gray-600 p-4 sm:p-6 font-serif text-white transition-all duration-300">
+        <div className="min-h-screen bg-linear-to-b from-gray-900 to-gray-600 p-4 sm:p-6 lg:pr-[18rem] font-serif text-white transition-all duration-300">
 
             {mode === "annotator" && (
                 <DownloadModal
@@ -829,164 +1078,116 @@ export default function PdfEditor() {
                 />
             )}
 
-            {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
-                <div>
-                    <h1 className="text-2xl font-bold text-white">
-                        {mode === "annotator"
-                            ? <><FileText size={22} className="inline-block mr-2 -mt-1 text-amber-500" />PDF Annotator</>
-                            : <><FileImage size={22} className="inline-block mr-2 -mt-1 text-amber-500" />Image Converter</>
-                        }
-                    </h1>
-                    <p className="text-sm text-gray-500 dark:text-gray-300 mt-0.5">
-                        {mode === "annotator"
-                            ? "Upload a PDF, Word (.docx), or text file · add annotations · download as PDF"
-                            : "Upload an image · convert to PDF or DOCX"
-                        }
-                    </p>
-                </div>
-                <div className="flex gap-2">
-                    <button
-                        onClick={() => {
-                            setMode("annotator");
-                            setPdfBytes(null); setAnnotations([]); setNumPages(0);
-                            setSelectedId(null); setPendingImage(null);
-                            setFileType(null); setDocContent(""); setImageData("");
-                        }}
-                        className={`px-4 py-2 text-sm font-semibold rounded-xl transition-colors ${mode === "annotator"
-                            ? "bg-amber-500 text-white"
-                            : "bg-gray-200 hover:bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
-                            }`}
-                    >
-                        Annotator
-                    </button>
-                    <button
-                        onClick={() => {
-                            setMode("converter");
-                            setPdfBytes(null); setAnnotations([]); setNumPages(0);
-                            setSelectedId(null); setPendingImage(null);
-                            setFileType(null); setDocContent(""); setImageData("");
-                        }}
-                        className={`px-4 py-2 text-sm font-semibold rounded-xl transition-colors ${mode === "converter"
-                            ? "bg-amber-500 text-white"
-                            : "bg-gray-200 hover:bg-gray-300 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
-                            }`}
-                    >
-                        Converter
-                    </button>
-                    {hasFile && (
-                        <button
-                            onClick={() => {
-                                if (!user) {
-                                    // Save state before redirect - convert ArrayBuffer to base64
-                                    let pdfB64 = "";
-                                    if (pdfBytes) {
-                                        const bytes = new Uint8Array(pdfBytes);
-                                        let binary = "";
-                                        for (let i = 0; i < bytes.length; i++) {
-                                            binary += String.fromCharCode(bytes[i]);
-                                        }
-                                        pdfB64 = btoa(binary);
-                                    }
-
-                                    saveTempData("pdfeditor", {
-                                        annotations,
-                                        mode,
-                                        fileType,
-                                        docContent,
-                                        imageData,
-                                        fileName,
-                                        originalFileName,
-                                        pdfBase64: pdfB64,
-                                    });
-
-                                    sessionStorage.setItem("redirectAfterLogin", window.location.pathname);
-                                    showAlert({
-                                        title: "Login Required",
-                                        message: "Please login to download your work.",
-                                        type: "warning",
-                                        confirmText: "Login",
-                                        linkToLogin: true,
-                                    });
-                                    return;
+            {/* Right sidebar — title, mode buttons, download */}
+            <aside className="hidden lg:flex fixed right-0 top-16 w-64 h-[calc(100vh-4rem)] flex-col gap-4 p-5 bg-gray-900/95 backdrop-blur border-l border-white/10 z-30">
+                {/* Title block */}
+                <div className="flex items-start gap-2">
+                    <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                            <h1 className="text-xl font-bold text-white leading-tight">
+                                {mode === "annotator"
+                                    ? <><FileText size={20} className="inline-block mr-2 -mt-1 text-amber-500" />PDF Annotator</>
+                                    : <><FileImage size={20} className="inline-block mr-2 -mt-1 text-amber-500" />Image Converter</>
                                 }
-                                setDownloadModal(true);
-                            }}
-                            className="flex items-center gap-2 px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold rounded-xl shadow transition-colors"
-                        >
-                            ⬇ Download {mode === "converter" ? "as File" : "as PDF"}
-                        </button>
-                    )}
+                            </h1>
+                            <div className="relative group shrink-0">
+                                <button
+                                    type="button"
+                                    aria-label="Info"
+                                    className="flex items-center justify-center w-6 h-6 rounded-full bg-white/10 hover:bg-amber-500/20 text-gray-300 hover:text-amber-400 transition-colors"
+                                >
+                                    <Info size={13} />
+                                </button>
+                                <div className="absolute right-full mr-2 top-1/2 -translate-y-1/2 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible group-focus-within:opacity-100 group-focus-within:visible transition-opacity duration-150 pointer-events-none">
+                                    <div className="relative bg-gray-800 text-white text-xs px-3 py-2 rounded-lg shadow-xl border border-amber-400/30 w-56">
+                                        {mode === "annotator"
+                                            ? "Upload a PDF, Word (.docx), or text file · add annotations · download as PDF"
+                                            : "Upload an image · convert to PDF or DOCX"
+                                        }
+                                        <div className="absolute top-1/2 -right-1 -translate-y-1/2 w-2 h-2 bg-gray-800 border-r border-t border-amber-400/30 rotate-45" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <p className="text-xs text-gray-400 mt-1.5">Document management &amp; conversion.</p>
+                    </div>
                 </div>
-            </div>
+
+                <div className="h-px bg-white/10" />
+
+                {/* Mode buttons (vertical) */}
+                <div className="flex flex-col gap-2">
+                    <button
+                        onClick={() => switchMode("annotator")}
+                        className={`flex items-center gap-2.5 w-full px-3 py-2.5 text-sm font-semibold rounded-xl transition-colors ${mode === "annotator"
+                            ? "bg-amber-500 text-white shadow"
+                            : "bg-white/5 hover:bg-white/10 text-gray-300"
+                            }`}
+                    >
+                        <Pen size={15} className="shrink-0" />
+                        <span>Annotator</span>
+                    </button>
+                    <button
+                        onClick={() => switchMode("converter")}
+                        className={`flex items-center gap-2.5 w-full px-3 py-2.5 text-sm font-semibold rounded-xl transition-colors ${mode === "converter"
+                            ? "bg-amber-500 text-white shadow"
+                            : "bg-white/5 hover:bg-white/10 text-gray-300"
+                            }`}
+                    >
+                        <FileImage size={15} className="shrink-0" />
+                        <span>Converter</span>
+                    </button>
+                </div>
+
+                {/* Download at bottom */}
+                {hasFile && (
+                    <div className="mt-auto">
+                        <div className="h-px bg-white/10 mb-3" />
+                        <button
+                            onClick={requestDownload}
+                            className="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold rounded-xl shadow transition-colors"
+                        >
+                            <Download size={15} /> Download {mode === "converter" ? "as File" : "as PDF"}
+                        </button>
+                    </div>
+                )}
+            </aside>
 
             {/* Upload zone */}
             {!hasFile ? (
+                <div className="flex items-center justify-center min-h-[calc(100vh-10rem)] w-full">
                 <div
                     onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
                     onDragLeave={() => setDragOver(false)}
                     onDrop={handleDrop}
-                    className={`relative max-w-2xl mx-auto rounded-3xl transition-all duration-300
+                    className={`relative w-full max-w-2xl rounded-md border-2 border-dashed backdrop-blur-md transition-all duration-300
                         ${dragOver
-                            ? "bg-amber-500/10 border-2 border-amber-400 shadow-[0_0_40px_rgba(251,191,36,0.15)]"
-                            : "border-2 border-dashed border-gray-500 hover:border-amber-400/70 hover:bg-amber-500/5"
+                            ? "bg-amber-500/15 border-amber-400 shadow-[0_0_40px_rgba(251,191,36,0.15)]"
+                            : "bg-white/10 border-white/30 hover:border-amber-400/70 hover:bg-white/15"
                         }`}
                 >
-                    <label className="flex flex-col items-center justify-center gap-5 p-10 sm:p-16 cursor-pointer">
-                        {/* Icon ring */}
-                        <div className={`relative flex items-center justify-center w-20 h-20 rounded-2xl transition-all duration-300
-                            ${dragOver ? "bg-amber-400/20 scale-110" : "bg-white/10"}`}>
-                            <UploadCloud
-                                size={36}
-                                className={`transition-colors duration-300 ${dragOver ? "text-amber-500" : "text-gray-300"}`}
-                            />
-                            {dragOver && (
-                                <span className="absolute inset-0 rounded-2xl border-2 border-amber-400 animate-ping opacity-30" />
-                            )}
-                        </div>
-
-                        {/* Text */}
-                        <div className="text-center space-y-1.5">
-                            <p className="text-lg font-bold text-white">
-                                {dragOver ? "Drop to upload" : "Drop file here or click to browse"}
+                    <label className="flex flex-col items-center justify-center gap-3 py-10 sm:py-14 cursor-pointer">
+                        <UploadCloud
+                            size={56}
+                            strokeWidth={1.8}
+                            className={`transition-colors duration-300 ${dragOver ? "text-amber-400" : "text-white"}`}
+                        />
+                        <div className="text-center space-y-1">
+                            <p className="text-sm font-semibold text-white">
+                                {dragOver
+                                    ? "Drop to upload"
+                                    : mode === "annotator"
+                                        ? "Upload file pdf"
+                                        : "Upload your image"
+                                }
                             </p>
-                            <p className="text-sm text-gray-300">
+                            <p className="text-xs text-gray-400">
                                 {mode === "annotator"
-                                    ? "Annotate, then download as PDF or DOCX"
-                                    : "Convert your image to PDF or DOCX"
+                                    ? "PDF, DOCX, TXT · ( Size limit: 20MB)"
+                                    : "PNG, JPG, JPEG · ( Size limit: 20MB)"
                                 }
                             </p>
                         </div>
-
-                        {/* Format badges */}
-                        <div className="flex flex-wrap justify-center gap-2">
-                            {mode === "annotator" ? (
-                                <>
-                                    <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-semibold">
-                                        <FileText size={12} /> PDF
-                                    </span>
-                                    <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold">
-                                        <FileText size={12} /> DOCX
-                                    </span>
-                                    <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gray-100 dark:bg-gray-500/10 border border-gray-300 dark:border-gray-500/20 text-gray-600 dark:text-gray-300 text-xs font-semibold">
-                                        <FileType2 size={12} /> TXT
-                                    </span>
-                                </>
-                            ) : (
-                                <>
-                                    <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-violet-500/10 border border-violet-500/20 text-violet-400 text-xs font-semibold">
-                                        <FileImage size={12} /> PNG
-                                    </span>
-                                    <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-semibold">
-                                        <FileImage size={12} /> JPG
-                                    </span>
-                                    <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 text-xs font-semibold">
-                                        <FileImage size={12} /> JPEG
-                                    </span>
-                                </>
-                            )}
-                        </div>
-
                         <input
                             type="file"
                             accept={mode === "annotator" ? ".pdf,.docx,.txt" : ".png,.jpg,.jpeg"}
@@ -995,32 +1196,101 @@ export default function PdfEditor() {
                         />
                     </label>
                 </div>
+                </div>
             ) : (
-                <div className="flex flex-col gap-4">
+                <div className="flex flex-col gap-3">
+                    {/* Sticky control bar: toolbar + zoom + undo/redo */}
                     {mode === "annotator" && (
-                        <Toolbar
-                            activeTool={activeTool}
-                            onToolChange={(t) => { setActiveTool(t); setPendingImage(null); setPlacing(null); setSelectedId(null); }}
-                            fontSize={fontSize}
-                            color={color}
-                            onFontSizeChange={setFontSize}
-                            onColorChange={setColor}
-                            bold={bold}
-                            onBoldChange={setBold}
-                            penStrokeWidth={penStrokeWidth}
-                            onPenStrokeWidthChange={setPenStrokeWidth}
-                            onImageFileSelected={(dataUrl, mimeType) => { setPendingImage({ dataUrl, mimeType }); setActiveTool("image"); }}
-                            selectedAnnotation={selectedAnnotation}
-                            onUpdateAnnotation={updateAnnotation}
-                            onDeleteAnnotation={deleteAnnotation}
-                            annotationCount={annotations.length}
-                            onChangeFile={() => {
-                                setPdfBytes(null); setAnnotations([]); setNumPages(0);
-                                setSelectedId(null); setPendingImage(null);
-                                setFileType(null); setDocContent(""); setImageData("");
-                            }}
-                            pendingImage={!!pendingImage}
-                        />
+                        <div className="sticky top-16 z-30 -mx-4 sm:-mx-6 -mt-4 sm:-mt-6 lg:mr-0 bg-gray-900/95 backdrop-blur-md border-b border-white/10">
+                            <div className="flex flex-col">
+                                <Toolbar
+                                    activeTool={activeTool}
+                                    onToolChange={(t) => { setActiveTool(t); setPendingImage(null); setPlacing(null); setSelectedId(null); }}
+                                    fontSize={fontSize}
+                                    color={color}
+                                    onFontSizeChange={setFontSize}
+                                    onColorChange={setColor}
+                                    bold={bold}
+                                    onBoldChange={setBold}
+                                    penStrokeWidth={penStrokeWidth}
+                                    onPenStrokeWidthChange={setPenStrokeWidth}
+                                    onImageFileSelected={(dataUrl, mimeType) => { setPendingImage({ dataUrl, mimeType }); setActiveTool("image"); }}
+                                    selectedAnnotation={selectedAnnotation}
+                                    onUpdateAnnotation={updateAnnotation}
+                                    onDeleteAnnotation={deleteAnnotation}
+                                    annotationCount={annotations.length}
+                                    onChangeFile={() => {
+                                        setPdfBytes(null); setAnnotations([]); setNumPages(0);
+                                        setSelectedId(null); setPendingImage(null);
+                                        setFileType(null); setDocContent(""); setImageData("");
+                                    }}
+                                    pendingImage={!!pendingImage}
+                                />
+
+                                {/* Zoom + undo/redo row */}
+                                <div className="flex flex-wrap items-center gap-1.5 bg-gray-800/40 border-t border-white/10 px-4 sm:px-6 py-1.5">
+                                    <button
+                                        onClick={undo}
+                                        disabled={historyRef.current.length === 0}
+                                        title="Undo (Ctrl+Z)"
+                                        className="flex items-center justify-center w-8 h-8 rounded-lg text-gray-300 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                                    >
+                                        <Undo2 size={15} />
+                                    </button>
+                                    <button
+                                        onClick={redo}
+                                        disabled={futureRef.current.length === 0}
+                                        title="Redo (Ctrl+Y)"
+                                        className="flex items-center justify-center w-8 h-8 rounded-lg text-gray-300 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                                    >
+                                        <Redo2 size={15} />
+                                    </button>
+                                    <div className="h-5 w-px bg-white/15 mx-1" />
+                                    <button
+                                        onClick={zoomOut}
+                                        title="Zoom out (−)"
+                                        className="flex items-center justify-center w-8 h-8 rounded-lg text-gray-300 hover:bg-white/10 transition-colors"
+                                    >
+                                        <ZoomOut size={15} />
+                                    </button>
+                                    <span className="text-xs text-gray-300 tabular-nums w-12 text-center font-mono">
+                                        {Math.round(zoom * 100)}%
+                                    </span>
+                                    <button
+                                        onClick={zoomIn}
+                                        title="Zoom in (+)"
+                                        className="flex items-center justify-center w-8 h-8 rounded-lg text-gray-300 hover:bg-white/10 transition-colors"
+                                    >
+                                        <ZoomIn size={15} />
+                                    </button>
+                                    <button
+                                        onClick={zoomFit}
+                                        title="Reset zoom (0)"
+                                        className="flex items-center justify-center w-8 h-8 rounded-lg text-gray-300 hover:bg-white/10 transition-colors"
+                                    >
+                                        <Maximize2 size={14} />
+                                    </button>
+                                    <span className="text-[10px] text-gray-400 hidden md:inline font-mono">
+                                        T · P · I · Esc · Del · Ctrl+Z
+                                    </span>
+                                    <button
+                                        onClick={() => setShowAnnotationsModal((v) => !v)}
+                                        className={`ml-auto flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors border ${showAnnotationsModal ? "bg-amber-500/20 border-amber-400/50 text-amber-300" : "bg-white/5 hover:bg-white/10 border-white/10 text-gray-300"}`}
+                                        title="Open annotations panel"
+                                    >
+                                        <List size={13} />
+                                        <span>Annotations</span>
+                                        {annotations.length > 0 && (
+                                            <span className="bg-amber-500 text-gray-900 rounded-full px-1.5 text-[10px] font-bold leading-4">
+                                                {annotations.length}
+                                            </span>
+                                        )}
+                                    </button>
+                                    {/* invisible reference to historyTick so React subscribes the bar to history updates */}
+                                    <span className="hidden">{historyTick}</span>
+                                </div>
+                            </div>
+                        </div>
                     )}
 
                     {loading && (
@@ -1029,16 +1299,160 @@ export default function PdfEditor() {
                         </div>
                     )}
 
-                    <div className="flex flex-col gap-6 items-center">
-                        {/* PDF: one container per page */}
-                        {fileType === "pdf" && Array.from({ length: numPages }, (_, i) => renderPageContainer(i))}
+                    {/* Body: viewer / annotations */}
+                    <div className="flex gap-4 items-start">
+                        {/* Viewer (also drop-target for replacing the file) */}
+                        <div
+                            onDragOver={(e) => { e.preventDefault(); setViewerDragOver(true); }}
+                            onDragLeave={(e) => {
+                                // Only clear on truly leaving the viewer
+                                const rt = e.relatedTarget as Node | null;
+                                if (!rt || !(e.currentTarget as Node).contains(rt)) setViewerDragOver(false);
+                            }}
+                            onDrop={handleViewerDrop}
+                            className={`relative flex-1 min-w-0 flex flex-col gap-6 items-center rounded-2xl py-2 transition-colors ${viewerDragOver ? "bg-amber-500/5 outline outline-2 outline-amber-400/60" : ""}`}
+                        >
+                            {viewerDragOver && (
+                                <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-40">
+                                    <div className="bg-amber-500/90 text-white px-6 py-3 rounded-2xl text-sm font-bold flex items-center gap-2 shadow-2xl">
+                                        <UploadCloud size={18} /> Drop to replace current file
+                                    </div>
+                                </div>
+                            )}
 
-                        {/* DOCX / TXT: single page container */}
-                        {(fileType === "docx" || fileType === "txt") && renderPageContainer(0)}
+                            {/* PDF: one container per page */}
+                            {fileType === "pdf" && Array.from({ length: numPages }, (_, i) => renderPageContainer(i))}
 
-                        {/* Image */}
-                        {fileType === "image" && renderPageContainer(0)}
+                            {/* DOCX / TXT: single page container */}
+                            {(fileType === "docx" || fileType === "txt") && renderPageContainer(0)}
+
+                            {/* Image */}
+                            {fileType === "image" && renderPageContainer(0)}
+                        </div>
+
                     </div>
+                </div>
+            )}
+
+            {/* Floating, draggable Annotations modal */}
+            {mode === "annotator" && hasFile && showAnnotationsModal && (
+                <div
+                    className="fixed z-50 w-72 max-w-[calc(100vw-1rem)] bg-gray-900/95 backdrop-blur-md border border-amber-400/30 shadow-2xl rounded-xl select-none"
+                    style={{ left: modalPos.x, top: modalPos.y }}
+                >
+                    {/* Drag handle / header */}
+                    <div
+                        onMouseDown={startModalDrag}
+                        className="flex items-center gap-2 px-3 py-2 border-b border-white/10 bg-white/5 rounded-t-xl cursor-move"
+                    >
+                        <GripHorizontal size={14} className="text-gray-500 shrink-0" />
+                        <p className="text-xs font-semibold text-white flex-1">
+                            Annotations
+                            <span className="ml-2 text-amber-400 font-mono">{annotations.length}</span>
+                        </p>
+                        <button
+                            onClick={() => setShowAnnotationsModal(false)}
+                            className="p-1 rounded text-gray-400 hover:bg-white/10 hover:text-white transition-colors"
+                            title="Close"
+                        >
+                            <XIcon size={13} />
+                        </button>
+                    </div>
+
+                    {/* Body */}
+                    <div className="p-3 max-h-80 overflow-y-auto">
+                        {annotations.length === 0 ? (
+                            <p className="text-xs text-gray-500">
+                                No annotations yet. Use the toolbar to add text, draw, or insert an image.
+                            </p>
+                        ) : (
+                            <ul className="flex flex-col gap-1">
+                                {[...annotations]
+                                    .sort((a, b) => a.page - b.page || a.id - b.id)
+                                    .map((ann) => {
+                                        const isSel = ann.id === selectedId;
+                                        const Icon = ann.type === "text" ? TypeIcon : ann.type === "image" ? ImageLucide : Pen;
+                                        return (
+                                            <li key={ann.id} className={`rounded-lg border transition-colors ${isSel ? "bg-amber-500/15 border-amber-400/40" : "border-transparent hover:bg-white/5"}`}>
+                                                <div className="flex items-center gap-2 px-2 py-1.5">
+                                                    <Icon size={12} className="shrink-0 text-amber-400" />
+                                                    {ann.type === "text" ? (
+                                                        <input
+                                                            value={(ann as TextAnnotation).text}
+                                                            onChange={(e) => updateAnnotation({ ...(ann as TextAnnotation), text: e.target.value })}
+                                                            onFocus={() => { setSelectedId(ann.id); scrollToAnnotation(ann); }}
+                                                            className="flex-1 min-w-0 bg-transparent text-xs text-gray-200 focus:outline-none focus:bg-white/10 rounded px-1"
+                                                            placeholder="(empty)"
+                                                        />
+                                                    ) : (
+                                                        <button
+                                                            onClick={() => { setSelectedId(ann.id); scrollToAnnotation(ann); }}
+                                                            className="flex-1 text-left text-xs text-gray-200 truncate"
+                                                        >
+                                                            {ann.type === "image" ? "Image" : "Stroke"}
+                                                        </button>
+                                                    )}
+                                                    <span className="text-[9px] text-gray-500 font-mono shrink-0">p{ann.page}</span>
+                                                    <button
+                                                        onClick={() => deleteAnnotation(ann.id)}
+                                                        title="Delete"
+                                                        className="shrink-0 p-1 rounded text-gray-500 hover:text-red-400 hover:bg-red-500/10"
+                                                    >
+                                                        <Trash2 size={11} />
+                                                    </button>
+                                                </div>
+                                            </li>
+                                        );
+                                    })}
+                            </ul>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {/* Mobile FAB: download + scroll-to-top (only when a file is loaded) */}
+            {hasFile && (
+                <div className="fixed bottom-4 right-4 z-50 flex flex-col items-end gap-2 lg:hidden">
+                    {showScrollTop && (
+                        <button
+                            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+                            className="w-11 h-11 rounded-full bg-gray-800/90 hover:bg-gray-700 text-white shadow-lg flex items-center justify-center backdrop-blur"
+                            aria-label="Scroll to top"
+                        >
+                            <ArrowUp size={18} />
+                        </button>
+                    )}
+                    <button
+                        onClick={() => {
+                            if (!user) {
+                                let pdfB64 = "";
+                                if (pdfBytes) {
+                                    const bytes = new Uint8Array(pdfBytes);
+                                    let binary = "";
+                                    for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+                                    pdfB64 = btoa(binary);
+                                }
+                                saveTempData("pdfeditor", {
+                                    annotations, mode, fileType, docContent, imageData,
+                                    fileName, originalFileName, pdfBase64: pdfB64,
+                                });
+                                sessionStorage.setItem("redirectAfterLogin", window.location.pathname);
+                                showAlert({
+                                    title: "Login Required",
+                                    message: "Please login to download your work.",
+                                    type: "warning",
+                                    confirmText: "Login",
+                                    linkToLogin: true,
+                                });
+                                return;
+                            }
+                            setDownloadModal(true);
+                        }}
+                        className="px-4 h-12 rounded-full bg-amber-500 hover:bg-amber-600 text-white shadow-xl flex items-center gap-2 font-semibold text-sm"
+                        aria-label="Download"
+                    >
+                        <Download size={16} /> Download
+                    </button>
                 </div>
             )}
         </div>
