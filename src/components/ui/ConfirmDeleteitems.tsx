@@ -15,12 +15,12 @@ export function ConfirmDeleteButton({ itemName, itemId, onDelete, children }: Co
     <AlertDialog.Root>
       <AlertDialog.Trigger asChild>
         {children ? (
-          <button className="flex items-center gap-1.5 px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-lg text-sm font-semibold transition-colors">
+          <button className="flex items-center gap-1.5 px-3 py-1.5 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-md text-sm font-semibold transition-colors">
             <Trash2 size={16} />
             {children}
           </button>
         ) : (
-          <button className="p-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors">
+          <button className="p-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-md transition-colors">
             <Trash2 size={16} />
           </button>
         )}
@@ -40,14 +40,14 @@ export function ConfirmDeleteButton({ itemName, itemId, onDelete, children }: Co
           </div>
           <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-3 mt-4">
             <AlertDialog.Cancel asChild>
-              <button className="px-5 py-2.5 rounded-xl font-medium text-gray-300 bg-white/5 hover:bg-white/10 border border-white/10 transition-colors">
+              <button className="px-5 py-2.5 rounded-md font-medium text-gray-300 bg-white/5 hover:bg-white/10 border border-white/10 transition-colors">
                 Cancel
               </button>
             </AlertDialog.Cancel>
             <AlertDialog.Action asChild>
               <button
                 onClick={() => onDelete(itemId)}
-                className="px-5 py-2.5 rounded-xl font-medium text-white bg-red-600 hover:bg-red-700 shadow-[0_0_15px_rgba(220,38,38,0.3)] transition-all"
+                className="px-5 py-2.5 rounded-md font-medium text-white bg-red-600 hover:bg-red-700 shadow-[0_0_15px_rgba(220,38,38,0.3)] transition-all"
               >
                 Yes, delete it
               </button>

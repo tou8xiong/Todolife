@@ -725,14 +725,14 @@ export default function NoteTextPage() {
                   }
                   setShowNewFolderInput(true);
                 }}
-                className="p-2 rounded-xl hover:bg-white/10 text-gray-300 hover:text-sky-400 transition-all"
+                className="p-2 rounded-md hover:bg-white/10 text-gray-300 hover:text-sky-400 transition-all"
                 title="New Folder"
               >
                 <MdCreateNewFolder size={18} />
               </button>
               <button
                 onClick={handleNew}
-                className="p-2 rounded-xl bg-sky-500 hover:bg-sky-600 text-white shadow-lg shadow-sky-500/25 hover:shadow-sky-500/40 transition-all"
+                className="p-2 rounded-md bg-sky-500 hover:bg-sky-600 text-white shadow-lg shadow-sky-500/25 hover:shadow-sky-500/40 transition-all"
                 title="New Document"
               >
                 <MdAdd size={18} />
@@ -755,13 +755,13 @@ export default function NoteTextPage() {
               <div className="flex gap-2">
                 <button
                   onClick={createFolder}
-                  className="flex-1 text-sm px-3 py-1.5 rounded-lg bg-sky-500 text-white hover:bg-sky-600 font-medium transition-colors"
+                  className="flex-1 text-sm px-3 py-1.5 rounded-md bg-sky-500 text-white hover:bg-sky-600 font-medium transition-colors"
                 >
                   Create
                 </button>
                 <button
                   onClick={() => { setShowNewFolderInput(false); setNewFolderName(""); }}
-                  className="flex-1 text-sm px-3 py-1.5 rounded-lg bg-white/5 text-gray-300 hover:bg-white/10 transition-colors"
+                  className="flex-1 text-sm px-3 py-1.5 rounded-md bg-white/5 text-gray-300 hover:bg-white/10 transition-colors"
                 >
                   Cancel
                 </button>
@@ -777,7 +777,7 @@ export default function NoteTextPage() {
               setActiveDoc(null);
               window.history.pushState(null, '', '/notetext');
             }}
-            className={`w-full text-left px-3 py-2.5 rounded-xl text-sm font-medium transition-all flex items-center gap-3 group
+            className={`w-full text-left px-3 py-2.5 rounded-md text-sm font-medium transition-all flex items-center gap-3 group
               ${selectedFolderId === null && !activeDoc
                 ? "bg-white/10 text-white border border-white/20"
                 : "text-gray-300 hover:bg-white/5 hover:text-white"
@@ -806,7 +806,7 @@ export default function NoteTextPage() {
                 <button
                   onClick={() => { setSelectedFolderId(folder.id); setActiveDoc(null); setContentLoading(true); setTimeout(() => setContentLoading(false), 300); toggleFolderExpand(folder.id); }}
                   onContextMenu={(e) => handleContextMenu(e, "folder", folder.id)}
-                  className={`w-full text-left px-3 py-2.5 rounded-xl text-sm font-medium transition-all flex items-center gap-2 group
+                  className={`w-full text-left px-3 py-2.5 rounded-md text-sm font-medium transition-all flex items-center gap-2 group
                     ${isSelected
                       ? "bg-white/15 text-white border border-white/20 shadow-sm"
                       : "text-gray-300 hover:bg-white/5 hover:text-white border border-transparent"
@@ -841,7 +841,7 @@ export default function NoteTextPage() {
                             key={doc.id}
                             onClick={() => handleOpen(doc)}
                             onContextMenu={(e) => handleContextMenu(e, "file", doc.id)}
-                            className={`w-full text-left px-3 py-2 rounded-xl text-sm transition-all flex items-center gap-2 group
+                            className={`w-full text-left px-3 py-2 rounded-md text-sm transition-all flex items-center gap-2 group
                               ${isActive
                                 ? "bg-white/10 shadow-sm border border-white/20 text-white"
                                 : "hover:bg-white/5 text-gray-300 hover:text-white"
@@ -907,14 +907,14 @@ export default function NoteTextPage() {
                 <span className="text-xs text-gray-400 hidden sm:block">Ctrl+S to save</span>
                 <button
                   onClick={() => { setMoveTargetFolder(activeDoc?.folder_id || null); setShowMoveModal(true); }}
-                  className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 text-white text-sm font-medium rounded-xl transition-all border border-white/10"
+                  className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 text-white text-sm font-medium rounded-md transition-all border border-white/10"
                 >
                   <MdFolder size={16} />
                   Move
                 </button>
                 <button
                   onClick={() => setShowExportModal(true)}
-                  className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 text-white text-sm font-medium rounded-xl transition-all border border-white/10"
+                  className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 text-white text-sm font-medium rounded-md transition-all border border-white/10"
                 >
                   <LuFileDown size={16} />
                   Export
@@ -922,7 +922,7 @@ export default function NoteTextPage() {
                 <button
                   onClick={handleSave}
                   disabled={saving}
-                  className="flex items-center gap-2 px-5 py-2.5 bg-sky-500 hover:bg-sky-600 disabled:opacity-50 text-white text-sm font-semibold rounded-xl shadow-lg shadow-sky-500/25 hover:shadow-sky-500/40 transition-all"
+                  className="flex items-center gap-2 px-5 py-2.5 bg-sky-500 hover:bg-sky-600 disabled:opacity-50 text-white text-sm font-semibold rounded-md shadow-lg shadow-sky-500/25 hover:shadow-sky-500/40 transition-all"
                 >
                   <MdSave size={16} />
                   {saving ? "Saving..." : "Save"}
@@ -958,7 +958,7 @@ export default function NoteTextPage() {
               <button
                 onClick={toggleBold}
                 title="Bold (Ctrl+B)"
-                className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all
+                className={`w-8 h-8 flex items-center justify-center rounded-md transition-all
                   ${activeFormats.has("bold")
                     ? "bg-sky-500/20 text-sky-400 ring-2 ring-sky-500/50"
                     : "hover:bg-white/5 text-gray-300 hover:text-white"}`}
@@ -969,7 +969,7 @@ export default function NoteTextPage() {
               <button
                 onClick={toggleItalic}
                 title="Italic (Ctrl+I)"
-                className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all
+                className={`w-8 h-8 flex items-center justify-center rounded-md transition-all
                   ${activeFormats.has("italic")
                     ? "bg-sky-500/20 text-sky-400 ring-2 ring-sky-500/50"
                     : "hover:bg-white/5 text-gray-300 hover:text-white"}`}
@@ -980,7 +980,7 @@ export default function NoteTextPage() {
               <button
                 onClick={toggleUnderline}
                 title="Underline (Ctrl+U)"
-                className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all
+                className={`w-8 h-8 flex items-center justify-center rounded-md transition-all
                   ${activeFormats.has("underline")
                     ? "bg-sky-500/20 text-sky-400 ring-2 ring-sky-500/50"
                     : "hover:bg-white/5 text-gray-300 hover:text-white"}`}
@@ -991,7 +991,7 @@ export default function NoteTextPage() {
               <button
                 onClick={toggleStrike}
                 title="Strikethrough"
-                className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all
+                className={`w-8 h-8 flex items-center justify-center rounded-md transition-all
                   ${activeFormats.has("strikeThrough")
                     ? "bg-sky-500/20 text-sky-400 ring-2 ring-sky-500/50"
                     : "hover:bg-white/5 text-gray-300 hover:text-white"}`}
@@ -1005,7 +1005,7 @@ export default function NoteTextPage() {
                 <button
                   onClick={() => colorInputRef.current?.click()}
                   title="Text Color"
-                  className="w-8 h-8 flex flex-col items-center justify-center rounded-lg hover:bg-white/5 transition-colors"
+                  className="w-8 h-8 flex flex-col items-center justify-center rounded-md hover:bg-white/5 transition-colors"
                 >
                   <span className="text-sm font-bold text-white leading-none">A</span>
                   <span className="w-5 h-1.5 rounded-sm mt-0.5 shadow-sm border border-white/10" style={{ backgroundColor: textColorPreview }} />
@@ -1023,7 +1023,7 @@ export default function NoteTextPage() {
                 <button
                   onClick={() => highlightInputRef.current?.click()}
                   title="Highlight Color"
-                  className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/5 transition-colors"
+                  className="w-8 h-8 flex items-center justify-center rounded-md hover:bg-white/5 transition-colors"
                 >
                   <span className="text-xs font-bold px-1 py-0.5 rounded shadow-sm" style={{ backgroundColor: highlightColorPreview, color: "#000" }}>
                     H
@@ -1043,7 +1043,7 @@ export default function NoteTextPage() {
               <button
                 onClick={() => setTextAlign("left")}
                 title="Align Left"
-                className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all
+                className={`w-8 h-8 flex items-center justify-center rounded-md transition-all
                   ${activeFormats.has("justifyLeft")
                     ? "bg-sky-500/20 text-sky-400 ring-2 ring-sky-500/50"
                     : "hover:bg-white/5 text-gray-300 hover:text-white"}`}
@@ -1054,7 +1054,7 @@ export default function NoteTextPage() {
               <button
                 onClick={() => setTextAlign("center")}
                 title="Center"
-                className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all
+                className={`w-8 h-8 flex items-center justify-center rounded-md transition-all
                   ${activeFormats.has("justifyCenter")
                     ? "bg-sky-500/20 text-sky-400 ring-2 ring-sky-500/50"
                     : "hover:bg-white/5 text-gray-300 hover:text-white"}`}
@@ -1065,7 +1065,7 @@ export default function NoteTextPage() {
               <button
                 onClick={() => setTextAlign("right")}
                 title="Align Right"
-                className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all
+                className={`w-8 h-8 flex items-center justify-center rounded-md transition-all
                   ${activeFormats.has("justifyRight")
                     ? "bg-sky-500/20 text-sky-400 ring-2 ring-sky-500/50"
                     : "hover:bg-white/5 text-gray-300 hover:text-white"}`}
@@ -1076,7 +1076,7 @@ export default function NoteTextPage() {
               <button
                 onClick={() => setTextAlign("justify")}
                 title="Justify"
-                className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all
+                className={`w-8 h-8 flex items-center justify-center rounded-md transition-all
                   ${activeFormats.has("justifyFull")
                     ? "bg-sky-500/20 text-sky-400 ring-2 ring-sky-500/50"
                     : "hover:bg-white/5 text-gray-300 hover:text-white"}`}
@@ -1089,7 +1089,7 @@ export default function NoteTextPage() {
               <button
                 onClick={toggleBulletList}
                 title="Bullet List"
-                className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all
+                className={`w-8 h-8 flex items-center justify-center rounded-md transition-all
                   ${isBulletList
                     ? "bg-sky-500/20 text-sky-400 ring-2 ring-sky-500/50"
                     : "hover:bg-white/5 text-gray-300 hover:text-white"}`}
@@ -1100,7 +1100,7 @@ export default function NoteTextPage() {
               <button
                 onClick={toggleOrderedList}
                 title="Numbered List"
-                className={`w-8 h-8 flex items-center justify-center rounded-lg transition-all
+                className={`w-8 h-8 flex items-center justify-center rounded-md transition-all
                   ${isOrderedList
                     ? "bg-sky-500/20 text-sky-400 ring-2 ring-sky-500/50"
                     : "hover:bg-white/5 text-gray-300 hover:text-white"}`}
@@ -1113,7 +1113,7 @@ export default function NoteTextPage() {
               <button
                 onClick={() => setShowImageModal(true)}
                 title="Insert Image"
-                className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/5 text-gray-300 hover:text-white transition-all"
+                className="w-8 h-8 flex items-center justify-center rounded-md hover:bg-white/5 text-gray-300 hover:text-white transition-all"
               >
                 <MdImage size={18} />
               </button>
@@ -1121,7 +1121,7 @@ export default function NoteTextPage() {
               <button
                 onClick={() => setShowLinkModal(true)}
                 title="Insert Link"
-                className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/5 text-gray-300 hover:text-white transition-all"
+                className="w-8 h-8 flex items-center justify-center rounded-md hover:bg-white/5 text-gray-300 hover:text-white transition-all"
               >
                 <MdLink size={18} />
               </button>
@@ -1131,7 +1131,7 @@ export default function NoteTextPage() {
               <button
                 onClick={addNewPage}
                 title="Add New Paper (Page Break)"
-                className="h-8 px-2 flex items-center justify-center gap-1.5 rounded-lg hover:bg-white/5 text-sky-400 hover:text-sky-300 transition-all"
+                className="h-8 px-2 flex items-center justify-center gap-1.5 rounded-md hover:bg-white/5 text-sky-400 hover:text-sky-300 transition-all"
               >
                 <MdNoteAdd size={18} />
                 <span className="text-[10px] font-bold uppercase tracking-wider">New Paper</span>
@@ -1197,7 +1197,7 @@ export default function NoteTextPage() {
                         <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                           <button
                             onClick={(e) => { e.stopPropagation(); handleDelete(doc.id); }}
-                            className="p-1.5 rounded-lg bg-white/90 dark:bg-gray-800/90 shadow-sm hover:bg-red-50 dark:hover:bg-red-900/30 text-gray-400 hover:text-red-500 transition-all"
+                            className="p-1.5 rounded-md bg-white/90 dark:bg-gray-800/90 shadow-sm hover:bg-red-50 dark:hover:bg-red-900/30 text-gray-400 hover:text-red-500 transition-all"
                           >
                             <MdDelete size={16} />
                           </button>
@@ -1215,7 +1215,7 @@ export default function NoteTextPage() {
                   <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">Create a new document to add it to this folder</p>
                   <button
                     onClick={handleNew}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-sky-500 hover:bg-sky-600 text-white text-sm font-semibold rounded-xl shadow-lg shadow-sky-500/25 hover:shadow-sky-500/40 transition-all"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-sky-500 hover:bg-sky-600 text-white text-sm font-semibold rounded-md shadow-lg shadow-sky-500/25 hover:shadow-sky-500/40 transition-all"
                   >
                     <MdAdd size={18} /> New Document
                   </button>
@@ -1238,7 +1238,7 @@ export default function NoteTextPage() {
                 </div>
                 <button
                   onClick={handleNew}
-                  className="flex items-center gap-2 px-4 py-2.5 bg-sky-500 hover:bg-sky-600 text-white text-sm font-semibold rounded-xl shadow-lg shadow-sky-500/25 hover:shadow-sky-500/40 transition-all"
+                  className="flex items-center gap-2 px-4 py-2.5 bg-sky-500 hover:bg-sky-600 text-white text-sm font-semibold rounded-md shadow-lg shadow-sky-500/25 hover:shadow-sky-500/40 transition-all"
                 >
                   <MdAdd size={18} /> New Document
                 </button>
@@ -1253,7 +1253,7 @@ export default function NoteTextPage() {
                         key={doc.id}
                         onClick={() => handleOpen(doc)}
                         onContextMenu={(e) => handleContextMenu(e, "file", doc.id)}
-                        className={`group relative p-5 rounded-2xl bg-white/5 backdrop-blur-md border ${color.border} hover:shadow-xl hover:scale-[1.02] transition-all duration-200 text-left cursor-pointer`}
+                        className={`group relative p-5 rounded-md bg-white/5 backdrop-blur-md border ${color.border} hover:shadow-xl hover:scale-[1.02] transition-all duration-200 text-left cursor-pointer`}
                       >
                         <div className="flex items-start gap-3">
                           <div className={`p-2.5 rounded-xl bg-white/80 dark:bg-gray-800/80 shadow-sm`}>
@@ -1279,7 +1279,7 @@ export default function NoteTextPage() {
                   <p className="text-sm mb-8 text-center text-gray-300 max-w-md mx-auto">Create your first document to get started</p>
                   <button
                     onClick={handleNew}
-                    className="flex items-center gap-2 px-6 py-3 bg-sky-500 hover:bg-sky-600 text-white text-sm font-semibold rounded-xl shadow-lg shadow-sky-500/25 hover:shadow-sky-500/40 transition-all"
+                    className="flex items-center gap-2 px-6 py-3 bg-sky-500 hover:bg-sky-600 text-white text-sm font-semibold rounded-md shadow-lg shadow-sky-500/25 hover:shadow-sky-500/40 transition-all"
                   >
                     <MdAdd size={20} /> New Document
                   </button>
@@ -1461,14 +1461,14 @@ export default function NoteTextPage() {
             <div className="flex gap-3 mt-2">
               <button
                 onClick={() => { setShowImageModal(false); setImageUrl(""); }}
-                className="flex-1 px-4 py-2.5 rounded-xl bg-white/5 text-gray-300 hover:bg-white/10 font-medium transition-colors border border-white/10"
+                className="flex-1 px-4 py-2.5 rounded-md bg-white/5 text-gray-300 hover:bg-white/10 font-medium transition-colors border border-white/10"
               >
                 Cancel
               </button>
               <button
                 onClick={() => { insertImage(imageUrl); setShowImageModal(false); setImageUrl(""); }}
                 disabled={!imageUrl.trim()}
-                className="flex-1 px-4 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 disabled:opacity-50 text-white font-semibold shadow-lg shadow-sky-500/25 transition-colors"
+                className="flex-1 px-4 py-2.5 rounded-md bg-sky-500 hover:bg-sky-600 disabled:opacity-50 text-white font-semibold shadow-lg shadow-sky-500/25 transition-colors"
               >
                 Insert URL
               </button>
@@ -1492,7 +1492,7 @@ export default function NoteTextPage() {
             <div className="flex gap-3 mt-2">
               <button
                 onClick={() => { setShowLinkModal(false); setLinkUrl(""); }}
-                className="flex-1 px-4 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 font-medium transition-colors"
+                className="flex-1 px-4 py-2.5 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 font-medium transition-colors"
               >
                 Cancel
               </button>
@@ -1505,7 +1505,7 @@ export default function NoteTextPage() {
                   }
                 }}
                 disabled={!linkUrl.trim()}
-                className="flex-1 px-4 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 disabled:opacity-50 text-white font-semibold shadow-lg shadow-sky-500/25 transition-colors"
+                className="flex-1 px-4 py-2.5 rounded-md bg-sky-500 hover:bg-sky-600 disabled:opacity-50 text-white font-semibold shadow-lg shadow-sky-500/25 transition-colors"
               >
                 Insert Link
               </button>
@@ -1537,7 +1537,7 @@ export default function NoteTextPage() {
                 <div className="flex flex-col gap-3 mt-2">
                   <button
                     onClick={exportToPDF}
-                    className="flex items-center gap-3 px-4 py-4 rounded-xl bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all border border-gray-200 dark:border-gray-700"
+                    className="flex items-center gap-3 px-4 py-4 rounded-md bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all border border-gray-200 dark:border-gray-700"
                   >
                     <div className="w-10 h-10 rounded-lg bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
                       <span className="text-red-500 text-lg font-bold">PDF</span>
@@ -1549,7 +1549,7 @@ export default function NoteTextPage() {
                   </button>
                   <button
                     onClick={exportToText}
-                    className="flex items-center gap-3 px-4 py-4 rounded-xl bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all border border-gray-200 dark:border-gray-700"
+                    className="flex items-center gap-3 px-4 py-4 rounded-md bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all border border-gray-200 dark:border-gray-700"
                   >
                     <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
                       <span className="text-blue-500 text-lg font-bold">TXT</span>
@@ -1563,7 +1563,7 @@ export default function NoteTextPage() {
                 <div className="flex gap-3 mt-2">
                   <button
                     onClick={() => setShowExportModal(false)}
-                    className="flex-1 px-4 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 font-medium transition-colors"
+                    className="flex-1 px-4 py-2.5 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 font-medium transition-colors"
                   >
                     Cancel
                   </button>
@@ -1583,7 +1583,7 @@ export default function NoteTextPage() {
             <div className="flex flex-col gap-2 mt-2 max-h-60 overflow-y-auto">
               <button
                 onClick={() => setMoveTargetFolder(null)}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all border ${moveTargetFolder === null
+                className={`flex items-center gap-3 px-4 py-3 rounded-md transition-all border ${moveTargetFolder === null
                   ? "bg-sky-500/20 border-sky-500 text-sky-400"
                   : "bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                   }`}
@@ -1599,7 +1599,7 @@ export default function NoteTextPage() {
                   <button
                     key={folder.id}
                     onClick={() => setMoveTargetFolder(folder.id)}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all border ${isSelected
+                    className={`flex items-center gap-3 px-4 py-3 rounded-md transition-all border ${isSelected
                       ? "bg-sky-500/20 border-sky-500"
                       : "bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700"
                       }`}
@@ -1622,7 +1622,7 @@ export default function NoteTextPage() {
             <div className="flex gap-3 mt-2">
               <button
                 onClick={() => setShowMoveModal(false)}
-                className="flex-1 px-4 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 font-medium transition-colors"
+                className="flex-1 px-4 py-2.5 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 font-medium transition-colors"
               >
                 Cancel
               </button>
@@ -1649,7 +1649,7 @@ export default function NoteTextPage() {
                     toast.error("Failed to move document");
                   }
                 }}
-                className="flex-1 px-4 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 text-white font-medium transition-colors"
+                className="flex-1 px-4 py-2.5 rounded-md bg-sky-500 hover:bg-sky-600 text-white font-medium transition-colors"
               >
                 Move
               </button>
@@ -1717,13 +1717,13 @@ export default function NoteTextPage() {
             <div className="flex gap-3">
               <button
                 onClick={() => { setShowRenameModal(false); setRenameValue(""); setRenameTarget(null); }}
-                className="flex-1 px-4 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 font-medium transition-colors"
+                className="flex-1 px-4 py-2.5 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 font-medium transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={() => { renameTarget?.type === "folder" ? renameFolder() : renameDoc(); }}
-                className="flex-1 px-4 py-2.5 rounded-xl bg-sky-500 text-white font-medium hover:bg-sky-600 transition-colors"
+                className="flex-1 px-4 py-2.5 rounded-md bg-sky-500 text-white font-medium hover:bg-sky-600 transition-colors"
               >
                 Rename
               </button>

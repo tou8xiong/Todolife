@@ -64,15 +64,15 @@ export default function Toolbar({
                 <div className="flex gap-1 bg-gray-100 dark:bg-gray-700 rounded-xl p-1">
                     <button
                         onClick={() => onToolChange("text")}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${activeTool === "text" ? "bg-amber-400 text-white shadow" : "text-gray-500 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"}`}
+                        className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-colors ${activeTool === "text" ? "bg-amber-400 text-white shadow" : "text-gray-500 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"}`}
                     ><Type size={13} className="inline-block mr-1 -mt-0.5" />Text</button>
                     <button
                         onClick={() => onToolChange("pen")}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${activeTool === "pen" ? "bg-amber-400 text-white shadow" : "text-gray-500 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"}`}
+                        className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-colors ${activeTool === "pen" ? "bg-amber-400 text-white shadow" : "text-gray-500 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"}`}
                     ><Pen size={13} className="inline-block mr-1 -mt-0.5" />Pen</button>
                     <button
                         onClick={() => { onToolChange("image"); fileInputRef.current?.click(); }}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${activeTool === "image" ? "bg-amber-400 text-white shadow" : "text-gray-500 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"}`}
+                        className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-colors ${activeTool === "image" ? "bg-amber-400 text-white shadow" : "text-gray-500 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"}`}
                     ><Image size={13} className="inline-block mr-1 -mt-0.5" />Image</button>
                 </div>
                 <input ref={fileInputRef} type="file" accept="image/png,image/jpeg" className="hidden" onChange={handleImageFile} />
@@ -97,7 +97,7 @@ export default function Toolbar({
                         </select>
                         <button
                             onClick={() => onBoldChange(!bold)}
-                            className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-colors border ${bold ? "bg-amber-400 text-white border-amber-400" : "border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600"}`}
+                            className={`px-2.5 py-1 rounded-md text-xs font-bold transition-colors border ${bold ? "bg-amber-400 text-white border-amber-400" : "border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600"}`}
                         >B</button>
                         <span className="text-xs text-gray-400">Color</span>
                         <input
@@ -118,7 +118,7 @@ export default function Toolbar({
                                 <button
                                     key={s}
                                     onClick={() => onPenStrokeWidthChange(s)}
-                                    className={`w-7 h-7 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center ${penStrokeWidth === s ? "bg-amber-400 text-white" : "bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-500"}`}
+                                    className={`w-7 h-7 rounded-md text-xs font-semibold transition-colors flex items-center justify-center ${penStrokeWidth === s ? "bg-amber-400 text-white" : "bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-500"}`}
                                 >{s}</button>
                             ))}
                         </div>
@@ -141,7 +141,7 @@ export default function Toolbar({
                     )}
                     <button
                         onClick={onChangeFile}
-                        className="text-xs px-3 py-1.5 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-300 rounded-lg transition-colors"
+                        className="text-xs px-3 py-1.5 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-300 rounded-md transition-colors"
                     >Change File</button>
                 </div>
             </div>
@@ -159,7 +159,7 @@ export default function Toolbar({
                     </select>
                     <button
                         onClick={() => onBoldChange(!bold)}
-                        className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-colors border ${bold ? "bg-amber-400 text-white border-amber-400" : "border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-300"}`}
+                        className={`px-2.5 py-1 rounded-md text-xs font-bold transition-colors border ${bold ? "bg-amber-400 text-white border-amber-400" : "border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-300"}`}
                     >B</button>
                     <span className="text-xs text-gray-400">Color</span>
                     <input
@@ -180,7 +180,7 @@ export default function Toolbar({
                             <button
                                 key={s}
                                 onClick={() => onPenStrokeWidthChange(s)}
-                                className={`w-7 h-7 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center ${penStrokeWidth === s ? "bg-amber-400 text-white" : "bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-300"}`}
+                                className={`w-7 h-7 rounded-md text-xs font-semibold transition-colors flex items-center justify-center ${penStrokeWidth === s ? "bg-amber-400 text-white" : "bg-gray-100 dark:bg-gray-600 text-gray-600 dark:text-gray-300"}`}
                             >{s}</button>
                         ))}
                     </div>
@@ -213,7 +213,7 @@ export default function Toolbar({
                     </select>
                     <button
                         onClick={() => updateText("bold", selectedAnnotation.bold ? false : true)}
-                        className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-colors border ${selectedAnnotation.bold ? "bg-amber-400 text-white border-amber-400" : "border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600"}`}
+                        className={`px-2.5 py-1 rounded-md text-xs font-bold transition-colors border ${selectedAnnotation.bold ? "bg-amber-400 text-white border-amber-400" : "border-gray-200 dark:border-gray-600 text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600"}`}
                     >B</button>
                     <input
                         type="color"
@@ -223,7 +223,7 @@ export default function Toolbar({
                     />
                     <button
                         onClick={() => onDeleteAnnotation(selectedAnnotation.id)}
-                        className="text-xs px-2 py-1 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg transition-colors"
+                        className="text-xs px-2 py-1 bg-red-100 hover:bg-red-200 text-red-600 rounded-md transition-colors"
                     >Delete</button>
                 </div>
             )}
@@ -235,7 +235,7 @@ export default function Toolbar({
                     <span className="text-xs text-gray-400 hidden sm:inline">— drag to move, corner handle to resize</span>
                     <button
                         onClick={() => onDeleteAnnotation(selectedAnnotation.id)}
-                        className="text-xs px-2 py-1 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg transition-colors"
+                        className="text-xs px-2 py-1 bg-red-100 hover:bg-red-200 text-red-600 rounded-md transition-colors"
                     >Delete</button>
                 </div>
             )}
@@ -246,7 +246,7 @@ export default function Toolbar({
                     <span className="text-xs text-gray-400 font-semibold">Stroke selected</span>
                     <button
                         onClick={() => onDeleteAnnotation(selectedAnnotation.id)}
-                        className="text-xs px-2 py-1 bg-red-100 hover:bg-red-200 text-red-600 rounded-lg transition-colors"
+                        className="text-xs px-2 py-1 bg-red-100 hover:bg-red-200 text-red-600 rounded-md transition-colors"
                     >Delete</button>
                 </div>
             )}

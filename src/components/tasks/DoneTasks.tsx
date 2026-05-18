@@ -194,7 +194,7 @@ export default function DoneTasks() {
               <button
                 key={type}
                 onClick={() => setSelectedType(type)}
-                className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-1 rounded-lg text-xs font-semibold transition-all duration-150 min-w-0
+                className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-1 rounded-md text-xs font-semibold transition-all duration-150 min-w-0
                   ${isActive ? "bg-white/20 text-white shadow-sm" : "text-gray-400 active:bg-white/10"}`}
               >
                 <Icon size={13} className={`shrink-0 ${isActive ? color : ""}`} />

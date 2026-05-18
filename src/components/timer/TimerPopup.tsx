@@ -112,19 +112,19 @@ export default function TimerPopup() {
                     <div className="flex gap-2 justify-center font-serif">
                         <button
                             onClick={start}
-                            className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg disabled:opacity-50 transition-colors"
+                            className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md disabled:opacity-50 transition-colors"
                             disabled={running}
                         >
                             Start
                         </button>
                         <button
                             onClick={stop}
-                            className="px-4 py-2 bg-yellow-400 hover:bg-yellow-500 dark:text-white text-black rounded-lg disabled:opacity-50 dark:bg-yellow-400 transition-colors"
+                            className="px-4 py-2 bg-yellow-400 hover:bg-yellow-500 dark:text-white text-black rounded-md disabled:opacity-50 dark:bg-yellow-400 transition-colors"
                             disabled={!running}
                         >
                             Pause
                         </button>
-                        <button onClick={reset} className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors">
+                        <button onClick={reset} className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md transition-colors">
                             Reset
                         </button>
                     </div>

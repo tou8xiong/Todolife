@@ -124,21 +124,21 @@ export default function TimerSettings() {
               {!running ? (
                 <button
                   onClick={start}
-                  className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-2xl font-bold transition-all hover:shadow-lg hover:shadow-green-500/30 active:scale-95"
+                  className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-md font-bold transition-all hover:shadow-lg hover:shadow-green-500/30 active:scale-95"
                 >
                   <Play size={20} fill="currentColor" /> Start
                 </button>
               ) : (
                 <button
                   onClick={stop}
-                  className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-2xl font-bold transition-all hover:shadow-lg hover:shadow-amber-500/30 active:scale-95"
+                  className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white rounded-md font-bold transition-all hover:shadow-lg hover:shadow-amber-500/30 active:scale-95"
                 >
                   <Pause size={20} fill="currentColor" /> Pause
                 </button>
               )}
               <button
                 onClick={reset}
-                className="flex items-center gap-2 px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-2xl font-bold transition-all active:scale-95 border border-gray-600"
+                className="flex items-center gap-2 px-6 py-3 bg-gray-700 hover:bg-gray-600 text-white rounded-md font-bold transition-all active:scale-95 border border-gray-600"
               >
                 <RotateCcw size={20} /> Reset
               </button>
@@ -147,7 +147,7 @@ export default function TimerSettings() {
             {centis > 100 && (
               <button
                 onClick={handleFinish}
-                className="mt-4 flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white rounded-2xl font-bold transition-all hover:shadow-lg hover:shadow-sky-500/30 active:scale-95"
+                className="mt-4 flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white rounded-md font-bold transition-all hover:shadow-lg hover:shadow-sky-500/30 active:scale-95"
               >
                 <CheckCircle2 size={20} /> Finish Session
               </button>
@@ -201,7 +201,7 @@ export default function TimerSettings() {
                       setIframeSrc(`https://www.youtube.com/embed/${video.id}?autoplay=0`);
                       setActiveLabel(video.name);
                     }}
-                    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl transition-all font-medium text-sm
+                    className={`flex items-center gap-2 px-4 py-2.5 rounded-md transition-all font-medium text-sm
                       ${isActive 
                         ? "bg-amber-500 text-white shadow-lg shadow-amber-500/30" 
                         : `bg-gray-700/60 ${video.color} ${video.hover} border border-gray-600 hover:border-gray-500`
@@ -223,7 +223,7 @@ export default function TimerSettings() {
                     setIframeSrc(`https://www.youtube.com/embed/mPZkdNFkNps?autoplay=0`);
                     setActiveLabel("Rainy Tokyo");
                   }}
-                  className="p-2 rounded-lg bg-blue-900/30 hover:bg-blue-900/50 text-blue-400 border border-blue-800 transition-all"
+                  className="p-2 rounded-md bg-blue-900/30 hover:bg-blue-900/50 text-blue-400 border border-blue-800 transition-all"
                   title="Rainy Ambience"
                 >
                   <CloudRain size={18} />
@@ -233,7 +233,7 @@ export default function TimerSettings() {
                     setIframeSrc(`https://www.youtube.com/embed/jfKfPfyJRdk?autoplay=0`);
                     setActiveLabel("Lofi Girl");
                   }}
-                  className="p-2 rounded-lg bg-green-900/30 hover:bg-green-900/50 text-green-400 border border-green-800 transition-all"
+                  className="p-2 rounded-md bg-green-900/30 hover:bg-green-900/50 text-green-400 border border-green-800 transition-all"
                   title="Nature Sounds"
                 >
                   <TreePine size={18} />

@@ -400,7 +400,7 @@ export default function AgentChat() {
         <div className="p-3 border-b border-gray-700/60">
           <button
             onClick={startNewChat}
-            className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl border border-gray-700 hover:bg-gray-800 text-gray-300 hover:text-white text-sm transition-all"
+            className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-md border border-gray-700 hover:bg-gray-800 text-gray-300 hover:text-white text-sm transition-all"
           >
             <SquarePen size={15} className="shrink-0 text-sky-400" />
             <span className="font-medium">New Chat</span>
@@ -424,7 +424,7 @@ export default function AgentChat() {
                     <li key={conv.id} className="group relative">
                       <button
                         onClick={() => selectConv(conv)}
-                        className={`w-full text-left px-3 py-2 rounded-lg text-xs transition-all pr-8 leading-snug
+                        className={`w-full text-left px-3 py-2 rounded-md text-xs transition-all pr-8 leading-snug
                           ${activeId === conv.id
                             ? "bg-gray-700 text-white"
                             : "text-gray-300 hover:bg-gray-800 hover:text-gray-200"
@@ -464,7 +464,7 @@ export default function AgentChat() {
           {/* Mobile sidebar toggle */}
           <button
             onClick={() => setSidebarOpen((v) => !v)}
-            className="md:hidden p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-300"
+            className="md:hidden p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-300"
           >
             <Menu size={20} />
           </button>
@@ -588,7 +588,7 @@ export default function AgentChat() {
             <div className="relative shrink-0" ref={dropdownRef}>
               <button
                 onClick={() => setDropdownOpen((v) => !v)}
-                className="flex items-center gap-1.5 px-3 py-2.5 rounded-xl border border-sky-200 dark:border-gray-600 bg-sky-50 dark:bg-gray-700 text-sky-600 dark:text-sky-400 hover:bg-sky-100 dark:hover:bg-gray-600 transition-all text-xs font-semibold"
+                className="flex items-center gap-1.5 px-3 py-2.5 rounded-md border border-sky-200 dark:border-gray-600 bg-sky-50 dark:bg-gray-700 text-sky-600 dark:text-sky-400 hover:bg-sky-100 dark:hover:bg-gray-600 transition-all text-xs font-semibold"
               >
                 <currentMode.icon size={13} className="shrink-0" />
                 <span className="hidden sm:inline">{currentMode.label}</span>
@@ -619,7 +619,7 @@ export default function AgentChat() {
             <button
               onClick={send}
               disabled={!input.trim() || loading}
-              className="shrink-0 p-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 active:scale-95 text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow"
+              className="shrink-0 p-2.5 rounded-md bg-sky-500 hover:bg-sky-600 active:scale-95 text-white disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow"
             >
               <Send size={16} />
             </button>

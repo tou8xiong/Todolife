@@ -186,14 +186,14 @@ export default function Profile() {
             <div className="w-full space-y-3">
               <button
                 onClick={() => setChangeName(!changename)}
-                className="w-full py-3 px-4 rounded-xl font-medium flex items-center justify-center gap-2 transition-all bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/20 text-white"
+                className="w-full py-3 px-4 rounded-md font-medium flex items-center justify-center gap-2 transition-all bg-white/5 hover:bg-white/10 border border-white/5 hover:border-white/20 text-white"
               >
                 {changename ? <><MdClose /> {t.profile.cancelEdit}</> : <><MdEdit /> {t.profile.editProfile}</>}
               </button>
 
               <button
                 onClick={handleSignOut}
-                className="w-full py-3 px-4 rounded-xl font-medium flex items-center justify-center gap-2 transition-all bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 hover:border-red-500/40"
+                className="w-full py-3 px-4 rounded-md font-medium flex items-center justify-center gap-2 transition-all bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 hover:border-red-500/40"
               >
                 <MdLogout /> {t.signOut}
               </button>
@@ -242,7 +242,7 @@ export default function Profile() {
                     {profileImage && (
                       <button
                         onClick={() => setProfileImage(null)}
-                        className="px-4 py-3 text-sm text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-xl transition-colors"
+                        className="px-4 py-3 text-sm text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 rounded-md transition-colors"
                       >
                         {t.profile.clearSelection}
                       </button>
@@ -252,7 +252,7 @@ export default function Profile() {
                       <button
                         onClick={removeImage}
                         disabled={saving}
-                        className="px-4 py-3 text-sm text-red-400 hover:text-red-300 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 rounded-xl transition-colors"
+                        className="px-4 py-3 text-sm text-red-400 hover:text-red-300 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 rounded-md transition-colors"
                       >
                         {t.profile.removeCurrentImage}
                       </button>
@@ -275,14 +275,14 @@ export default function Profile() {
                       setChangeName(false);
                       setProfileImage(null);
                     }}
-                    className="flex-1 py-3.5 rounded-xl border border-white/10 text-gray-300 hover:bg-white/5 font-medium transition-all"
+                    className="flex-1 py-3.5 rounded-md border border-white/10 text-gray-300 hover:bg-white/5 font-medium transition-all"
                   >
                     {t.cancel}
                   </button>
                   <button
                     onClick={handleUpdate}
                     disabled={saving}
-                    className="flex-1 py-3.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-white font-semibold transition-all shadow-[0_0_20px_rgba(14,165,233,0.3)] hover:shadow-[0_0_30px_rgba(14,165,233,0.5)] flex items-center justify-center gap-2 disabled:opacity-50"
+                    className="flex-1 py-3.5 rounded-md bg-sky-500 hover:bg-sky-400 text-white font-semibold transition-all shadow-[0_0_20px_rgba(14,165,233,0.3)] hover:shadow-[0_0_30px_rgba(14,165,233,0.5)] flex items-center justify-center gap-2 disabled:opacity-50"
                   >
                     {saving ? (
                       <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />

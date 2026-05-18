@@ -20,7 +20,7 @@ export default function AlertDialog({ open, title, message, onClose }: AlertDial
                 <p className="text-gray-700 text-sm leading-relaxed">{message}</p>
                 <button
                     onClick={onClose}
-                    className="self-end px-5 py-2 bg-red-500 hover:bg-red-600 text-white text-sm font-semibold rounded-lg transition-colors"
+                    className="self-end px-5 py-2 bg-red-500 hover:bg-red-600 text-white text-sm font-semibold rounded-md transition-colors"
                 >
                     OK
                 </button>

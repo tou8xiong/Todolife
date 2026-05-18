@@ -164,7 +164,7 @@ export default function NooteBook() {
                         />
                         <button
                             onClick={handleaddIdea}
-                            className="px-5 py-3 bg-sky-500 hover:bg-sky-600 active:scale-95 text-white text-sm font-semibold rounded-xl shadow transition-all"
+                            className="px-5 py-3 bg-sky-500 hover:bg-sky-600 active:scale-95 text-white text-sm font-semibold rounded-md shadow transition-all"
                         >
                             Keep
                         </button>
@@ -211,13 +211,13 @@ export default function NooteBook() {
                                         />
                                         <button
                                             onClick={() => handleEditSave(idea.id)}
-                                            className="p-1.5 rounded-lg bg-sky-50 dark:bg-sky-900/30 hover:bg-sky-100 dark:hover:bg-sky-900/50 shrink-0"
+                                            className="p-1.5 rounded-md bg-sky-50 dark:bg-sky-900/30 hover:bg-sky-100 dark:hover:bg-sky-900/50 shrink-0"
                                         >
                                             <MdCheck size={18} className="text-sky-500" />
                                         </button>
                                         <button
                                             onClick={handleEditCancel}
-                                            className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 shrink-0"
+                                            className="p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 shrink-0"
                                         >
                                             <MdClose size={18} className="text-gray-500 dark:text-gray-300" />
                                         </button>
@@ -229,13 +229,13 @@ export default function NooteBook() {
                                         </p>
                                         <button
                                             onClick={() => handleEditStart(idea)}
-                                            className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-lg hover:bg-sky-50 dark:hover:bg-sky-900/30 shrink-0"
+                                            className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-md hover:bg-sky-50 dark:hover:bg-sky-900/30 shrink-0"
                                         >
                                             <MdEdit size={20} className="text-sky-400" />
                                         </button>
                                         <button
                                             onClick={() => handleDelete(idea.id)}
-                                            className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 shrink-0"
+                                            className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-md hover:bg-red-50 dark:hover:bg-red-900/30 shrink-0"
                                         >
                                             <MdDelete size={20} className="text-red-400" />
                                         </button>

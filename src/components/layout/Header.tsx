@@ -118,7 +118,7 @@ export default function Header() {
               <div className="relative">
                 <button
                   onClick={() => setShowProfileMenu(!showProfileMenu)}
-                  className="flex items-center gap-2 px-2 py-1 rounded-xl hover:bg-blue-400/40 transition-colors cursor-pointer"
+                  className="flex items-center gap-2 px-2 py-1 rounded-md hover:bg-blue-400/40 transition-colors cursor-pointer"
                 >
                   <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-white shadow-sm flex items-center justify-center bg-amber-100 shrink-0">
                     {profileLoading ? (
@@ -160,7 +160,7 @@ export default function Header() {
                         </li>
                         <li>
                           <button onClick={handleLogout}
-                            className="w-full text-left px-3 py-2 rounded-lg hover:bg-red-50 text-sm text-red-600 transition-colors">
+                            className="w-full text-left px-3 py-2 rounded-md hover:bg-red-50 text-sm text-red-600 transition-colors">
                             {t.nav.logout}
                           </button>
                         </li>
@@ -175,7 +175,7 @@ export default function Header() {
             <button
               onClick={() => setDrawerOpen(!drawerOpen)}
               aria-label="Toggle menu"
-              className="md:hidden p-2 rounded-xl hover:bg-blue-400/40 transition-colors text-gray-800"
+              className="md:hidden p-2 rounded-md hover:bg-blue-400/40 transition-colors text-gray-800"
             >
               {drawerOpen ? <X size={22} /> : <Menu size={22} />}
             </button>
@@ -201,7 +201,7 @@ export default function Header() {
           <span className="text-white font-bold text-base font-serif tracking-wide">{t.nav.menu}</span>
           <button
             onClick={() => setDrawerOpen(false)}
-            className="text-gray-400 hover:text-white p-1 rounded-lg hover:bg-gray-700 transition-colors"
+            className="text-gray-400 hover:text-white p-1 rounded-md hover:bg-gray-700 transition-colors"
           >
             <X size={20} />
           </button>

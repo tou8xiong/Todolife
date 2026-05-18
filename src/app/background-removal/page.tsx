@@ -276,7 +276,7 @@ export default function BackgroundRemovalPage() {
                                 <div className="rounded-2xl bg-white/[0.04] border border-white/10 overflow-hidden">
                                     <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
                                         <span className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Original</span>
-                                        <button onClick={handleReset} className="rounded-lg p-1.5 text-gray-500 hover:bg-white/10 hover:text-white transition-colors">
+                                        <button onClick={handleReset} className="rounded-md p-1.5 text-gray-500 hover:bg-white/10 hover:text-white transition-colors">
                                             <X size={15} />
                                         </button>
                                     </div>
@@ -293,7 +293,7 @@ export default function BackgroundRemovalPage() {
                                     <div ref={resultRef} className="rounded-2xl bg-white/[0.04] border border-violet-500/30 overflow-hidden">
                                         <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
                                             <span className="text-xs font-semibold text-violet-400 uppercase tracking-widest">Result</span>
-                                            <button onClick={handleDownload} className="flex items-center gap-1.5 rounded-lg bg-violet-600 hover:bg-violet-500 px-3 py-1.5 text-xs font-semibold text-white transition-colors">
+                                            <button onClick={handleDownload} className="flex items-center gap-1.5 rounded-md bg-violet-600 hover:bg-violet-500 px-3 py-1.5 text-xs font-semibold text-white transition-colors">
                                                 <Download size={13} /> {t.backgroundRemoval?.buttons?.downloadPng || "Download PNG"}
                                             </button>
                                         </div>
@@ -327,7 +327,7 @@ export default function BackgroundRemovalPage() {
                             {/* Actions — full width on mobile */}
                             <div className="flex flex-col sm:flex-row gap-3">
                                 <button onClick={handleRemove} disabled={loading || !!resultPreview}
-                                    className="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 px-6 py-3.5 sm:py-3 text-sm font-semibold text-white shadow-lg shadow-violet-900/30 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
+                                    className="flex items-center justify-center gap-2 rounded-md bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 px-6 py-3.5 sm:py-3 text-sm font-semibold text-white shadow-lg shadow-violet-900/30 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
                                     <Sparkles size={16} />
                                     {loading ? (t.backgroundRemoval?.buttons?.processing || "Processing…") : (t.backgroundRemoval?.buttons?.removeBackground || "Remove Background")}
                                 </button>
@@ -336,7 +336,7 @@ export default function BackgroundRemovalPage() {
                                     <ImageIcon size={16} /> {t.backgroundRemoval?.buttons?.newImage || "New Image"}
                                 </button>
                                 <button onClick={handleReset} disabled={loading}
-                                    className="flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 hover:bg-red-500/10 hover:border-red-500/30 hover:text-red-400 px-4 py-3.5 sm:py-3 text-sm font-semibold text-gray-500 transition-all active:scale-95 disabled:opacity-50 sm:w-auto">
+                                    className="flex items-center justify-center gap-2 rounded-md border border-white/10 bg-white/5 hover:bg-red-500/10 hover:border-red-500/30 hover:text-red-400 px-4 py-3.5 sm:py-3 text-sm font-semibold text-gray-500 transition-all active:scale-95 disabled:opacity-50 sm:w-auto">
                                     <Trash2 size={16} /> <span className="sm:hidden">Clear</span>
                                 </button>
                             </div>

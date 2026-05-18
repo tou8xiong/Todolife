@@ -126,14 +126,14 @@ export function AlertProvider({ children }: { children: React.ReactNode }) {
               {alert.showCancel && (
                 <button
                   onClick={handleCancel}
-                  className="px-5 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
+                  className="px-5 py-2.5 rounded-md bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                 >
                   {alert.cancelText || "Cancel"}
                 </button>
               )}
               <button
                 onClick={handleConfirm}
-                className={`px-5 py-2.5 rounded-xl ${currentStyle.bg} text-white font-semibold hover:opacity-90 transition-opacity`}
+                className={`px-5 py-2.5 rounded-md ${currentStyle.bg} text-white font-semibold hover:opacity-90 transition-opacity`}
               >
                 {alert.confirmText || "OK"}
               </button>

@@ -53,13 +53,13 @@ export default function FolderActionModal({
           <div className="flex gap-3 mt-2">
             <button
               onClick={onClose}
-              className="flex-1 px-4 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 font-medium transition-colors"
+              className="flex-1 px-4 py-2.5 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 font-medium transition-colors"
             >
               Cancel
             </button>
             <button
               onClick={onDelete}
-              className="flex-1 px-4 py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white font-semibold shadow-lg shadow-red-500/25 transition-colors"
+              className="flex-1 px-4 py-2.5 rounded-md bg-red-500 hover:bg-red-600 text-white font-semibold shadow-lg shadow-red-500/25 transition-colors"
             >
               Delete
             </button>
@@ -94,14 +94,14 @@ export default function FolderActionModal({
         <div className="flex gap-3 mt-2">
           <button
             onClick={onClose}
-            className="flex-1 px-4 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 font-medium transition-colors"
+            className="flex-1 px-4 py-2.5 rounded-md bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 font-medium transition-colors"
           >
             Cancel
           </button>
           <button
             onClick={() => name.trim() && onRename(name.trim())}
             disabled={!name.trim()}
-            className="flex-1 px-4 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-600 disabled:opacity-50 text-white font-semibold shadow-lg shadow-sky-500/25 transition-colors"
+            className="flex-1 px-4 py-2.5 rounded-md bg-sky-500 hover:bg-sky-600 disabled:opacity-50 text-white font-semibold shadow-lg shadow-sky-500/25 transition-colors"
           >
             Rename
           </button>

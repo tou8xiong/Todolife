@@ -942,7 +942,7 @@ export default function PdfEditor() {
     };
     // ── Page renderer (shared for PDF pages and doc pages) ────────────────
     const renderPageContainer = (i: number) => (
-        <div key={i} className="w-full flex flex-col items-center px-2 sm:px-4">
+        <div key={i} className="flex flex-col items-center px-2 sm:px-4 transition-all duration-200" style={{ width: `${Math.round(zoom * 100)}%`, minWidth: "200px" }}>
             {fileType === "pdf" && (
                 <div className="flex items-center w-full px-1 mb-1">
                     <span className="text-[9px] sm:text-[10px] font-mono text-gray-200 uppercase tracking-widest">
@@ -952,7 +952,7 @@ export default function PdfEditor() {
             )}
             <div
                 ref={(el) => { containerRefs.current[i] = el; }}
-                className="relative bg-white shadow-2xl ring-1 ring-gray-200 dark:ring-gray-700 overflow-hidden w-full transition-all duration-300"
+                className="relative bg-white shadow-2xl ring-1 ring-gray-200 dark:ring-gray-700 overflow-hidden w-full transition-all duration-200"
                 style={{
                     cursor: activeTool === "pen" ? "crosshair" : activeTool === "image" && pendingImage ? "crosshair" : activeTool === "text" ? "text" : "default",
                 }}
@@ -1030,17 +1030,17 @@ export default function PdfEditor() {
                         style={{ left: `${placing.x * 100}%`, top: `${placing.y * 100}%`, transform: "translateY(-50%)" }}
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <div className="bg-white dark:bg-gray-800 shadow-2xl rounded-xl p-2.5 flex gap-2 border border-amber-300">
+                        <div className="rounded-md p-2 flex gap-2 border-2 border-dashed border-amber-400" style={{ background: "transparent", boxShadow: "0 0 0 4px rgba(245,158,11,0.15)" }}>
                             <input
                                 autoFocus
                                 value={newText}
                                 onChange={(e) => setNewText(e.target.value)}
                                 onKeyDown={(e) => e.key === "Enter" && confirmText()}
                                 placeholder="Type text…"
-                                className="border border-gray-200 rounded-lg px-2 py-1 text-sm w-36 focus:outline-none focus:border-amber-400 dark:bg-gray-700 dark:text-white"
+                                className="bg-transparent border-0 px-2 py-1 text-sm text-gray-900 placeholder-gray-400 w-36 focus:outline-none"
                             />
-                            <button onClick={confirmText} className="px-2.5 py-1 bg-amber-400 hover:bg-amber-500 text-white rounded-lg text-xs font-semibold">Add</button>
-                            <button onClick={() => setPlacing(null)} className="px-2 py-1 bg-gray-100 dark:bg-gray-600 text-gray-200 dark:text-white rounded-lg text-xs">✕</button>
+                            <button onClick={confirmText} className="px-2.5 py-1 bg-amber-400 hover:bg-amber-500 text-white rounded-md text-xs font-semibold">Add</button>
+                            <button onClick={() => setPlacing(null)} className="px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-md text-xs">✕</button>
                         </div>
                     </div>
                 )}
@@ -1119,7 +1119,7 @@ export default function PdfEditor() {
                 <div className="flex flex-col gap-2">
                     <button
                         onClick={() => switchMode("annotator")}
-                        className={`flex items-center gap-2.5 w-full px-3 py-2.5 text-sm font-semibold rounded-xl transition-colors ${mode === "annotator"
+                        className={`flex items-center gap-2.5 w-full px-3 py-2.5 text-sm font-semibold rounded-md transition-colors ${mode === "annotator"
                             ? "bg-amber-500 text-white shadow"
                             : "bg-white/5 hover:bg-white/10 text-gray-300"
                             }`}
@@ -1129,7 +1129,7 @@ export default function PdfEditor() {
                     </button>
                     <button
                         onClick={() => switchMode("converter")}
-                        className={`flex items-center gap-2.5 w-full px-3 py-2.5 text-sm font-semibold rounded-xl transition-colors ${mode === "converter"
+                        className={`flex items-center gap-2.5 w-full px-3 py-2.5 text-sm font-semibold rounded-md transition-colors ${mode === "converter"
                             ? "bg-amber-500 text-white shadow"
                             : "bg-white/5 hover:bg-white/10 text-gray-300"
                             }`}
@@ -1145,7 +1145,7 @@ export default function PdfEditor() {
                         <div className="h-px bg-white/10 mb-3" />
                         <button
                             onClick={requestDownload}
-                            className="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold rounded-xl shadow transition-colors"
+                            className="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold rounded-md shadow transition-colors"
                         >
                             <Download size={15} /> Download {mode === "converter" ? "as File" : "as PDF"}
                         </button>
@@ -1199,9 +1199,50 @@ export default function PdfEditor() {
                 </div>
             ) : (
                 <div className="flex flex-col gap-3">
+                    {/* Converter sticky control bar */}
+                    {mode === "converter" && (
+                        <div className="sticky top-16 z-30 -mx-4 sm:-mx-6 -mt-4 sm:-mt-6 lg:-mr-8 bg-gray-900/95 backdrop-blur-md border-b border-white/10">
+                            <div className="flex items-center gap-2 px-4 sm:px-6 py-3">
+                                <span className="text-xs font-semibold text-gray-300 flex items-center gap-1.5">
+                                    <FileImage size={13} className="text-amber-400" />
+                                    Image Converter
+                                </span>
+                                <div className="h-4 w-px bg-white/15 mx-1" />
+                                <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold bg-white/10 hover:bg-white/15 text-gray-300 cursor-pointer transition-colors">
+                                    <UploadCloud size={13} />
+                                    Add New
+                                    <input
+                                        type="file"
+                                        accept=".png,.jpg,.jpeg"
+                                        className="hidden"
+                                        onChange={handleFileUpload}
+                                    />
+                                </label>
+                                <button
+                                    onClick={() => {
+                                        setFileType(null); setImageData(""); setAnnotations([]);
+                                        setSelectedId(null);
+                                    }}
+                                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold bg-white/10 hover:bg-red-500/20 hover:text-red-400 text-gray-300 transition-colors"
+                                >
+                                    <XIcon size={13} />
+                                    Close
+                                </button>
+                                <div className="ml-auto">
+                                    <button
+                                        onClick={requestDownload}
+                                        className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold rounded-md shadow transition-colors"
+                                    >
+                                        <Download size={13} /> Download
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     {/* Sticky control bar: toolbar + zoom + undo/redo */}
                     {mode === "annotator" && (
-                        <div className="sticky top-16 z-30 -mx-4 sm:-mx-6 -mt-4 sm:-mt-6 lg:mr-0 bg-gray-900/95 backdrop-blur-md border-b border-white/10">
+                        <div className="sticky top-16 z-30 -mx-4 sm:-mx-6 -mt-4 sm:-mt-6 lg:-mr-8 bg-gray-900/95 backdrop-blur-md border-b border-white/10">
                             <div className="flex flex-col">
                                 <Toolbar
                                     activeTool={activeTool}
@@ -1233,7 +1274,7 @@ export default function PdfEditor() {
                                         onClick={undo}
                                         disabled={historyRef.current.length === 0}
                                         title="Undo (Ctrl+Z)"
-                                        className="flex items-center justify-center w-8 h-8 rounded-lg text-gray-300 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                                        className="flex items-center justify-center w-8 h-8 rounded-md text-gray-300 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                                     >
                                         <Undo2 size={15} />
                                     </button>
@@ -1241,7 +1282,7 @@ export default function PdfEditor() {
                                         onClick={redo}
                                         disabled={futureRef.current.length === 0}
                                         title="Redo (Ctrl+Y)"
-                                        className="flex items-center justify-center w-8 h-8 rounded-lg text-gray-300 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                                        className="flex items-center justify-center w-8 h-8 rounded-md text-gray-300 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                                     >
                                         <Redo2 size={15} />
                                     </button>
@@ -1249,7 +1290,7 @@ export default function PdfEditor() {
                                     <button
                                         onClick={zoomOut}
                                         title="Zoom out (−)"
-                                        className="flex items-center justify-center w-8 h-8 rounded-lg text-gray-300 hover:bg-white/10 transition-colors"
+                                        className="flex items-center justify-center w-8 h-8 rounded-md text-gray-300 hover:bg-white/10 transition-colors"
                                     >
                                         <ZoomOut size={15} />
                                     </button>
@@ -1259,14 +1300,14 @@ export default function PdfEditor() {
                                     <button
                                         onClick={zoomIn}
                                         title="Zoom in (+)"
-                                        className="flex items-center justify-center w-8 h-8 rounded-lg text-gray-300 hover:bg-white/10 transition-colors"
+                                        className="flex items-center justify-center w-8 h-8 rounded-md text-gray-300 hover:bg-white/10 transition-colors"
                                     >
                                         <ZoomIn size={15} />
                                     </button>
                                     <button
                                         onClick={zoomFit}
                                         title="Reset zoom (0)"
-                                        className="flex items-center justify-center w-8 h-8 rounded-lg text-gray-300 hover:bg-white/10 transition-colors"
+                                        className="flex items-center justify-center w-8 h-8 rounded-md text-gray-300 hover:bg-white/10 transition-colors"
                                     >
                                         <Maximize2 size={14} />
                                     </button>
@@ -1275,7 +1316,7 @@ export default function PdfEditor() {
                                     </span>
                                     <button
                                         onClick={() => setShowAnnotationsModal((v) => !v)}
-                                        className={`ml-auto flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors border ${showAnnotationsModal ? "bg-amber-500/20 border-amber-400/50 text-amber-300" : "bg-white/5 hover:bg-white/10 border-white/10 text-gray-300"}`}
+                                        className={`ml-auto flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold transition-colors border ${showAnnotationsModal ? "bg-amber-500/20 border-amber-400/50 text-amber-300" : "bg-white/5 hover:bg-white/10 border-white/10 text-gray-300"}`}
                                         title="Open annotations panel"
                                     >
                                         <List size={13} />
@@ -1310,7 +1351,7 @@ export default function PdfEditor() {
                                 if (!rt || !(e.currentTarget as Node).contains(rt)) setViewerDragOver(false);
                             }}
                             onDrop={handleViewerDrop}
-                            className={`relative flex-1 min-w-0 flex flex-col gap-6 items-center rounded-2xl py-2 transition-colors ${viewerDragOver ? "bg-amber-500/5 outline outline-2 outline-amber-400/60" : ""}`}
+                            className={`relative flex-1 min-w-0 flex flex-col gap-6 items-center overflow-x-auto rounded-2xl py-2 transition-colors ${viewerDragOver ? "bg-amber-500/5 outline outline-2 outline-amber-400/60" : ""}`}
                         >
                             {viewerDragOver && (
                                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-40">

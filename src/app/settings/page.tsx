@@ -144,7 +144,7 @@ export default function SettingsPage() {
                 <button
                   key={lang.locale}
                   onClick={() => handleLanguageChange(lang.locale)}
-                  className={`relative flex items-center gap-3 px-4 py-4 rounded-2xl border text-left transition-all duration-200
+                  className={`relative flex items-center gap-3 px-4 py-4 rounded-md border text-left transition-all duration-200
                     ${isActive
                       ? "bg-sky-500/20 border-sky-500/50 shadow-sm shadow-sky-500/10"
                       : "bg-white/5 border-white/10 hover:bg-white/10"
@@ -252,7 +252,7 @@ export default function SettingsPage() {
 
           <button
             onClick={handleSignOut}
-            className="flex items-center gap-3 w-full px-3 py-3 rounded-xl hover:bg-red-500/10 border border-transparent hover:border-red-500/20 transition-all text-left mt-1"
+            className="flex items-center gap-3 w-full px-3 py-3 rounded-md hover:bg-red-500/10 border border-transparent hover:border-red-500/20 transition-all text-left mt-1"
           >
             <LogOut size={17} className="text-red-400" />
             <p className="text-sm text-red-400">{s.account.signOut}</p>
@@ -268,7 +268,7 @@ export default function SettingsPage() {
           {!confirmDelete ? (
             <button
               onClick={() => setConfirmDelete(true)}
-              className="flex items-center gap-3 px-4 py-3 rounded-xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 text-sm font-medium transition-all"
+              className="flex items-center gap-3 px-4 py-3 rounded-md bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 text-sm font-medium transition-all"
             >
               <Trash2 size={16} />
               {s.dangerZone.deleteAccount}
@@ -279,14 +279,14 @@ export default function SettingsPage() {
               <div className="flex flex-col sm:flex-row gap-3">
                 <button
                   onClick={() => setConfirmDelete(false)}
-                  className="flex-1 py-3 sm:py-2.5 rounded-xl border border-white/10 text-gray-300 hover:bg-white/5 text-sm transition-all bg-white/5"
+                  className="flex-1 py-3 sm:py-2.5 rounded-md border border-white/10 text-gray-300 hover:bg-white/5 text-sm transition-all bg-white/5"
                 >
                   {t.cancel}
                 </button>
                 <button
                   onClick={handleDeleteAccount}
                   disabled={deleting}
-                  className="flex-1 py-3 sm:py-2.5 rounded-xl bg-red-600 hover:bg-red-700 dark:hover:bg-red-500 text-white text-sm font-semibold transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-sm"
+                  className="flex-1 py-3 sm:py-2.5 rounded-md bg-red-600 hover:bg-red-700 dark:hover:bg-red-500 text-white text-sm font-semibold transition-all disabled:opacity-50 flex items-center justify-center gap-2 shadow-sm"
                 >
                   {deleting ? (
                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />

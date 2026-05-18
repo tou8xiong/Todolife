@@ -222,7 +222,7 @@ export default function ImageToText() {
                                 </div>
                                 <button
                                     onClick={() => setShowHistory(!showHistory)}
-                                    className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-white transition-all border border-gray-600 text-sm"
+                                    className="flex items-center gap-2 px-3 sm:px-4 py-2 rounded-md bg-gray-700 hover:bg-gray-600 text-white transition-all border border-gray-600 text-sm"
                                 >
                                     <History className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" />
                                     <span className="font-semibold">History</span>
@@ -246,7 +246,7 @@ export default function ImageToText() {
                                 <div className="flex items-center gap-3">
                                     <button
                                         onClick={() => setShowHistory(false)}
-                                        className="p-2 rounded-lg hover:bg-gray-700 text-gray-400 hover:text-white transition-all"
+                                        className="p-2 rounded-md hover:bg-gray-700 text-gray-400 hover:text-white transition-all"
                                     >
                                         <ArrowLeft className="w-5 h-5" />
                                     </button>
@@ -258,7 +258,7 @@ export default function ImageToText() {
                                 {history.length > 0 && (
                                     <button
                                         onClick={clearHistory}
-                                        className="px-3 py-1 rounded-lg bg-red-600 hover:bg-red-700 text-white text-sm transition-all"
+                                        className="px-3 py-1 rounded-md bg-red-600 hover:bg-red-700 text-white text-sm transition-all"
                                     >
                                         Clear All
                                     </button>
@@ -403,14 +403,14 @@ export default function ImageToText() {
                                                     <>
                                                         <button
                                                             onClick={handleEdit}
-                                                            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold transition-all shadow-md text-sm"
+                                                            className="flex items-center gap-2 px-3 py-2 rounded-md bg-blue-600 hover:bg-blue-700 text-white font-semibold transition-all shadow-md text-sm"
                                                         >
                                                             <Edit2 className="w-4 h-4" />
                                                             Edit
                                                         </button>
                                                         <button
                                                             onClick={copyToClipboard}
-                                                            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold transition-all shadow-md text-sm"
+                                                            className="flex items-center gap-2 px-3 py-2 rounded-md bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold transition-all shadow-md text-sm"
                                                         >
                                                             <Copy className="w-4 h-4" />
                                                             Copy
@@ -420,14 +420,14 @@ export default function ImageToText() {
                                                     <>
                                                         <button
                                                             onClick={handleCancelEdit}
-                                                            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-600 hover:bg-gray-700 text-white font-semibold transition-all shadow-md text-sm"
+                                                            className="flex items-center gap-2 px-3 py-2 rounded-md bg-gray-600 hover:bg-gray-700 text-white font-semibold transition-all shadow-md text-sm"
                                                         >
                                                             <X className="w-4 h-4" />
                                                             Cancel
                                                         </button>
                                                         <button
                                                             onClick={handleSaveEdit}
-                                                            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white font-semibold transition-all shadow-md text-sm"
+                                                            className="flex items-center gap-2 px-3 py-2 rounded-md bg-green-600 hover:bg-green-700 text-white font-semibold transition-all shadow-md text-sm"
                                                         >
                                                             <Save className="w-4 h-4" />
                                                             Save

@@ -146,16 +146,16 @@ function PomodoroTimer({ tasks }: { tasks: Task[] }) {
                 <button
                     onClick={() => setRunning(true)}
                     disabled={running}
-                    className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg disabled:opacity-40 text-sm transition-colors"
+                    className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md disabled:opacity-40 text-sm transition-colors"
                 >{d.start}</button>
                 <button
                     onClick={() => setRunning(false)}
                     disabled={!running}
-                    className="px-4 py-2 bg-yellow-400 hover:bg-yellow-500 text-white rounded-lg disabled:opacity-40 text-sm transition-colors"
+                    className="px-4 py-2 bg-yellow-400 hover:bg-yellow-500 text-white rounded-md disabled:opacity-40 text-sm transition-colors"
                 >{d.pause}</button>
                 <button
                     onClick={() => { setRunning(false); setSecondsLeft(DURATION); }}
-                    className="px-4 py-2 bg-red-400 hover:bg-red-500 text-white rounded-lg text-sm transition-colors"
+                    className="px-4 py-2 bg-red-400 hover:bg-red-500 text-white rounded-md text-sm transition-colors"
                 >{d.reset}</button>
             </div>
         </div>
@@ -393,7 +393,7 @@ export default function Dashboard() {
                                 </div>
                                 <button
                                     onClick={() => handleMarkDone(task.id)}
-                                    className="text-xs px-3 py-1 bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-green-500 dark:text-white dark:hover:bg-green-600 font-semibold rounded-lg shrink-0 transition-colors"
+                                    className="text-xs px-3 py-1 bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-green-500 dark:text-white dark:hover:bg-green-600 font-semibold rounded-md shrink-0 transition-colors"
                                 >{t.done}</button>
                             </li>
                         ))}

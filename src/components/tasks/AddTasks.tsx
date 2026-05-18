@@ -188,7 +188,7 @@ export default function AddTasks() {
                                         key={value}
                                         type="button"
                                         onClick={() => setTask(p => ({ ...p, type: value }))}
-                                        className={`flex flex-col items-center gap-1 py-2 rounded-lg border text-xs transition-all ${colorClasses[color as keyof typeof colorClasses]}`}
+                                        className={`flex flex-col items-center gap-1 py-2 rounded-md border text-xs transition-all ${colorClasses[color as keyof typeof colorClasses]}`}
                                     >
                                         <Icon size={16} />
                                         {label}
@@ -218,7 +218,7 @@ export default function AddTasks() {
                                         key={value}
                                         type="button"
                                         onClick={() => setTask(p => ({ ...p, priority: value }))}
-                                        className={`py-2 rounded-lg border text-xs font-medium transition-all ${colorClasses[color as keyof typeof colorClasses]}`}
+                                        className={`py-2 rounded-md border text-xs font-medium transition-all ${colorClasses[color as keyof typeof colorClasses]}`}
                                     >
                                         {label}
                                     </button>
@@ -263,7 +263,7 @@ export default function AddTasks() {
                         <button
                             type="button"
                             onClick={handleCancel}
-                            className="flex-1 flex items-center justify-center gap-1 px-4 py-2 rounded-lg bg-gray-700 hover:bg-gray-600 text-gray-300 font-semibold transition-all border border-gray-600"
+                            className="flex-1 flex items-center justify-center gap-1 px-4 py-2 rounded-md bg-gray-700 hover:bg-gray-600 text-gray-300 font-semibold transition-all border border-gray-600"
                         >
                             <X size={16} /> {t.cancel}
                         </button>
@@ -271,7 +271,7 @@ export default function AddTasks() {
                             type="button"
                             onClick={handleAdd}
                             disabled={saving}
-                            className="flex-1 flex items-center justify-center gap-1 px-4 py-2 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold transition-all shadow-md shadow-amber-500/20 disabled:opacity-60 disabled:cursor-not-allowed"
+                            className="flex-1 flex items-center justify-center gap-1 px-4 py-2 rounded-md bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold transition-all shadow-md shadow-amber-500/20 disabled:opacity-60 disabled:cursor-not-allowed"
                         >
                             <Check size={16} /> {t.save}
                         </button>
