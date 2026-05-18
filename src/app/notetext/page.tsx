@@ -102,10 +102,7 @@ export default function NoteTextPage() {
   const [activeDoc, setActiveDoc] = useState<Doc | null>(null);
   const [title, setTitle] = useState("");
   const [user, setUser] = useState<any>(null);
-  const [initialLoading, setInitialLoading] = useState(() => {
-    if (typeof window === "undefined") return true;
-    return !sessionStorage.getItem("notetext_loaded");
-  });
+  const [initialLoading, setInitialLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [contentLoading, setContentLoading] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
@@ -676,28 +673,65 @@ export default function NoteTextPage() {
     <>
       {initialLoading ? (
         <div className="flex h-[calc(100vh-4rem)] bg-linear-to-b from-gray-900 to-gray-600 overflow-hidden">
+          {/* Sidebar skeleton */}
           <div className="w-64 sm:w-72 shrink-0 bg-white/5 backdrop-blur-xl border-r border-white/10 flex flex-col max-md:hidden">
-            <div className="p-4 border-b border-gray-200 dark:border-gray-800">
-              <div className="h-6 bg-white/10 rounded animate-pulse mb-4"></div>
-              <div className="space-y-2">
-                <div className="h-10 bg-white/10 rounded-xl animate-pulse"></div>
-                <div className="h-10 bg-white/10 rounded-xl animate-pulse"></div>
+            {/* Sidebar header */}
+            <div className="p-4 border-b border-white/10">
+              <div className="flex items-center justify-between mb-3">
+                <div className="h-4 w-28 bg-white/15 rounded animate-pulse" />
+                <div className="flex gap-1">
+                  <div className="w-8 h-8 bg-white/10 rounded-md animate-pulse" />
+                  <div className="w-8 h-8 bg-sky-500/30 rounded-md animate-pulse" />
+                </div>
               </div>
             </div>
-            <div className="flex-1 p-3 space-y-2">
-              {[1, 2, 3, 4].map(i => (
-                <div key={i} className="h-10 bg-white/10 rounded-xl animate-pulse"></div>
+            {/* Nav items */}
+            <div className="flex-1 p-3 space-y-1">
+              <div className="h-10 bg-white/10 rounded-md animate-pulse mb-3" />
+              <div className="h-px bg-white/10 my-2" />
+              <div className="flex items-center gap-2 px-3 mb-2">
+                <div className="h-3 w-14 bg-white/10 rounded animate-pulse" />
+              </div>
+              {[72, 56, 80, 64].map((w, i) => (
+                <div key={i} className="flex items-center gap-2 px-3 py-2">
+                  <div className="w-4 h-4 bg-white/10 rounded animate-pulse shrink-0" />
+                  <div className="w-7 h-7 bg-white/10 rounded-lg animate-pulse shrink-0" />
+                  <div className={`h-3 bg-white/10 rounded animate-pulse`} style={{ width: `${w}%` }} />
+                </div>
               ))}
             </div>
-          </div>
-          <div className="flex-1 flex flex-col">
-            <div className="p-6 border-b border-white/10">
-              <div className="h-8 bg-white/10 rounded animate-pulse w-1/3"></div>
+            <div className="p-4 border-t border-white/10">
+              <div className="h-4 w-24 bg-white/10 rounded animate-pulse" />
             </div>
-            <div className="flex-1 p-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                {[1, 2, 3, 4, 5, 6].map(i => (
-                  <div key={i} className="h-32 bg-white/10 rounded-2xl animate-pulse"></div>
+          </div>
+
+          {/* Main area skeleton */}
+          <div className="flex-1 flex flex-col overflow-hidden">
+            {/* Top bar */}
+            <div className="flex items-center justify-between px-8 py-6 border-b border-white/10">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-white/10 rounded-2xl animate-pulse" />
+                <div className="space-y-2">
+                  <div className="h-5 w-36 bg-white/15 rounded animate-pulse" />
+                  <div className="h-3 w-24 bg-white/10 rounded animate-pulse" />
+                </div>
+              </div>
+              <div className="h-9 w-32 bg-sky-500/30 rounded-md animate-pulse" />
+            </div>
+
+            {/* Cards grid */}
+            <div className="flex-1 p-8">
+              <div className="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
+                  <div key={i} className="p-5 rounded-md bg-white/5 border border-white/10 space-y-3 animate-pulse">
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 bg-white/10 rounded-xl shrink-0" />
+                      <div className="flex-1 space-y-2 pt-1">
+                        <div className="h-3.5 bg-white/15 rounded w-3/4" />
+                        <div className="h-3 bg-white/10 rounded w-1/2" />
+                      </div>
+                    </div>
+                  </div>
                 ))}
               </div>
             </div>
