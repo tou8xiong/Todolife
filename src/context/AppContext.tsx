@@ -11,6 +11,7 @@ import type { ReactNode } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import type { User } from "firebase/auth";
 import { auth } from "@/lib/firebase";
+import { authFetch } from "@/lib/authFetch";
 import type { Task, TaskCounts } from "@/types/task";
 
 interface Profile {
@@ -62,7 +63,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const email = emailRef.current;
     if (!email) return;
     try {
-      const res = await fetch(`/api/tasks?email=${encodeURIComponent(email)}`);
+      const res = await authFetch(`/api/tasks`);
       const data = await res.json();
       const tasks: Task[] = data.tasks ?? [];
       const total = tasks.length;
@@ -78,8 +79,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (!email) return;
     setProfileLoading(true);
     try {
-      const res = await fetch(
-        `/api/profile?email=${encodeURIComponent(email)}`,
+      const res = await authFetch(
+        `/api/profile`,
         { cache: "no-store" }
       );
       const data = await res.json();

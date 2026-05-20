@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import AlertDialog from "@/components/ui/AlertDialog";
 import { useLanguage } from "@/context/LanguageContext";
 import { Briefcase, BookOpen, Zap, CalendarDays, Clock, X, Check } from "lucide-react";
+import { authFetch } from "@/lib/authFetch";
 
 const VALID_TYPES = ["work", "study", "activities"];
 const VALID_PRIORITIES = ["high", "medium", "low"];
@@ -84,14 +85,14 @@ export default function AddTasks() {
 
         setSaving(true);
         try {
-            const getRes = await fetch(`/api/tasks?email=${encodeURIComponent(user.email)}`, { cache: "no-store" });
+            const getRes = await authFetch(`/api/tasks`, { cache: "no-store" });
             const getData = await getRes.json();
             const storedTasks = getData.tasks ?? [];
             const updatedTasks = [...storedTasks, { id: Date.now(), ...task }];
-            const postRes = await fetch("/api/tasks", {
+            const postRes = await authFetch("/api/tasks", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email: user.email, tasks: updatedTasks }),
+                body: JSON.stringify({ tasks: updatedTasks }),
             });
             if (!postRes.ok) {
                 const err = await postRes.json().catch(() => ({}));

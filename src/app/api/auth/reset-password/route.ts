@@ -1,33 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import admin from "firebase-admin";
 import { Resend } from "resend";
-
-function initializeFirebaseAdmin() {
-  if (admin.apps.length) {
-    return admin.app();
-  }
-
-  const projectId = process.env.FIREBASE_PROJECT_ID;
-  const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
-  const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n");
-
-  if (!projectId || !clientEmail || !privateKey) {
-    return null;
-  }
-
-  return admin.initializeApp({
-    credential: admin.credential.cert({
-      projectId,
-      clientEmail,
-      privateKey,
-    }),
-  });
-}
+import { getFirebaseAdmin } from "@/lib/firebase-admin";
 
 export async function POST(req: NextRequest) {
   try {
-    const firebaseApp = initializeFirebaseAdmin();
-    if (!firebaseApp) {
+    const adminSDK = getFirebaseAdmin();
+    if (!adminSDK) {
       return NextResponse.json({ error: "Service not configured" }, { status: 503 });
     }
 
@@ -44,7 +22,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Invalid email" }, { status: 400 });
     }
 
-    const resetLink = await admin.auth().generatePasswordResetLink(email);
+    const resetLink = await adminSDK.auth().generatePasswordResetLink(email);
 
     const { data, error } = await resend.emails.send({
       from: "TodoLife <onboarding@resend.dev>",

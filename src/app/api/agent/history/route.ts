@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import redis from "@/lib/redis";
+import { verifyAuth } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -7,17 +8,15 @@ const SEVEN_DAYS = 60 * 60 * 24 * 7;
 const MAX_CONVERSATIONS = 50;
 const MAX_MESSAGES = 200;
 
-function isValidEmail(email: string): boolean {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && email.length <= 254;
-}
-
-// GET /api/agent/history?email=              → conversation list
-// GET /api/agent/history?email=&id=          → messages for one conversation
+// GET /api/agent/history           → conversation list
+// GET /api/agent/history?id=       → messages for one conversation
 export async function GET(req: NextRequest) {
   try {
-    const email = req.nextUrl.searchParams.get("email");
+    const authResult = await verifyAuth(req);
+    if ("error" in authResult) return authResult.error;
+    const email = authResult.email;
+
     const id = req.nextUrl.searchParams.get("id");
-    if (!email || !isValidEmail(email)) return NextResponse.json({ conversations: [], messages: [] });
 
     if (id) {
       const data = await redis.get(`agent:${email}:conv:${id}`);
@@ -34,12 +33,16 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// POST /api/agent/history  { email, conversation: { id, title, mode, messages } }
+// POST /api/agent/history  { conversation: { id, title, mode, messages } }
 export async function POST(req: NextRequest) {
   try {
-    const { email, conversation } = await req.json();
-    if (!email || !isValidEmail(email) || !conversation?.id) {
-      return NextResponse.json({ error: "Valid email and conversation.id required" }, { status: 400 });
+    const authResult = await verifyAuth(req);
+    if ("error" in authResult) return authResult.error;
+    const email = authResult.email;
+
+    const { conversation } = await req.json();
+    if (!conversation?.id) {
+      return NextResponse.json({ error: "conversation.id required" }, { status: 400 });
     }
 
     // Cap messages to prevent unbounded Redis growth
@@ -81,13 +84,16 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// DELETE /api/agent/history?email=&id=
+// DELETE /api/agent/history?id=
 export async function DELETE(req: NextRequest) {
   try {
-    const email = req.nextUrl.searchParams.get("email");
+    const authResult = await verifyAuth(req);
+    if ("error" in authResult) return authResult.error;
+    const email = authResult.email;
+
     const id = req.nextUrl.searchParams.get("id");
-    if (!email || !isValidEmail(email) || !id) {
-      return NextResponse.json({ error: "Valid email and id required" }, { status: 400 });
+    if (!id) {
+      return NextResponse.json({ error: "id required" }, { status: 400 });
     }
 
     await redis.del(`agent:${email}:conv:${id}`);

@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAlert } from "@/hooks/useAlert";
+import { authFetch } from "@/lib/authFetch";
 
 interface Idea {
     id: number;
@@ -23,9 +24,9 @@ export default function NooteBook() {
     const [editingId, setEditingId] = useState<number | null>(null);
     const [editText, setEditText] = useState("");
 
-    const loadIdeas = async (email: string) => {
+    const loadIdeas = async () => {
         try {
-            const res = await fetch(`/api/ideas?email=${encodeURIComponent(email)}`);
+            const res = await authFetch(`/api/ideas`);
             const data = await res.json();
             setIdeas(data.ideas ?? []);
         } catch (err) {
@@ -33,18 +34,18 @@ export default function NooteBook() {
         }
     };
 
-    const saveIdeas = async (email: string, updated: Idea[]) => {
-        await fetch("/api/ideas", {
+    const saveIdeas = async (updated: Idea[]) => {
+        await authFetch("/api/ideas", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email, ideas: updated }),
+            body: JSON.stringify({ ideas: updated }),
         });
     };
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
             setUser(currentUser);
-            if (currentUser?.email) loadIdeas(currentUser.email);
+            if (currentUser?.email) loadIdeas();
         });
         return () => unsubscribe();
     }, []);
@@ -71,7 +72,7 @@ export default function NooteBook() {
         const updatedIdeas = [...ideas, newIdea];
         setIdeas(updatedIdeas);
         setCurentIdeas({ ideatext: "" });
-        await saveIdeas(user.email, updatedIdeas);
+        await saveIdeas(updatedIdeas);
         window.dispatchEvent(new Event("tasksUpdated"));
         toast.success("Idea added!");
     };
@@ -90,7 +91,7 @@ export default function NooteBook() {
         }
         const updatedIdeas = ideas.filter((idea) => idea.id !== id);
         setIdeas(updatedIdeas);
-        await saveIdeas(user.email, updatedIdeas);
+        await saveIdeas(updatedIdeas);
         window.dispatchEvent(new Event("tasksUpdated"));
     };
 
@@ -118,7 +119,7 @@ export default function NooteBook() {
         setIdeas(updatedIdeas);
         setEditingId(null);
         setEditText("");
-        await saveIdeas(user.email, updatedIdeas);
+        await saveIdeas(updatedIdeas);
         toast.success("Idea updated!");
     };
 

@@ -4,6 +4,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { Task } from "@/types/task";
 import { useLanguage } from "@/context/LanguageContext";
+import { authFetch } from "@/lib/authFetch";
 import { BookOpen, Clock, Zap, Target, CheckCircle } from "lucide-react";
 
 interface Idea {
@@ -217,8 +218,8 @@ export default function Dashboard() {
         try {
             setLoadingTasks(true);
             const [tasksRes, ideasRes] = await Promise.all([
-                fetch(`/api/tasks?email=${encodeURIComponent(email)}`),
-                fetch(`/api/ideas?email=${encodeURIComponent(email)}`),
+                authFetch(`/api/tasks`),
+                authFetch(`/api/ideas`),
             ]);
             const tasksData = await tasksRes.json();
             const ideasData = await ideasRes.json();
@@ -270,10 +271,10 @@ export default function Dashboard() {
             t.id === id ? { ...t, completed: true, completedAt: new Date().toISOString() } : t
         );
         setTasks(updated);
-        await fetch("/api/tasks", {
+        await authFetch("/api/tasks", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email: user.email, tasks: updated }),
+            body: JSON.stringify({ tasks: updated }),
         });
         window.dispatchEvent(new Event("tasksUpdated"));
     };

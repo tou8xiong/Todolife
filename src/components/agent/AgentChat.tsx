@@ -9,6 +9,7 @@ import {
   AlertCircle, ChevronUp, CheckCircle2, SquarePen, Trash2, Menu, X,
 } from "lucide-react";
 import { buildSystemPrompt, parseTaskFromResponse, AgentSystemPromptOptions, ParsedUpdateData } from "@/utils/aiPrompts";
+import { authFetch } from "@/lib/authFetch";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -99,7 +100,7 @@ export default function AgentChat() {
 
   const loadConvList = useCallback(async (email: string) => {
     try {
-      const res = await fetch(`/api/agent/history?email=${encodeURIComponent(email)}`);
+      const res = await authFetch(`/api/agent/history`);
       const data = await res.json();
       setConversations(data.conversations ?? []);
     } catch { /* silent */ }
@@ -108,7 +109,7 @@ export default function AgentChat() {
   const loadConv = useCallback(async (email: string, id: string) => {
     setHistoryLoading(true);
     try {
-      const res = await fetch(`/api/agent/history?email=${encodeURIComponent(email)}&id=${id}`);
+      const res = await authFetch(`/api/agent/history?id=${id}`);
       const data = await res.json();
       setMessages(data.messages ?? []);
     } catch {
@@ -127,10 +128,10 @@ export default function AgentChat() {
   ) => {
     if (!msgs.length) return;
     try {
-      await fetch("/api/agent/history", {
+      await authFetch("/api/agent/history", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, conversation: { id, title, mode: convMode, messages: msgs } }),
+        body: JSON.stringify({ conversation: { id, title, mode: convMode, messages: msgs } }),
       });
       // Update local list
       const meta: ConvMeta = { id, title, mode: convMode, updatedAt: new Date().toISOString() };
@@ -140,7 +141,7 @@ export default function AgentChat() {
 
   const deleteConv = useCallback(async (email: string, id: string) => {
     try {
-      await fetch(`/api/agent/history?email=${encodeURIComponent(email)}&id=${id}`, { method: "DELETE" });
+      await authFetch(`/api/agent/history?id=${id}`, { method: "DELETE" });
       setConversations((prev) => prev.filter((c) => c.id !== id));
       if (activeIdRef.current === id) {
         setActiveId(null);
@@ -156,7 +157,7 @@ export default function AgentChat() {
       if (user?.email) {
         setUserEmail(user.email);
         try {
-          const res = await fetch(`/api/tasks?email=${encodeURIComponent(user.email)}`);
+          const res = await authFetch(`/api/tasks`);
           const data = await res.json();
           if (data.tasks) setTasks(data.tasks);
         } catch {
@@ -242,10 +243,10 @@ export default function AgentChat() {
       completedAt: null,
     };
     const updatedTasks = [...tasks, newTask];
-    const res = await fetch("/api/tasks", {
+    const res = await authFetch("/api/tasks", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: userEmail, tasks: updatedTasks }),
+      body: JSON.stringify({ tasks: updatedTasks }),
     });
     if (!res.ok) throw new Error("Failed to save task");
     setTasks(updatedTasks);
@@ -259,10 +260,10 @@ export default function AgentChat() {
     const target = tasks.find((t) => t.id === id);
     if (!target) throw new Error(`Task with ID ${id} not found`);
     const updatedTasks = tasks.filter((t) => t.id !== id);
-    const res = await fetch("/api/tasks", {
+    const res = await authFetch("/api/tasks", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: userEmail, tasks: updatedTasks }),
+      body: JSON.stringify({ tasks: updatedTasks }),
     });
     if (!res.ok) throw new Error("Failed to delete task");
     setTasks(updatedTasks);
@@ -279,10 +280,10 @@ export default function AgentChat() {
     const updatedTasks = tasks.map((t) =>
       t.id === id ? { ...t, ...fields } : t
     );
-    const res = await fetch("/api/tasks", {
+    const res = await authFetch("/api/tasks", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: userEmail, tasks: updatedTasks }),
+      body: JSON.stringify({ tasks: updatedTasks }),
     });
     if (!res.ok) throw new Error("Failed to update task");
     setTasks(updatedTasks);
@@ -309,7 +310,7 @@ export default function AgentChat() {
 
     try {
       const today = new Date().toISOString().split("T")[0];
-      const res = await fetch("/api/agent", {
+      const res = await authFetch("/api/agent", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

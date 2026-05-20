@@ -1,21 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import supabase from "@/lib/supabase";
+import { verifyAuth } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
-function isValidEmail(email: string): boolean {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && email.length <= 254;
-}
-
-// GET /api/folders?email=user@example.com
+// GET /api/folders
 export async function GET(req: NextRequest) {
   try {
     if (!supabase) {
       return NextResponse.json({ error: "Database not configured" }, { status: 503 });
     }
 
-    const email = req.nextUrl.searchParams.get("email");
-    if (!email || !isValidEmail(email)) return NextResponse.json({ folders: [] });
+    const authResult = await verifyAuth(req);
+    if ("error" in authResult) return authResult.error;
+    const email = authResult.email;
 
     const { data, error } = await supabase
       .from("folders")
@@ -32,15 +30,18 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// POST /api/folders  { email, folder }
+// POST /api/folders  { folder }
 export async function POST(req: NextRequest) {
   try {
     if (!supabase) {
       return NextResponse.json({ error: "Database not configured" }, { status: 503 });
     }
 
-    const { email, folder } = await req.json();
-    if (!email || !isValidEmail(email)) return NextResponse.json({ error: "Valid email required" }, { status: 400 });
+    const authResult = await verifyAuth(req);
+    if ("error" in authResult) return authResult.error;
+    const email = authResult.email;
+
+    const { folder } = await req.json();
 
     const newFolder = {
       name: typeof folder?.name === "string" && folder.name.trim() ? folder.name.trim() : "New Folder",
@@ -65,16 +66,19 @@ export async function POST(req: NextRequest) {
   }
 }
 
-// DELETE /api/folders?id=uuid&email=user@example.com
+// DELETE /api/folders?id=uuid
 export async function DELETE(req: NextRequest) {
   try {
     if (!supabase) {
       return NextResponse.json({ error: "Database not configured" }, { status: 503 });
     }
 
+    const authResult = await verifyAuth(req);
+    if ("error" in authResult) return authResult.error;
+    const email = authResult.email;
+
     const id = req.nextUrl.searchParams.get("id");
-    const email = req.nextUrl.searchParams.get("email");
-    if (!id || !email || !isValidEmail(email)) return NextResponse.json({ error: "Valid ID and email required" }, { status: 400 });
+    if (!id) return NextResponse.json({ error: "Valid ID required" }, { status: 400 });
 
     const { error } = await supabase
       .from("folders")
@@ -91,15 +95,18 @@ export async function DELETE(req: NextRequest) {
   }
 }
 
-// PATCH /api/folders  { email, folder }
+// PATCH /api/folders  { folder }
 export async function PATCH(req: NextRequest) {
   try {
     if (!supabase) {
       return NextResponse.json({ error: "Database not configured" }, { status: 503 });
     }
 
-    const { email, folder } = await req.json();
-    if (!email || !isValidEmail(email)) return NextResponse.json({ error: "Valid email required" }, { status: 400 });
+    const authResult = await verifyAuth(req);
+    if ("error" in authResult) return authResult.error;
+    const email = authResult.email;
+
+    const { folder } = await req.json();
     if (!folder?.id) return NextResponse.json({ error: "Folder id required" }, { status: 400 });
 
     const { data, error } = await supabase

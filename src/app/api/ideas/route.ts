@@ -1,21 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import supabase from "@/lib/supabase";
+import { verifyAuth } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
-function isValidEmail(email: string): boolean {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && email.length <= 254;
-}
-
-// GET /api/ideas?email=user@example.com
+// GET /api/ideas
 export async function GET(req: NextRequest) {
   try {
     if (!supabase) {
       return NextResponse.json({ error: "Database not configured" }, { status: 503 });
     }
 
-    const email = req.nextUrl.searchParams.get("email");
-    if (!email || !isValidEmail(email)) return NextResponse.json({ ideas: [] });
+    const authResult = await verifyAuth(req);
+    if ("error" in authResult) return authResult.error;
+    const email = authResult.email;
 
     const { data, error } = await supabase
       .from("notes")
@@ -32,15 +30,18 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// POST /api/ideas  { email, ideas }
+// POST /api/ideas  { ideas }
 export async function POST(req: NextRequest) {
   try {
     if (!supabase) {
       return NextResponse.json({ error: "Database not configured" }, { status: 503 });
     }
 
-    const { email, ideas } = await req.json();
-    if (!email || !isValidEmail(email)) return NextResponse.json({ error: "Valid email required" }, { status: 400 });
+    const authResult = await verifyAuth(req);
+    if ("error" in authResult) return authResult.error;
+    const email = authResult.email;
+
+    const { ideas } = await req.json();
 
     const { error: deleteError } = await supabase
       .from("notes")

@@ -7,6 +7,7 @@ import { MdEdit, MdLogout, MdEmail, MdPhotoCamera, MdSave, MdClose, MdPerson } f
 import EmojiProfiles from "@/components/ui/cartoonvector";
 import Image from "next/image";
 import { useLanguage } from "@/context/LanguageContext";
+import { authFetch } from "@/lib/authFetch";
 
 export default function Profile() {
   const { t } = useLanguage();
@@ -20,7 +21,7 @@ export default function Profile() {
 
   useEffect(() => {
     if (!user?.email) return;
-    fetch(`/api/profile?email=${encodeURIComponent(user.email)}`, { cache: "no-store" })
+    authFetch(`/api/profile`, { cache: "no-store" })
       .then((r) => r.json())
       .then((data) => {
         if (data.profileImage) setProfileImageUrl(data.profileImage);
@@ -43,10 +44,10 @@ export default function Profile() {
       reader.onload = async (e) => {
         const dataUrl = e.target?.result as string;
         try {
-          const res = await fetch("/api/profile", {
+          const res = await authFetch("/api/profile", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email: user.email, profileImage: dataUrl }),
+            body: JSON.stringify({ profileImage: dataUrl }),
           });
           if (!res.ok) {
             const err = await res.json();
@@ -78,10 +79,10 @@ export default function Profile() {
       }
 
       if (userEmoji !== null) {
-        const res = await fetch("/api/profile", {
+        const res = await authFetch("/api/profile", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email: user.email, emoji: userEmoji }),
+          body: JSON.stringify({ emoji: userEmoji }),
         });
         if (!res.ok) throw new Error("Failed to save emoji");
         window.dispatchEvent(new Event("profileUpdated"));
@@ -110,10 +111,10 @@ export default function Profile() {
   const removeImage = async () => {
     setSaving(true);
     try {
-      const res = await fetch("/api/profile", {
+      const res = await authFetch("/api/profile", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: user.email, profileImage: null }),
+        body: JSON.stringify({ profileImage: null }),
       });
       if (!res.ok) throw new Error("Failed to remove image");
       setProfileImageUrl(null);

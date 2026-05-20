@@ -6,6 +6,7 @@ import { Task } from "@/types/task";
 import { useLanguage } from "@/context/LanguageContext";
 import { ConfirmDeleteButton } from "@/components/ui/ConfirmDeleteitems";
 import { saveTasksToDB } from "@/lib/taskDB";
+import { authFetch } from "@/lib/authFetch";
 
 const getDeadlineUrgency = (date?: string, time?: string) => {
     if (!date) return null;
@@ -129,7 +130,7 @@ export default function TaskList() {
 
     const loadTasks = async (email: string) => {
         try {
-            const res = await fetch(`/api/tasks?email=${encodeURIComponent(email)}`, { cache: "no-store" });
+            const res = await authFetch(`/api/tasks`, { cache: "no-store" });
             const data = await res.json();
             const all: Task[] = data.tasks ?? [];
             allTasksRef.current = all;
@@ -140,10 +141,10 @@ export default function TaskList() {
     };
 
     const saveAndSync = async (email: string, updatedAll: Task[]) => {
-        await fetch("/api/tasks", {
+        await authFetch("/api/tasks", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email, tasks: updatedAll }),
+            body: JSON.stringify({ tasks: updatedAll }),
         });
         window.dispatchEvent(new Event("tasksUpdated"));
     };

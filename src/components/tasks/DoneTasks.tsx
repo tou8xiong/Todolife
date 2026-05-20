@@ -7,6 +7,7 @@ import DoneTaskCard from "@/components/ui/DoneTaskCard";
 import { ConfirmDeleteButton } from "@/components/ui/ConfirmDeleteitems";
 import { CheckCircle2, Briefcase, BookOpen, Zap } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
+import { authFetch } from "@/lib/authFetch";
 
 type TaskType = "work" | "study" | "activities";
 
@@ -77,7 +78,7 @@ export default function DoneTasks() {
 
   const loadDoneTasks = async (userEmail: string) => {
     try {
-      const res = await fetch(`/api/tasks?email=${encodeURIComponent(userEmail)}`, { cache: "no-store" });
+      const res = await authFetch(`/api/tasks`, { cache: "no-store" });
       const data = await res.json();
       const all: Task[] = data.tasks ?? [];
       const completedOnly = all
@@ -117,13 +118,13 @@ export default function DoneTasks() {
   const handleDelete = async (id: number) => {
     if (!user?.email) return;
     try {
-      const res = await fetch(`/api/tasks?email=${encodeURIComponent(user.email)}`);
+      const res = await authFetch(`/api/tasks`);
       const data = await res.json();
       const updatedTasks = (data.tasks ?? []).filter((t: Task) => t.id !== id);
-      await fetch("/api/tasks", {
+      await authFetch("/api/tasks", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: user.email, tasks: updatedTasks }),
+        body: JSON.stringify({ tasks: updatedTasks }),
       });
       window.dispatchEvent(new Event("tasksUpdated"));
       setDoneTasks((prev) => prev.filter((t) => t.id !== id));
@@ -135,13 +136,13 @@ export default function DoneTasks() {
   const doClearAll = async () => {
     if (!user?.email) return;
     try {
-      const res = await fetch(`/api/tasks?email=${encodeURIComponent(user.email)}`);
+      const res = await authFetch(`/api/tasks`);
       const data = await res.json();
       const updatedTasks = (data.tasks ?? []).filter((t: Task) => !t.completed);
-      await fetch("/api/tasks", {
+      await authFetch("/api/tasks", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: user.email, tasks: updatedTasks }),
+        body: JSON.stringify({ tasks: updatedTasks }),
       });
       window.dispatchEvent(new Event("tasksUpdated"));
       setDoneTasks([]);

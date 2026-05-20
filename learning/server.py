@@ -30,21 +30,26 @@ app.add_middleware(
 
 # ── Models ───────────────────────────────────────────────────────────────────
 
+
 class Message(BaseModel):
     role: Literal["user", "assistant", "system"]
     content: str
 
+
 class AgentRequest(BaseModel):
     messages: list[Message]
 
+
 class SummarizeRequest(BaseModel):
     text: str
+
 
 class SuggestTasksRequest(BaseModel):
     goal: str
     context: str = ""
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
+
 
 async def generate(prompt: str, retries: int = 3) -> str:
     """Try each model in order, retry on quota/overload errors."""
@@ -97,11 +102,13 @@ def build_prompt(messages: list[Message]) -> str:
 
 # ── Routes ───────────────────────────────────────────────────────────────────
 
+
 @app.post("/api/agent")
 async def agent(req: AgentRequest):
     """General chat — used by the Next.js frontend when PYTHON_BACKEND_URL is set."""
     if not GEMINI_API_KEY:
-        raise HTTPException(status_code=500, detail="GEMINI_API_KEY not configured")
+        raise HTTPException(
+            status_code=500, detail="GEMINI_API_KEY not configured")
     if not req.messages:
         raise HTTPException(status_code=400, detail="Messages are required")
 
@@ -114,7 +121,8 @@ async def agent(req: AgentRequest):
 async def summarize(req: SummarizeRequest):
     """Summarize any text into 3–5 bullet points."""
     if not GEMINI_API_KEY:
-        raise HTTPException(status_code=500, detail="GEMINI_API_KEY not configured")
+        raise HTTPException(
+            status_code=500, detail="GEMINI_API_KEY not configured")
     if not req.text.strip():
         raise HTTPException(status_code=400, detail="Text is required")
 
@@ -138,7 +146,8 @@ async def summarize(req: SummarizeRequest):
 async def suggest_tasks(req: SuggestTasksRequest):
     """Break a goal into numbered actionable tasks with priorities."""
     if not GEMINI_API_KEY:
-        raise HTTPException(status_code=500, detail="GEMINI_API_KEY not configured")
+        raise HTTPException(
+            status_code=500, detail="GEMINI_API_KEY not configured")
     if not req.goal.strip():
         raise HTTPException(status_code=400, detail="Goal is required")
 

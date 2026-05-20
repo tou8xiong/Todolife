@@ -1,17 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import supabase from "@/lib/supabase";
+import { verifyAuth } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
-// GET /api/profile?email=user@example.com
+// GET /api/profile
 export async function GET(req: NextRequest) {
   try {
     if (!supabase) {
       return NextResponse.json({ error: "Database not configured" }, { status: 503 });
     }
 
-    const email = req.nextUrl.searchParams.get("email");
-    if (!email) return NextResponse.json({ profileImage: null, emoji: null });
+    const authResult = await verifyAuth(req);
+    if ("error" in authResult) return authResult.error;
+    const email = authResult.email;
 
     const { data, error } = await supabase
       .from("profiles")
@@ -34,15 +36,18 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// POST /api/profile  { email, profileImage?, emoji? }
+// POST /api/profile  { profileImage?, emoji? }
 export async function POST(req: NextRequest) {
   try {
     if (!supabase) {
       return NextResponse.json({ error: "Database not configured" }, { status: 503 });
     }
 
-    const { email, profileImage, emoji } = await req.json();
-    if (!email) return NextResponse.json({ error: "Email required" }, { status: 400 });
+    const authResult = await verifyAuth(req);
+    if ("error" in authResult) return authResult.error;
+    const email = authResult.email;
+
+    const { profileImage, emoji } = await req.json();
 
     const updateData: any = { user_email: email };
     if (profileImage !== undefined) updateData.profile_image = profileImage;

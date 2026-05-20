@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { Task } from "@/types/task";
+import { authFetch } from "@/lib/authFetch";
 
 interface UseTasksOptions {
   email: string | null;
@@ -14,7 +15,7 @@ export function useTasks({ email, onTasksChange }: UseTasksOptions) {
 
     const loadTasks = async () => {
       try {
-        const res = await fetch(`/api/tasks?email=${encodeURIComponent(email)}`);
+        const res = await authFetch(`/api/tasks`);
         const data = await res.json();
         if (data.tasks) {
           setTasks(data.tasks);
@@ -49,10 +50,10 @@ export function useTasks({ email, onTasksChange }: UseTasksOptions) {
     const updatedTasks = [...tasks, newTask];
 
     try {
-      const res = await fetch("/api/tasks", {
+      const res = await authFetch("/api/tasks", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, tasks: updatedTasks }),
+        body: JSON.stringify({ tasks: updatedTasks }),
       });
 
       if (!res.ok) throw new Error("Failed to save task");
@@ -73,10 +74,10 @@ export function useTasks({ email, onTasksChange }: UseTasksOptions) {
     const updatedTasks = tasks.filter((t) => t.id !== taskId);
 
     try {
-      const res = await fetch("/api/tasks", {
+      const res = await authFetch("/api/tasks", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, tasks: updatedTasks }),
+        body: JSON.stringify({ tasks: updatedTasks }),
       });
 
       if (!res.ok) throw new Error("Failed to delete task");
@@ -106,10 +107,10 @@ export function useTasks({ email, onTasksChange }: UseTasksOptions) {
     });
 
     try {
-      const res = await fetch("/api/tasks", {
+      const res = await authFetch("/api/tasks", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, tasks: updatedTasks }),
+        body: JSON.stringify({ tasks: updatedTasks }),
       });
 
       if (!res.ok) throw new Error("Failed to update task");

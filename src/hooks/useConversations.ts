@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import { authFetch } from "@/lib/authFetch";
 
 export type Mode = "chat" | "summarize" | "tasks";
 
@@ -35,7 +36,7 @@ export function useConversations({ email }: UseConversationsOptions) {
   const loadConvList = useCallback(async () => {
     if (!email) return;
     try {
-      const res = await fetch(`/api/agent/history?email=${encodeURIComponent(email)}`);
+      const res = await authFetch(`/api/agent/history`);
       const data = await res.json();
       setConversations(data.conversations ?? []);
     } catch { /* silent */ }
@@ -45,7 +46,7 @@ export function useConversations({ email }: UseConversationsOptions) {
     if (!email) return;
     setHistoryLoading(true);
     try {
-      const res = await fetch(`/api/agent/history?email=${encodeURIComponent(email)}&id=${id}`);
+      const res = await authFetch(`/api/agent/history?id=${id}`);
       const data = await res.json();
       setMessages(data.messages ?? []);
     } catch {
@@ -63,10 +64,10 @@ export function useConversations({ email }: UseConversationsOptions) {
   ) => {
     if (!email || !msgs.length) return;
     try {
-      await fetch("/api/agent/history", {
+      await authFetch("/api/agent/history", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, conversation: { id, title, mode: convMode, messages: msgs } }),
+        body: JSON.stringify({ conversation: { id, title, mode: convMode, messages: msgs } }),
       });
       const meta: ConvMeta = { id, title, mode: convMode, updatedAt: new Date().toISOString() };
       setConversations((prev) => [meta, ...prev.filter((c) => c.id !== id)]);
@@ -76,7 +77,7 @@ export function useConversations({ email }: UseConversationsOptions) {
   const deleteConv = useCallback(async (id: string) => {
     if (!email) return;
     try {
-      await fetch(`/api/agent/history?email=${encodeURIComponent(email)}&id=${id}`, { method: "DELETE" });
+      await authFetch(`/api/agent/history?id=${id}`, { method: "DELETE" });
       setConversations((prev) => prev.filter((c) => c.id !== id));
       if (activeIdRef.current === id) {
         setActiveId(null);
