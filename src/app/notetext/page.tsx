@@ -17,6 +17,7 @@ import { LuFileDown } from "react-icons/lu";
 import { useTipTapEditor } from "@/hooks/useTipTapEditor";
 import { EditorContent } from "@tiptap/react";
 import { authFetch } from "@/lib/authFetch";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface Doc {
   id: number;
@@ -97,6 +98,7 @@ function formatDate(dateStr?: string) {
 
 export default function NoteTextPage() {
   const { showAlert } = useAlert();
+  const { t } = useLanguage();
   const [docs, setDocs] = useState<Doc[]>([]);
   const [folders, setFolders] = useState<Folder[]>([]);
   const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
@@ -216,37 +218,149 @@ export default function NoteTextPage() {
   const exportToPDF = useCallback(async () => {
     if (!title.trim()) return;
     setExporting(true);
-    try {
-      // Send pages content to Puppeteer API
-      const response = await authFetch('/api/export-pdf', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          title,
-          pages,
-        }),
-      });
+    await new Promise((r) => setTimeout(r, 50));
 
-      if (!response.ok) {
-        throw new Error('Failed to generate PDF');
+    // CSS that mirrors the editor exactly, using only hex/rgb colors so
+    // html2canvas doesn't choke on Tailwind v4's oklch/lab color functions.
+    const PAPER_CSS = `
+      * { box-sizing: border-box; }
+      body { margin: 0; padding: 0; background: #ffffff; }
+      .pdf-page {
+        width: 900px;
+        background: #ffffff;
+        font-family: Georgia, 'Times New Roman', serif;
+        font-size: 16px;
+        line-height: 1.4;
+        color: #111827;
+      }
+      .pdf-title-area { text-align: center; padding: 40px 100px 16px; }
+      .pdf-title {
+        font-size: 36px; font-weight: 700; color: #1f2937;
+        font-family: Georgia, 'Times New Roman', serif;
+        letter-spacing: -0.025em; margin-bottom: 8px;
+      }
+      .pdf-meta { font-size: 13px; color: #6b7280; }
+      .pdf-content { padding: 60px 100px; }
+      .pdf-content p  { margin: 0 0 0.5em 0; }
+      .pdf-content h1 { font-size: 32px; font-weight: bold; margin: 24px 0 16px; }
+      .pdf-content h2 { font-size: 24px; font-weight: bold; margin: 20px 0 12px; }
+      .pdf-content h3 { font-size: 20px; font-weight: bold; margin: 16px 0 8px; }
+      .pdf-content ul, .pdf-content ol { padding-left: 1.5em; margin: 1em 0; }
+      .pdf-content li  { margin: 0.25em 0; }
+      .pdf-content ul > li       { list-style-type: disc; }
+      .pdf-content ol > li       { list-style-type: decimal; }
+      .pdf-content ul ul > li    { list-style-type: circle; }
+      .pdf-content ol ol > li    { list-style-type: lower-alpha; }
+      .pdf-content blockquote {
+        border-left: 4px solid #38bdf8; padding-left: 16px;
+        margin: 16px 0; font-style: italic; color: #64748b;
+      }
+      .pdf-content pre  { background: #1e293b; color: #e2e8f0; padding: 16px; border-radius: 8px; font-family: monospace; }
+      .pdf-content code { background: #f1f5f9; padding: 2px 4px; border-radius: 4px; font-family: monospace; }
+      .pdf-content img  { max-width: 100%; height: auto; border-radius: 8px; margin: 16px 0; }
+      .pdf-content a    { color: #0ea5e9; text-decoration: underline; }
+      .pdf-content strong { font-weight: bold; }
+      .pdf-content em   { font-style: italic; }
+      .pdf-content u    { text-decoration: underline; }
+      .pdf-content s    { text-decoration: line-through; }
+    `;
+
+    try {
+      const { default: jsPDF } = await import('jspdf');
+      const { default: html2canvas } = await import('html2canvas');
+
+      const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+      const pageWidthMM = pdf.internal.pageSize.getWidth();
+      const pageHeightMM = pdf.internal.pageSize.getHeight();
+
+      for (let i = 0; i < pages.length; i++) {
+        // Build a clean container — no Tailwind classes, so no oklch leaks in.
+        const container = document.createElement('div');
+        container.className = 'pdf-page';
+        container.style.cssText = 'position:fixed;left:-9999px;top:0;z-index:-1;';
+
+        const titleDiv = document.createElement('div');
+        titleDiv.textContent = title;
+
+        if (i === 0) {
+          const titleArea = document.createElement('div');
+          titleArea.className = 'pdf-title-area';
+          titleDiv.className = 'pdf-title';
+          titleArea.appendChild(titleDiv);
+          container.appendChild(titleArea);
+        }
+
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'pdf-content';
+        contentDiv.innerHTML = pages[i];
+        container.appendChild(contentDiv);
+
+        document.body.appendChild(container);
+
+        const canvas = await html2canvas(container, {
+          scale: 2,
+          useCORS: true,
+          allowTaint: true,
+          backgroundColor: '#ffffff',
+          logging: false,
+          onclone: (clonedDoc: Document) => {
+            // html2canvas parses every stylesheet in the document before rendering.
+            // Tailwind v4 uses oklch()/lab() which html2canvas can't parse — disable
+            // those sheets so the parser never sees them.
+            Array.from(clonedDoc.styleSheets).forEach((sheet) => {
+              try {
+                const rules = Array.from(sheet.cssRules ?? []);
+                const hasBadColors = rules.some(
+                  (r) => r.cssText && (r.cssText.includes('oklch(') || r.cssText.includes('lab('))
+                );
+                if (hasBadColors) (sheet as CSSStyleSheet & { disabled: boolean }).disabled = true;
+              } catch {
+                // cross-origin sheet — can't read rules, leave it alone
+              }
+            });
+            // Inject our safe hex-only stylesheet
+            const safeStyle = clonedDoc.createElement('style');
+            safeStyle.textContent = PAPER_CSS;
+            clonedDoc.head.appendChild(safeStyle);
+          },
+        });
+
+        document.body.removeChild(container);
+
+        const canvasW = canvas.width;
+        const canvasH = canvas.height;
+        const pxPerMM = canvasW / pageWidthMM;
+        const pageHeightPx = Math.floor(pageHeightMM * pxPerMM);
+
+        let offsetY = 0;
+        let firstSlice = true;
+
+        while (offsetY < canvasH) {
+          if (i > 0 || !firstSlice) pdf.addPage();
+          firstSlice = false;
+
+          const sliceH = Math.min(pageHeightPx, canvasH - offsetY);
+          const slice = document.createElement('canvas');
+          slice.width = canvasW;
+          slice.height = pageHeightPx;
+          const ctx = slice.getContext('2d');
+          if (ctx) {
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvasW, pageHeightPx);
+            ctx.drawImage(canvas, 0, offsetY, canvasW, sliceH, 0, 0, canvasW, sliceH);
+          }
+
+          pdf.addImage(slice.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, pageWidthMM, pageHeightMM);
+          offsetY += pageHeightPx;
+        }
       }
 
-      // Download the PDF
-      const blob = await response.blob();
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${title || "document"}.pdf`;
-      a.click();
-      URL.revokeObjectURL(url);
-
-      toast.success("PDF exported successfully!");
+      pdf.save(`${title || 'document'}.pdf`);
+      toast.success('PDF exported successfully!');
       setShowExportModal(false);
     } catch (err) {
-      console.error("Export error:", err);
-      toast.error("Failed to export PDF");
+      console.error('Export error:', err);
+      toast.error('Failed to export PDF');
     } finally {
       setExporting(false);
     }
@@ -783,8 +897,8 @@ export default function NoteTextPage() {
                     onChange={(e) => setNewFolderName(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && createFolder()}
                     onBlur={() => { if (!newFolderName.trim()) setShowNewFolderInput(false); }}
-                    placeholder="Folder name..."
-                    className="w-full text-sm px-3 py-2 rounded-xl border border-white/10 bg-white/5 text-white focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all placeholder:text-gray-500"
+                    placeholder={t.noteText.folderNamePlaceholder}
+                    className="w-full text-sm px-3 py-2 rounded-md border border-white/10 bg-white/5 text-white focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all placeholder:text-gray-500"
                     autoFocus
                   />
                   <div className="flex gap-2">
@@ -792,13 +906,13 @@ export default function NoteTextPage() {
                       onClick={createFolder}
                       className="flex-1 text-sm px-3 py-1.5 rounded-md bg-sky-500 text-white hover:bg-sky-600 font-medium transition-colors"
                     >
-                      Create
+                      {t.noteText.create}
                     </button>
                     <button
                       onClick={() => { setShowNewFolderInput(false); setNewFolderName(""); }}
                       className="flex-1 text-sm px-3 py-1.5 rounded-md bg-white/5 text-gray-300 hover:bg-white/10 transition-colors"
                     >
-                      Cancel
+                      {t.cancel}
                     </button>
                   </div>
                 </div>
@@ -819,14 +933,14 @@ export default function NoteTextPage() {
                   }`}
               >
                 <MdGridView size={18} />
-                <span>All Documents</span>
+                <span>{t.noteText.allDocuments}</span>
                 <span className="ml-auto text-xs bg-white/10 text-white px-2 py-0.5 rounded-full">{docs.length}</span>
               </button>
 
               <div className="border-t border-gray-100 dark:border-gray-800 my-3" />
 
               <div className="flex items-center gap-2 px-3 mb-2">
-                <p className="text-[11px] text-gray-300 uppercase tracking-wider font-semibold">Folders</p>
+                <p className="text-[11px] text-gray-300 uppercase tracking-wider font-semibold">{t.noteText.folders}</p>
                 <span className="text-[11px] text-gray-400">{folders.length}</span>
               </div>
 
@@ -890,7 +1004,7 @@ export default function NoteTextPage() {
                             );
                           })
                         ) : (
-                          <p className="text-xs text-gray-400 px-3 py-2">No documents</p>
+                          <p className="text-xs text-gray-400 px-3 py-2">{t.noteText.noDocumentsInFolder}</p>
                         )}
                       </div>
                     )}
@@ -903,8 +1017,8 @@ export default function NoteTextPage() {
                   <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-white/5 flex items-center justify-center">
                     <MdNoteAdd size={32} className="text-gray-400" />
                   </div>
-                  <p className="text-sm text-gray-300 mb-1">No documents yet</p>
-                  <p className="text-xs text-gray-400">Click + to create one</p>
+                  <p className="text-sm text-gray-300 mb-1">{t.noteText.noDocuments}</p>
+                  <p className="text-xs text-gray-400">{t.noteText.clickToCreate}</p>
                 </div>
               )}
             </div>
@@ -912,7 +1026,7 @@ export default function NoteTextPage() {
             <div className="p-4 border-t border-gray-200 dark:border-gray-800">
               <Link href="/noteidea" className="flex items-center gap-2 text-sm text-gray-300 hover:text-sky-400 transition-colors">
                 <MdArrowBack size={16} />
-                <span>Idea Notes</span>
+                <span>{t.noteText.ideaNotes}</span>
               </Link>
             </div>
           </div>
@@ -939,13 +1053,13 @@ export default function NoteTextPage() {
                     </span>
                   )}
                   <div className="ml-auto flex items-center gap-2">
-                    <span className="text-xs text-gray-400 hidden sm:block">Ctrl+S to save</span>
+                    <span className="text-xs text-gray-400 hidden sm:block">{t.noteText.ctrlSToSave}</span>
                     <button
                       onClick={() => { setMoveTargetFolder(activeDoc?.folder_id || null); setShowMoveModal(true); }}
                       className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 text-white text-sm font-medium rounded-md transition-all border border-white/10"
                     >
                       <MdFolder size={16} />
-                      Move
+                      {t.noteText.move}
                     </button>
                     <button
                       onClick={() => setShowExportModal(true)}
@@ -1312,6 +1426,12 @@ export default function NoteTextPage() {
                       </div>
                       <p className="text-2xl font-bold mb-2 text-white">No documents yet</p>
                       <p className="text-sm mb-8 text-center text-gray-300 max-w-md mx-auto">Create your first document to get started</p>
+                      <button
+                        onClick={handleNew}
+                        className="flex items-center gap-2 px-6 py-3 bg-sky-500 hover:bg-sky-600 text-white text-sm font-semibold rounded-md shadow-lg shadow-sky-500/25 hover:shadow-sky-500/40 transition-all"
+                      >
+                        <MdAdd size={20} /> New Document
+                      </button>
                     </div>
                   )}
                 </div>
