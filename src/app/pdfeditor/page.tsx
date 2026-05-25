@@ -16,6 +16,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { saveTempData, loadTempData, clearTempData } from "@/lib/tempData";
 import { useAlert } from "@/hooks/useAlert";
+import { useLanguage } from "@/context/LanguageContext";
 
 // ── Drag / resize ref type ───────────────────────────────────────────────────
 
@@ -47,6 +48,7 @@ export default function PdfEditor() {
     const { user } = useAppContext();
     const router = useRouter();
     const { showAlert } = useAlert();
+    const { t } = useLanguage();
     const [pdfBytes, setPdfBytes] = useState<ArrayBuffer | null>(null);
     const [numPages, setNumPages] = useState(0);
     const [loading, setLoading] = useState(false);
@@ -1049,7 +1051,7 @@ export default function PdfEditor() {
     );
 
     return (
-        <div className="min-h-screen bg-linear-to-b from-gray-900 to-gray-600 p-4 sm:p-6 lg:pr-[18rem] font-serif text-white transition-all duration-300">
+        <div className="min-h-screen bg-tool p-4 sm:p-6 lg:pr-[18rem] font-serif text-white transition-all duration-300">
 
             {mode === "annotator" && (
                 <DownloadModal
@@ -1125,7 +1127,7 @@ export default function PdfEditor() {
                             }`}
                     >
                         <Pen size={15} className="shrink-0" />
-                        <span>Annotator</span>
+                        <span>{t.pdfEditor.annotator}</span>
                     </button>
                     <button
                         onClick={() => switchMode("converter")}
@@ -1135,7 +1137,7 @@ export default function PdfEditor() {
                             }`}
                     >
                         <FileImage size={15} className="shrink-0" />
-                        <span>Converter</span>
+                        <span>{t.pdfEditor.converter}</span>
                     </button>
                 </div>
 
@@ -1147,7 +1149,7 @@ export default function PdfEditor() {
                             onClick={requestDownload}
                             className="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold rounded-md shadow transition-colors"
                         >
-                            <Download size={15} /> Download {mode === "converter" ? "as File" : "as PDF"}
+                            <Download size={15} /> {mode === "converter" ? t.pdfEditor.downloadAsFile : t.pdfEditor.downloadAsPdf}
                         </button>
                     </div>
                 )}
@@ -1175,10 +1177,10 @@ export default function PdfEditor() {
                         <div className="text-center space-y-1">
                             <p className="text-sm font-semibold text-white">
                                 {dragOver
-                                    ? "Drop to upload"
+                                    ? t.pdfEditor.dropToUpload
                                     : mode === "annotator"
-                                        ? "Upload file pdf"
-                                        : "Upload your image"
+                                        ? t.pdfEditor.uploadFilePdf
+                                        : t.pdfEditor.uploadYourImage
                                 }
                             </p>
                             <p className="text-xs text-gray-400">

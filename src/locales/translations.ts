@@ -347,6 +347,90 @@ export const translations = {
       },
     },
 
+    // ── Timer / Settime page ──────────────────────────────────────────────
+    timer: {
+      stopwatch: "Stopwatch",
+      pomodoro: "Pomodoro",
+      countdown: "Countdown",
+      focus: "Focus",
+      breakTime: "Break Time",
+      cycle: "Cycle",
+      whatWorkingOn: "What are you working on?",
+      start: "Start",
+      pause: "Pause",
+      reset: "Reset",
+      finishSave: "Finish & Save Session",
+      today: "Today",
+      total: "Total",
+      sessions: "sessions",
+      lofiRadio: "Lo-fi Radio",
+      sessionHistory: "Session History",
+      noSessions: "No sessions yet. Start studying!",
+    },
+
+    // ── NoteIdea page ─────────────────────────────────────────────────────
+    noteIdea: {
+      title: "Idea Notes",
+      subtitle: "Capture every thought before it slips away",
+      newIdea: "New Idea",
+      placeholder: "Write your idea here...",
+      keep: "Keep",
+      yourIdeas: "Your Ideas",
+      noIdeas: "No ideas yet. Add your first one!",
+      noteText: "Note Text",
+    },
+
+    // ── NoteText page ─────────────────────────────────────────────────────
+    noteText: {
+      allDocuments: "All Documents",
+      folders: "Folders",
+      noDocuments: "No documents yet",
+      clickToCreate: "Click + to create one",
+      noDocumentsInFolder: "No documents",
+      folderNamePlaceholder: "Folder name...",
+      create: "Create",
+      ideaNotes: "Idea Notes",
+      move: "Move",
+      ctrlSToSave: "Ctrl+S to save",
+    },
+
+    // ── Agent page ────────────────────────────────────────────────────────
+    agent: {
+      newChat: "New Chat",
+      noConversations: "No conversations yet.",
+      startNewChat: "Start a new chat!",
+      today: "Today",
+      yesterday: "Yesterday",
+      previous7Days: "Previous 7 Days",
+      chatsKept: "Chats kept 7 days",
+      aiAgent: "AI Agent",
+      howCanIHelp: "How can I help you?",
+      pending: "pending",
+      done: "done",
+      loadingConversation: "Loading conversation...",
+      thinking: "Thinking…",
+      modeChat: "Chat",
+      modeSummarize: "Summarize",
+      modeSuggestTasks: "Suggest Tasks",
+      modeChatPlaceholder: "Ask about tasks, or say 'create a task: buy groceries'...",
+      modeSummarizePlaceholder: "Paste any text here and I'll summarize it...",
+      modeSuggestTasksPlaceholder: "Describe your goal (e.g. 'finish my project this week')...",
+      modeChatHint: "I can read your tasks, show done tasks, and create new ones.",
+      modeSummarizeHint: "I'll return 3–5 concise bullet points.",
+      modeSuggestTasksHint: "I'll break it into actionable tasks with priorities.",
+    },
+
+    // ── PDF Editor page ───────────────────────────────────────────────────
+    pdfEditor: {
+      annotator: "Annotator",
+      converter: "Converter",
+      uploadFilePdf: "Upload file pdf",
+      uploadYourImage: "Upload your image",
+      dropToUpload: "Drop to upload",
+      downloadAsPdf: "Download as PDF",
+      downloadAsFile: "Download as File",
+    },
+
     // ── Common UI Elements ────────────────────────────────────────────────
     common: {
       buttons: {
@@ -726,6 +810,90 @@ export const translations = {
         facebook: "ສືບຕໍ່ດ້ວຍ Facebook",
         github: "ສືບຕໍ່ດ້ວຍ GitHub",
       },
+    },
+
+    // ── Timer / Settime page ──────────────────────────────────────────────
+    timer: {
+      stopwatch: "ໂມງຈັບເວລາ",
+      pomodoro: "Pomodoro",
+      countdown: "ນັບຖອຍຫຼັງ",
+      focus: "ສຸມໃສ່",
+      breakTime: "ເວລາພັກ",
+      cycle: "ຮອບ",
+      whatWorkingOn: "ທ່ານກຳລັງເຮັດຫຍັງ?",
+      start: "ເລີ່ມຕົ້ນ",
+      pause: "ຢຸດຊົ່ວຄາວ",
+      reset: "ຣີເຊັດ",
+      finishSave: "ສຳເລັດ & ບັນທຶກ",
+      today: "ມື້ນີ້",
+      total: "ທັງໝົດ",
+      sessions: "ຊ່ວງ",
+      lofiRadio: "Lo-fi ວິທະຍຸ",
+      sessionHistory: "ປະຫວັດຊ່ວງ",
+      noSessions: "ຍັງບໍ່ມີຊ່ວງ. ເລີ່ມຮຽນໄດ້ເລີຍ!",
+    },
+
+    // ── NoteIdea page ─────────────────────────────────────────────────────
+    noteIdea: {
+      title: "ບັນທຶກແນວຄິດ",
+      subtitle: "ຈັບທຸກຄວາມຄິດກ່ອນທີ່ຈະລືມ",
+      newIdea: "ແນວຄິດໃໝ່",
+      placeholder: "ຂຽນແນວຄິດຂອງທ່ານທີ່ນີ້...",
+      keep: "ບັນທຶກ",
+      yourIdeas: "ແນວຄິດຂອງທ່ານ",
+      noIdeas: "ຍັງບໍ່ມີແນວຄິດ. ເພີ່ມອັນທຳອິດ!",
+      noteText: "ບັນທຶກຂໍ້ຄວາມ",
+    },
+
+    // ── NoteText page ─────────────────────────────────────────────────────
+    noteText: {
+      allDocuments: "ເອກະສານທັງໝົດ",
+      folders: "ໂຟລເດີ",
+      noDocuments: "ຍັງບໍ່ມີເອກະສານ",
+      clickToCreate: "ຄລິກ + ເພື່ອສ້າງ",
+      noDocumentsInFolder: "ບໍ່ມີເອກະສານ",
+      folderNamePlaceholder: "ຊື່ໂຟລເດີ...",
+      create: "ສ້າງ",
+      ideaNotes: "ບັນທຶກແນວຄິດ",
+      move: "ຍ້າຍ",
+      ctrlSToSave: "Ctrl+S ເພື່ອບັນທຶກ",
+    },
+
+    // ── Agent page ────────────────────────────────────────────────────────
+    agent: {
+      newChat: "ສົນທະນາໃໝ່",
+      noConversations: "ຍັງບໍ່ມີການສົນທະນາ.",
+      startNewChat: "ເລີ່ມສົນທະນາໃໝ່!",
+      today: "ມື້ນີ້",
+      yesterday: "ມື້ວານ",
+      previous7Days: "7 ວັນທີ່ຜ່ານມາ",
+      chatsKept: "ສົນທະນາຖືກເກັບ 7 ວັນ",
+      aiAgent: "ຜູ້ຊ່ວຍ AI",
+      howCanIHelp: "ຂ້ອຍຊ່ວຍຫຍັງໄດ້ບໍ?",
+      pending: "ກຳລັງດຳເນີນ",
+      done: "ສຳເລັດ",
+      loadingConversation: "ກຳລັງໂຫລດ...",
+      thinking: "ກຳລັງຄິດ…",
+      modeChat: "ສົນທະນາ",
+      modeSummarize: "ສະຫຼຸບ",
+      modeSuggestTasks: "ແນະນຳວຽກ",
+      modeChatPlaceholder: "ຖາມກ່ຽວກັບວຽກ ຫຼື ພິມ 'ສ້າງວຽກ: ຊື້ເຄື່ອງ'...",
+      modeSummarizePlaceholder: "ວາງຂໍ້ຄວາມທີ່ນີ້ ຂ້ອຍຈະສະຫຼຸບໃຫ້...",
+      modeSuggestTasksPlaceholder: "ອະທິບາຍເປົ້າໝາຍ (ເຊັ່ນ 'ສຳເລັດໂຄງການໃນອາທິດນີ້')...",
+      modeChatHint: "ຂ້ອຍສາມາດອ່ານວຽກ, ສະແດງວຽກທີ່ສຳເລັດ, ແລະ ສ້າງໃໝ່ໄດ້.",
+      modeSummarizeHint: "ຂ້ອຍຈະຕອບ 3–5 ຈຸດສຳຄັນ.",
+      modeSuggestTasksHint: "ຂ້ອຍຈະແຍກເປັນວຽກທີ່ລົງມືໄດ້ພ້ອມລຳດັບຄວາມສຳຄັນ.",
+    },
+
+    // ── PDF Editor page ───────────────────────────────────────────────────
+    pdfEditor: {
+      annotator: "ໝາຍໃສ່",
+      converter: "ແປງໄຟລ໌",
+      uploadFilePdf: "ອັບໂຫລດໄຟລ໌ PDF",
+      uploadYourImage: "ອັບໂຫລດຮູບ",
+      dropToUpload: "ວາງເພື່ອອັບໂຫລດ",
+      downloadAsPdf: "ດາວໂຫລດເປັນ PDF",
+      downloadAsFile: "ດາວໂຫລດໄຟລ໌",
     },
 
     // ── Common UI Elements ────────────────────────────────────────────────

@@ -9,6 +9,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAlert } from "@/hooks/useAlert";
 import { authFetch } from "@/lib/authFetch";
+import { useLanguage } from "@/context/LanguageContext";
 
 interface Idea {
     id: number;
@@ -18,6 +19,7 @@ interface Idea {
 export default function NooteBook() {
     const router = useRouter();
     const { showAlert } = useAlert();
+    const { t } = useLanguage();
     const [curentideas, setCurentIdeas] = useState({ ideatext: "" });
     const [ideas, setIdeas] = useState<Idea[]>([]);
     const [user, setUser] = useState<any>(null);
@@ -129,7 +131,7 @@ export default function NooteBook() {
     };
 
     return (
-        <div className="min-h-screen bg-linear-to-b from-gray-900 to-gray-600 p-4 sm:p-8 font-serif text-white relative transition-all duration-300">
+        <div className="min-h-screen bg-tool p-4 sm:p-8 font-serif text-white relative transition-all duration-300">
 
             {/* Top Right Button */}
             <Link
@@ -137,7 +139,7 @@ export default function NooteBook() {
                 className="absolute top-4 right-4 flex items-center gap-2 px-4 py-2 bg-sky-500 hover:bg-sky-600 active:scale-95 text-white text-sm font-semibold rounded-xl shadow-lg shadow-sky-500/30 transition-all z-20"
             >
                 <MdDescription size={18} />
-                Note Text
+                {t.noteIdea.noteText}
             </Link>
 
             {/* Header */}
@@ -145,17 +147,17 @@ export default function NooteBook() {
                 <div className="bg-white/10 backdrop-blur-md rounded-full p-4 shadow-md mb-3 border border-white/10">
                     <GiNotebook size={48} className="text-sky-500 dark:text-sky-400" />
                 </div>
-                <h1 className="text-3xl font-bold text-white tracking-tight">Idea Notes</h1>
-                <p className="text-sm text-gray-300 mt-1">Capture every thought before it slips away</p>
+                <h1 className="text-3xl font-bold text-white tracking-tight">{t.noteIdea.title}</h1>
+                <p className="text-sm text-gray-300 mt-1">{t.noteIdea.subtitle}</p>
             </div>
 
             {/* Input Card */}
             <div className="max-w-2xl mx-auto mb-8" data-aos="zoom-in">
                 <div className="bg-white/10 backdrop-blur-md rounded-2xl shadow-lg p-5 border border-white/10">
-                    <p className="text-xs font-semibold text-sky-400 uppercase tracking-widest mb-3">New Idea</p>
+                    <p className="text-xs font-semibold text-sky-400 uppercase tracking-widest mb-3">{t.noteIdea.newIdea}</p>
                     <div className="flex gap-3">
                         <input
-                            placeholder="Write your idea here..."
+                            placeholder={t.noteIdea.placeholder}
                             type="text"
                             name="ideatext"
                             onChange={handleChange}
@@ -167,7 +169,7 @@ export default function NooteBook() {
                             onClick={handleaddIdea}
                             className="px-5 py-3 bg-sky-500 hover:bg-sky-600 active:scale-95 text-white text-sm font-semibold rounded-md shadow transition-all"
                         >
-                            Keep
+                            {t.noteIdea.keep}
                         </button>
                     </div>
                 </div>
@@ -177,7 +179,7 @@ export default function NooteBook() {
             <div className="max-w-2xl mx-auto">
                 <div className="flex items-center justify-between mb-4">
                     <h2 className="text-base font-bold text-white">
-                        Your Ideas
+                        {t.noteIdea.yourIdeas}
                         <span className="ml-2 text-xs font-normal text-gray-300">({ideas.length})</span>
                     </h2>
                 </div>
@@ -185,7 +187,7 @@ export default function NooteBook() {
                 {ideas.length === 0 ? (
                     <div className="flex flex-col items-center py-20 text-gray-400 dark:text-gray-400">
                         <GiNotebook size={64} />
-                        <p className="mt-3 text-sm">No ideas yet. Add your first one!</p>
+                        <p className="mt-3 text-sm">{t.noteIdea.noIdeas}</p>
                     </div>
                 ) : (
                     <ul className="flex flex-col gap-3">

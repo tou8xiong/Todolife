@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { buildSystemPrompt, parseTaskFromResponse, AgentSystemPromptOptions, ParsedUpdateData } from "@/utils/aiPrompts";
 import { authFetch } from "@/lib/authFetch";
+import { useLanguage } from "@/context/LanguageContext";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -32,11 +33,7 @@ interface ConvMeta {
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
-const MODES: { id: Mode; label: string; icon: React.ElementType; placeholder: string; hint: string }[] = [
-  { id: "chat", label: "Chat", icon: MessageSquare, placeholder: "Ask about tasks, or say 'create a task: buy groceries'...", hint: "I can read your tasks, show done tasks, and create new ones." },
-  { id: "summarize", label: "Summarize", icon: FileText, placeholder: "Paste any text here and I'll summarize it...", hint: "I'll return 3–5 concise bullet points." },
-  { id: "tasks", label: "Suggest Tasks", icon: ListTodo, placeholder: "Describe your goal (e.g. 'finish my project this week')...", hint: "I'll break it into actionable tasks with priorities." },
-];
+type ModeConfig = { id: Mode; label: string; icon: React.ElementType; placeholder: string; hint: string };
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -69,6 +66,14 @@ function groupConversations(convs: ConvMeta[]) {
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function AgentChat() {
+  const { t } = useLanguage();
+
+  const MODES: ModeConfig[] = [
+    { id: "chat", label: t.agent.modeChat, icon: MessageSquare, placeholder: t.agent.modeChatPlaceholder, hint: t.agent.modeChatHint },
+    { id: "summarize", label: t.agent.modeSummarize, icon: FileText, placeholder: t.agent.modeSummarizePlaceholder, hint: t.agent.modeSummarizeHint },
+    { id: "tasks", label: t.agent.modeSuggestTasks, icon: ListTodo, placeholder: t.agent.modeSuggestTasksPlaceholder, hint: t.agent.modeSuggestTasksHint },
+  ];
+
   const [conversations, setConversations] = useState<ConvMeta[]>([]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -380,7 +385,7 @@ export default function AgentChat() {
   const doneCount = tasks.filter((t) => t.completed).length;
 
   return (
-    <div className="flex h-[calc(100vh-4rem)] overflow-hidden bg-linear-to-b from-gray-900 to-gray-600 font-serif">
+    <div className="flex h-[calc(100vh-4rem)] overflow-hidden bg-tool font-serif">
 
       {/* ── Sidebar backdrop (mobile) ─────────────────────────────────── */}
       {sidebarOpen && (
@@ -393,7 +398,7 @@ export default function AgentChat() {
       {/* ── Sidebar ───────────────────────────────────────────────────── */}
       <aside className={`
         fixed top-16 bottom-0 left-0 z-40 md:static md:top-auto md:bottom-auto
-        w-64 shrink-0 bg-linear-to-b from-gray-900 to-gray-600 border-r border-gray-700 flex flex-col
+        w-64 shrink-0 bg-tool border-r border-gray-700 flex flex-col
         transition-transform duration-300 ease-in-out
         ${sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
       `}>
@@ -404,7 +409,7 @@ export default function AgentChat() {
             className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-md border border-gray-700 hover:bg-gray-800 text-gray-300 hover:text-white text-sm transition-all"
           >
             <SquarePen size={15} className="shrink-0 text-sky-400" />
-            <span className="font-medium">New Chat</span>
+            <span className="font-medium">{t.agent.newChat}</span>
           </button>
         </div>
 
@@ -412,13 +417,15 @@ export default function AgentChat() {
         <div className="flex-1 overflow-y-auto p-2">
           {conversations.length === 0 ? (
             <p className="text-xs text-gray-600 text-center mt-8 px-3 leading-relaxed">
-              No conversations yet.<br />Start a new chat!
+              {t.agent.noConversations}<br />{t.agent.startNewChat}
             </p>
           ) : (
-            groups.map((group) => (
+            groups.map((group) => {
+              const groupLabel = group.label === "Today" ? t.agent.today : group.label === "Yesterday" ? t.agent.yesterday : t.agent.previous7Days;
+              return (
               <div key={group.label} className="mb-4">
                 <p className="text-[10px] font-semibold text-gray-600 uppercase tracking-widest px-3 mb-1">
-                  {group.label}
+                  {groupLabel}
                 </p>
                 <ul className="flex flex-col gap-0.5">
                   {group.items.map((conv) => (
@@ -448,12 +455,13 @@ export default function AgentChat() {
                   ))}
                 </ul>
               </div>
-            ))
+              );
+            })
           )}
         </div>
 
         <div className="px-4 py-3 border-t border-gray-700/60">
-          <p className="text-[10px] text-white text-center tracking-widest uppercase">Chats kept 7 days</p>
+          <p className="text-[10px] text-white text-center tracking-widest uppercase">{t.agent.chatsKept}</p>
         </div>
       </aside>
 
@@ -475,7 +483,7 @@ export default function AgentChat() {
             <span className="font-semibold text-white text-sm">
               {activeId
                 ? (conversations.find((c) => c.id === activeId)?.title ?? "Conversation")
-                : "AI Agent"}
+                : t.agent.aiAgent}
             </span>
           </div>
         </div>
@@ -486,7 +494,7 @@ export default function AgentChat() {
           {historyLoading && (
             <div className="flex items-center justify-center py-12 gap-2 text-gray-300 text-xs">
               <Loader2 size={14} className="animate-spin" />
-              Loading conversation...
+              {t.agent.loadingConversation}
             </div>
           )}
 
@@ -495,10 +503,10 @@ export default function AgentChat() {
               <div className="p-5 rounded-full bg-gray-800 shadow-md border border-gray-700">
                 <Bot size={36} className="text-sky-400" />
               </div>
-              <h2 className="text-2xl font-bold text-white">How can I help you?</h2>
+              <h2 className="text-2xl font-bold text-white">{t.agent.howCanIHelp}</h2>
               {mode === "chat" && (
                 <span className="text-xs bg-sky-900/30 text-sky-300 border border-sky-800 px-3 py-1 rounded-full">
-                  {pendingCount} pending · {doneCount} done
+                  {pendingCount} {t.agent.pending} · {doneCount} {t.agent.done}
                 </span>
               )}
               <p className="text-sm text-gray-300 max-w-sm">{currentMode.hint}</p>
@@ -557,7 +565,7 @@ export default function AgentChat() {
               </div>
               <div className="px-4 py-3 rounded-2xl rounded-bl-sm bg-gray-700 border border-gray-600 flex items-center gap-2 shadow-sm">
                 <Loader2 size={14} className="text-sky-400 animate-spin" />
-                <span className="text-xs text-gray-300">Thinking…</span>
+                <span className="text-xs text-gray-300">{t.agent.thinking}</span>
               </div>
             </div>
           )}

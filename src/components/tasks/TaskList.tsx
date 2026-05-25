@@ -312,8 +312,8 @@ export default function TaskList() {
                                             {task.date}
                                         </span>
                                     </p>
-                                    <p className="flex text-sm border-l-2 pl-3">
-                                        Time: <span className="text-sm font-sans ml-1">{task.time}</span>
+                                    <p className="flex text-sm border-l-2 pl-3 text-gray-600">
+                                        Time: <span className="text-sm font-sans ml-1 text-gray-700">{task.time}</span>
                                     </p>
                                     <div className="ml-auto flex gap-2">
                                         <button

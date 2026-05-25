@@ -190,7 +190,7 @@ export default function ImageToText() {
     };
 
     return (
-        <div className="w-full min-h-screen flex flex-col bg-gradient-to-b from-gray-900 via-gray-800 to-gray-700">
+        <div className="w-full min-h-screen flex flex-col bg-tool">
             <div className="flex-1 overflow-y-auto p-4 sm:p-6">
                 <div className="max-w-6xl mx-auto">
                     {/* Header */}

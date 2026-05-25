@@ -31,9 +31,10 @@ export default function EmojiProfiles({ setUserEmoji, userEmogi }: props) {
             >
                 {emogiprofile.map((src, index) => (
                     <button
+                        type="button"
                         onClick={() => setUserEmoji(src)}
                         key={index}
-                        className="cursor-pointer">
+                        className={`cursor-pointer rounded-xl p-1.5 transition-all ${userEmogi === src ? "ring-2 ring-sky-400 bg-sky-500/20 scale-105" : "hover:bg-white/10 hover:scale-105"}`}>
                         <Image
                             src={src}
                             alt={`emoji ${index + 1}`}

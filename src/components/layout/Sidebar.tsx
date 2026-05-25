@@ -51,7 +51,7 @@ export default function Sidebar() {
                             key={href}
                             href={href}
                             title={isCompact ? label : undefined}
-                            className={`flex items-center ${isCompact ? 'justify-center p-3 mx-1' : 'gap-3 px-3 py-2.5'} rounded-xl font-serif text-sm transition-all duration-200
+                            className={`flex items-center ${isCompact ? 'justify-center p-3 mx-1' : 'gap-3 px-3 py-2.5'} rounded-md font-serif text-sm transition-all duration-200
                                 ${isActive
                                     ? "bg-amber-400/15 text-amber-400 border border-amber-400/25 shadow-sm"
                                     : "text-gray-400 hover:bg-gray-800 hover:text-white"

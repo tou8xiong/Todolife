@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+/* ─── Tool pages dark background (#030712) ──────────────────── */
+@utility bg-tool {
+  background-color: #030712;
+}
+
 /* ─── Project Design Tokens ─────────────────────────────────── */
 :root {
   --background: #ffffff;

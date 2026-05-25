@@ -283,14 +283,14 @@ export default function Dashboard() {
 
     if (redirecting || !user) {
         return (
-            <div className="min-h-screen bg-linear-to-b from-gray-900 to-gray-600 flex items-center justify-center">
+            <div className="min-h-screen bg-tool flex items-center justify-center">
                 <div className="animate-spin h-8 w-8 border-4 border-sky-500 border-t-transparent rounded-full" />
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-linear-to-b from-gray-900 to-gray-600 p-4 sm:p-6 font-serif text-white">
+        <div className="min-h-screen bg-tool p-4 sm:p-6 font-serif text-white">
 
             <div className="bg-white/10 backdrop-blur-md border border-white/10 rounded-2xl shadow-lg p-5 mb-5 flex flex-col sm:flex-row sm:items-center gap-4 transition-all">
                 <div className="flex-1">
