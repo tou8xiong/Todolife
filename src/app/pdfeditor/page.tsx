@@ -1155,6 +1155,35 @@ export default function PdfEditor() {
                 )}
             </aside>
 
+            {/* Mobile-only header: title + mode switcher (replaces hidden right sidebar) */}
+            <div className="lg:hidden -mx-4 sm:-mx-6 -mt-4 sm:-mt-6 mb-3 sm:mb-4 bg-gray-900/95 backdrop-blur-md border-b border-white/10">
+                <div className="flex items-center gap-2 px-4 sm:px-6 py-3">
+                    <h1 className="text-sm font-bold text-white flex items-center gap-1.5 shrink-0 min-w-0 truncate">
+                        {mode === "annotator" ? (
+                            <><FileText size={15} className="text-amber-500 shrink-0" /> <span className="truncate">PDF Annotator</span></>
+                        ) : (
+                            <><FileImage size={15} className="text-amber-500 shrink-0" /> <span className="truncate">Image Converter</span></>
+                        )}
+                    </h1>
+                    <div className="ml-auto flex gap-1 bg-white/5 rounded-md p-1 border border-white/10 shrink-0">
+                        <button
+                            onClick={() => switchMode("annotator")}
+                            className={`flex items-center gap-1 px-2.5 py-1 rounded text-xs font-semibold transition-colors ${mode === "annotator" ? "bg-amber-500 text-white shadow" : "text-gray-300 hover:bg-white/10"}`}
+                        >
+                            <Pen size={12} />
+                            <span>{t.pdfEditor.annotator}</span>
+                        </button>
+                        <button
+                            onClick={() => switchMode("converter")}
+                            className={`flex items-center gap-1 px-2.5 py-1 rounded text-xs font-semibold transition-colors ${mode === "converter" ? "bg-amber-500 text-white shadow" : "text-gray-300 hover:bg-white/10"}`}
+                        >
+                            <FileImage size={12} />
+                            <span>{t.pdfEditor.converter}</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             {/* Upload zone */}
             {!hasFile ? (
                 <div className="flex items-center justify-center min-h-[calc(100vh-10rem)] w-full">
@@ -1203,7 +1232,7 @@ export default function PdfEditor() {
                 <div className="flex flex-col gap-3">
                     {/* Converter sticky control bar */}
                     {mode === "converter" && (
-                        <div className="sticky top-16 z-30 -mx-4 sm:-mx-6 -mt-4 sm:-mt-6 lg:-mr-8 bg-gray-900/95 backdrop-blur-md border-b border-white/10">
+                        <div className="sticky top-16 z-30 -mx-4 sm:-mx-6 lg:-mt-6 lg:-mr-8 bg-gray-900/95 backdrop-blur-md border-b border-white/10">
                             <div className="flex items-center gap-2 px-4 sm:px-6 py-3">
                                 <span className="text-xs font-semibold text-gray-300 flex items-center gap-1.5">
                                     <FileImage size={13} className="text-amber-400" />

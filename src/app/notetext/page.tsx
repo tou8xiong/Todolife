@@ -1333,13 +1333,13 @@ export default function NoteTextPage() {
                             className={`group relative p-5 rounded-2xl bg-white/5 backdrop-blur-md border ${color.border} hover:shadow-xl hover:scale-[1.02] transition-all duration-200 cursor-pointer`}
                           >
                             <div className="flex items-start gap-3">
-                              <div className={`p-2 rounded-xl bg-white/80 dark:bg-gray-800/80 shadow-sm`}>
+                              <div className={`p-2 rounded-xl bg-white/10 border border-white/10 shadow-sm`}>
                                 <MdDescription size={20} className={color.text} />
                               </div>
                               <div className="flex-1 min-w-0">
-                                <h3 className="font-semibold text-gray-800 dark:text-white truncate mb-1">{doc.title}</h3>
+                                <h3 className="font-semibold text-white truncate mb-1">{doc.title}</h3>
                                 {doc.updated_at && (
-                                  <p className="text-xs text-gray-500 dark:text-gray-400">{formatDate(doc.updated_at)}</p>
+                                  <p className="text-xs text-gray-400">{formatDate(doc.updated_at)}</p>
                                 )}
                               </div>
                             </div>
@@ -1405,13 +1405,13 @@ export default function NoteTextPage() {
                             className={`group relative p-5 rounded-md bg-white/5 backdrop-blur-md border ${color.border} hover:shadow-xl hover:scale-[1.02] transition-all duration-200 text-left cursor-pointer`}
                           >
                             <div className="flex items-start gap-3">
-                              <div className={`p-2.5 rounded-xl bg-white/80 dark:bg-gray-800/80 shadow-sm`}>
+                              <div className={`p-2.5 rounded-xl bg-white/10 border border-white/10 shadow-sm`}>
                                 <MdDescription size={22} className={color.text} />
                               </div>
                               <div className="flex-1 min-w-0">
-                                <h3 className="font-semibold text-gray-800 dark:text-white truncate mb-1">{doc.title}</h3>
+                                <h3 className="font-semibold text-white truncate mb-1">{doc.title}</h3>
                                 {doc.updated_at && (
-                                  <p className="text-xs text-gray-500 dark:text-gray-400">{formatDate(doc.updated_at)}</p>
+                                  <p className="text-xs text-gray-400">{formatDate(doc.updated_at)}</p>
                                 )}
                               </div>
                             </div>
