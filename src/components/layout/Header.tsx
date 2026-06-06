@@ -7,7 +7,7 @@ import { useAppContext } from "@/context/AppContext";
 import { useTaskCounts } from "@/hooks/useTaskCounts";
 import {
   Menu, X, LayoutDashboard, Timer, FileText, BookOpen,
-  CheckSquare, ListTodo, PlusSquare, ImageIcon, Loader2, Settings,
+  CheckSquare, ListTodo, PlusSquare, ImageIcon, Loader2, Settings, User,
 } from "lucide-react";
 import { TbRobot } from "react-icons/tb";
 import { signOut } from "firebase/auth";
@@ -118,22 +118,22 @@ export default function Header() {
               <div className="relative">
                 <button
                   onClick={() => setShowProfileMenu(!showProfileMenu)}
-                  className="flex items-center gap-2 px-2 py-1 rounded-md hover:bg-blue-400/40 transition-colors cursor-pointer"
+                  className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-blue-400/40 transition-colors cursor-pointer"
                 >
-                  <div className="w-8 h-8 rounded-full overflow-hidden border-2 border-white shadow-sm flex items-center justify-center bg-amber-100 shrink-0">
+                  <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full overflow-hidden border-2 border-white shadow-sm flex items-center justify-center bg-amber-100 shrink-0">
                     {profileLoading ? (
-                      <Loader2 size={16} className="text-blue-400 animate-spin" />
+                      <Loader2 size={18} className="text-blue-400 animate-spin" />
                     ) : profile.profileImage ? (
-                      <Image src={profile.profileImage} alt="profile" width={32} height={32} className="object-cover w-full h-full" />
+                      <Image src={profile.profileImage} alt="profile" width={40} height={40} className="object-cover w-full h-full" />
                     ) : profile.emoji ? (
-                      <Image src={profile.emoji} alt="avatar" width={32} height={32} className="object-cover w-full h-full" />
+                      <Image src={profile.emoji} alt="avatar" width={40} height={40} className="object-cover w-full h-full" />
                     ) : (
-                      <span className="text-sm font-bold text-blue-600">
+                      <span className="text-base font-bold text-blue-600">
                         {username[0].toUpperCase()}
                       </span>
                     )}
                   </div>
-                  <span className="font-semibold text-sm hidden sm:block text-gray-800 max-w-[90px] truncate">
+                  <span className="font-semibold text-base sm:text-lg hidden sm:block text-gray-800 max-w-[120px] sm:max-w-[160px] truncate">
                     {username}
                   </span>
                 </button>
@@ -141,26 +141,27 @@ export default function Header() {
                 {showProfileMenu && (
                   <>
                     <div className="fixed inset-0 z-40" onClick={() => setShowProfileMenu(false)} />
-                    <div className="absolute right-0 mt-2 w-44 bg-white rounded-xl shadow-xl border border-gray-100 z-50">
-                      <ul className="p-1.5 flex flex-col gap-0.5 font-serif text-gray-800">
+                    <div className="absolute right-0 mt-2 w-56 sm:w-60 bg-white rounded-xl shadow-xl border border-gray-100 z-50">
+                      <ul className="p-2 flex flex-col gap-0.5 font-serif text-gray-800">
                         <li>
                           <Link href="/profile"
                             onClick={() => setShowProfileMenu(false)}
-                            className="block px-3 py-2 rounded-lg hover:bg-gray-100 text-sm transition-colors">
+                            className="flex items-center gap-2 px-4 py-2.5 rounded-lg hover:bg-gray-100 text-base transition-colors">
+                            <User size={18} className="text-gray-500" />
                             {t.nav.profile}
                           </Link>
                         </li>
                         <li>
                           <Link href="/settings"
                             onClick={() => setShowProfileMenu(false)}
-                            className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-100 text-sm transition-colors">
-                            <Settings size={14} className="text-gray-500" />
+                            className="flex items-center gap-2 px-4 py-2.5 rounded-lg hover:bg-gray-100 text-base transition-colors">
+                            <Settings size={18} className="text-gray-500" />
                             {t.nav.settings}
                           </Link>
                         </li>
                         <li>
                           <button onClick={handleLogout}
-                            className="w-full text-left px-3 py-2 rounded-md hover:bg-red-50 text-sm text-red-600 transition-colors">
+                            className="w-full text-left px-4 py-2.5 rounded-lg hover:bg-red-50 text-base text-red-600 transition-colors">
                             {t.nav.logout}
                           </button>
                         </li>

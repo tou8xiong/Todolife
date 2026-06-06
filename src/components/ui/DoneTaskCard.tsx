@@ -6,7 +6,7 @@ import { CheckCircle2, CalendarDays, Clock } from "lucide-react";
 const PRIORITY_STYLES: Record<string, string> = {
   high: "bg-red-100 text-red-600 border-red-400",
   medium: "bg-yellow-100 text-yellow-600 border-yellow-400",
-  low: "bg-green-100 text-green-600 border-green-400",
+  low: "bg-slate-100 text-slate-600 border-slate-400",
 };
 
 const formatCompletedAt = (iso?: string | null) => {
@@ -34,7 +34,7 @@ export default function DoneTaskCard({ task, onDelete }: DoneTaskCardProps) {
     : null;
 
   return (
-    <div className="w-full p-5 sm:p-7 shadow-md rounded-xl border-l-4 hover:shadow-xl transition-all duration-200 bg-white border-green-500 break-words">
+    <div className="w-full p-5 sm:p-7 shadow-md rounded-md border-l-4 hover:shadow-xl transition-all duration-200 bg-white border-amber-400 break-words">
 
       {/* Top row: title + priority badge */}
       <div className="flex items-start gap-2">
@@ -69,7 +69,7 @@ export default function DoneTaskCard({ task, onDelete }: DoneTaskCardProps) {
           </p>
         )}
         <div className="ml-auto flex items-center gap-2">
-          <span className="flex items-center gap-1 text-xs text-green-600 font-semibold">
+          <span className="flex items-center gap-1 text-xs text-amber-600 font-semibold">
             <CheckCircle2 size={13} className="shrink-0" />
             {formatCompletedAt(task.completedAt)}
           </span>

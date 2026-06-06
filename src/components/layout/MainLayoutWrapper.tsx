@@ -5,10 +5,11 @@ import { useAppContext } from "@/context/AppContext";
 
 export default function MainLayoutWrapper({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const { forceExpandSidebar } = useAppContext();
-  
+  const { forceExpandSidebar, forceCollapseSidebar } = useAppContext();
+
   const compactPages = ["/notetext", "/background-removal"];
-  const isCompact = compactPages.some(p => pathname.startsWith(p)) && !forceExpandSidebar;
+  const isCompactPage = compactPages.some(p => pathname.startsWith(p));
+  const isCompact = isCompactPage ? !forceExpandSidebar : forceCollapseSidebar;
 
   return (
     <main className={`${isCompact ? "md:ml-16" : "md:ml-45"} min-h-[calc(100vh-4rem)] transition-all duration-300`}>

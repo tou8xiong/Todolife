@@ -861,7 +861,6 @@ export default function NoteTextPage() {
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-sm font-bold text-white flex items-center gap-1.5">
                   My Workspace
-                  <PageHelpTooltip subtitle={t.pageHelp.notetext.subtitle} description={t.pageHelp.notetext.description} side="bottom" iconSize={11} />
                 </h2>
                 <div className="flex items-center gap-1">
                   <button

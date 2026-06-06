@@ -1,11 +1,12 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { Task } from "@/types/task";
 import DoneTaskCard from "@/components/ui/DoneTaskCard";
 import { ConfirmDeleteButton } from "@/components/ui/ConfirmDeleteitems";
-import { CheckCircle2, Briefcase, BookOpen, Zap } from "lucide-react";
+import * as AlertDialog from "@radix-ui/react-alert-dialog";
+import { CheckCircle2, Briefcase, BookOpen, Zap, MoreVertical, Trash2 } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { authFetch } from "@/lib/authFetch";
 import PageHelpTooltip from "@/components/ui/PageHelpTooltip";
@@ -21,7 +22,7 @@ const TASK_TYPES: {
   accent: string;
 }[] = [
     { type: "work", labelKey: "work", short: "Work", icon: Briefcase, color: "text-blue-400", accent: "border-blue-400/50 bg-blue-400/10" },
-    { type: "study", labelKey: "study", short: "Study", icon: BookOpen, color: "text-violet-400", accent: "border-violet-400/50 bg-violet-400/10" },
+    { type: "study", labelKey: "study", short: "Study", icon: BookOpen, color: "text-slate-300", accent: "border-slate-300/50 bg-slate-300/10" },
     { type: "activities", labelKey: "activities", short: "Acts", icon: Zap, color: "text-amber-400", accent: "border-amber-400/50 bg-amber-400/10" },
   ];
 
@@ -43,7 +44,7 @@ function TaskTypeColumn({ tasks, type, label, icon: Icon, color, selectedType, o
   return (
     <div className={`${isVisible ? "flex" : "hidden"} sm:flex flex-col flex-1 min-w-0`}>
       {/* Column header */}
-      <div className="flex items-center justify-between px-2.5 py-2 mb-2 rounded-xl bg-gray-800/60 border border-gray-700/50">
+      <div className="flex items-center justify-between px-2.5 py-2 mb-2 rounded-md bg-gray-800/60 border border-gray-700/50">
         <div className="flex items-center gap-1.5 min-w-0">
           <Icon size={15} className={`${color} shrink-0`} />
           <span className={`text-xs sm:text-sm font-bold ${color} truncate`}>{label}</span>
@@ -56,9 +57,9 @@ function TaskTypeColumn({ tasks, type, label, icon: Icon, color, selectedType, o
       {/* Task list — scrollable, adapts height to viewport */}
       <div className="overflow-y-auto hide-scrollbar space-y-2 max-h-[58vh] sm:max-h-[calc(100vh-320px)]">
         {filtered.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-36 gap-2 rounded-xl border border-dashed border-gray-700 bg-white/5">
+          <div className="flex flex-col items-center justify-center min-h-[10rem] gap-2 p-4 rounded-md border border-dashed border-gray-700 bg-white/5">
             <CheckCircle2 size={24} className="text-gray-500" />
-            <p className="text-xs text-gray-400 text-center px-2">{t.tasks.noCompletedTasks}</p>
+            <p className="text-xs text-gray-400 text-center px-2 break-words">{t.tasks.noCompletedTasks}</p>
           </div>
         ) : (
           filtered.map((task) => (
@@ -76,6 +77,19 @@ export default function DoneTasks() {
   const [selectedType, setSelectedType] = useState<TaskType>("work");
   const [user, setUser] = useState<any>(null);
   const [loadingUser, setLoadingUser] = useState(true);
+  const [showMenu, setShowMenu] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!showMenu) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setShowMenu(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [showMenu]);
 
   const loadDoneTasks = async (userEmail: string) => {
     try {
@@ -159,8 +173,8 @@ export default function DoneTasks() {
         {/* ── Header ── */}
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-            <div className="shrink-0 p-2 sm:p-2.5 rounded-xl bg-green-100 dark:bg-green-500/20 border border-green-200 dark:border-green-500/30">
-              <CheckCircle2 size={18} className="text-green-600 dark:text-green-400 sm:w-5.5 sm:h-5.5" />
+            <div className="shrink-0 p-2 sm:p-2.5 rounded-xl bg-amber-100 dark:bg-amber-500/20 border border-amber-200 dark:border-amber-500/30">
+              <CheckCircle2 size={18} className="text-amber-600 dark:text-amber-400 sm:w-5.5 sm:h-5.5" />
             </div>
             <div className="min-w-0">
               <h1 className="text-xl sm:text-3xl font-bold text-white leading-tight truncate flex items-center gap-2">
@@ -174,15 +188,57 @@ export default function DoneTasks() {
           </div>
 
           {doneTasks.length > 0 && (
-            <div className="shrink-0">
-              <ConfirmDeleteButton
-                itemName="all completed tasks"
-                itemId="all"
-                onDelete={() => doClearAll()}
+            <div className="shrink-0 relative" ref={menuRef}>
+              <button
+                onClick={() => setShowMenu((prev) => !prev)}
+                className="p-2.5 rounded-md text-gray-300 hover:bg-gray-700/50 hover:text-white transition-colors"
+                title="More options"
+                aria-label="More options"
+                aria-expanded={showMenu}
               >
-                <span className="hidden sm:inline">{t.clearAll}</span>
-                <span className="sm:hidden">{t.clearAll}</span>
-              </ConfirmDeleteButton>
+                <MoreVertical size={20} />
+              </button>
+              {showMenu && (
+                <div className="absolute right-0 mt-2 w-56 bg-gray-900 rounded-xl shadow-xl border border-gray-700/60 z-50 p-2">
+                  <AlertDialog.Root>
+                    <AlertDialog.Trigger asChild>
+                      <button
+                        onClick={() => setShowMenu(false)}
+                        className="flex items-center gap-2 w-full px-3 py-2.5 rounded-lg text-red-400 hover:bg-red-500/10 text-base font-medium transition-colors"
+                      >
+                        <Trash2 size={18} />
+                        {t.clearAll}
+                      </button>
+                    </AlertDialog.Trigger>
+                    <AlertDialog.Portal>
+                      <AlertDialog.Overlay className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50" />
+                      <AlertDialog.Content className="fixed left-1/2 top-1/2 z-50 w-[90vw] max-w-md -translate-x-1/2 -translate-y-1/2 p-5 sm:p-6 bg-gray-900 border border-gray-800 shadow-2xl rounded-2xl font-serif">
+                        <AlertDialog.Title className="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
+                          <span className="text-red-500">⚠️</span> Are you sure?
+                        </AlertDialog.Title>
+                        <AlertDialog.Description className="text-sm text-gray-400 leading-relaxed mt-2">
+                          This will permanently delete all completed tasks. This action cannot be undone.
+                        </AlertDialog.Description>
+                        <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2.5 mt-5">
+                          <AlertDialog.Cancel asChild>
+                            <button className="px-4 py-2.5 rounded-md font-medium text-gray-300 bg-white/5 hover:bg-white/10 border border-white/10 transition-colors">
+                              Cancel
+                            </button>
+                          </AlertDialog.Cancel>
+                          <AlertDialog.Action asChild>
+                            <button
+                              onClick={() => doClearAll()}
+                              className="px-4 py-2.5 rounded-md font-medium text-white bg-red-600 hover:bg-red-700 shadow-[0_0_15px_rgba(220,38,38,0.3)] transition-all"
+                            >
+                              Yes, clear all
+                            </button>
+                          </AlertDialog.Action>
+                        </div>
+                      </AlertDialog.Content>
+                    </AlertDialog.Portal>
+                  </AlertDialog.Root>
+                </div>
+              )}
             </div>
           )}
         </div>
