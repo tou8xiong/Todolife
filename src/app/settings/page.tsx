@@ -12,6 +12,7 @@ import {
   Settings, Moon, Sun, Bell, BellOff, User, LogOut,
   ShieldAlert, Info, ChevronRight, Trash2, Globe, Check,
 } from "lucide-react";
+import PageHelpTooltip from "@/components/ui/PageHelpTooltip";
 
 const LANGUAGES: { locale: Locale; label: string; native: string; flag: string }[] = [
   { locale: "en", label: "English", native: "English", flag: "🇬🇧" },
@@ -89,7 +90,10 @@ export default function SettingsPage() {
             <Settings size={20} className="text-sky-400" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-white">{s.title}</h1>
+            <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+              {s.title}
+              <PageHelpTooltip subtitle={t.pageHelp.settings.subtitle} description={t.pageHelp.settings.description} />
+            </h1>
             <p className="text-sm text-gray-300">{s.subtitle}</p>
           </div>
         </div>

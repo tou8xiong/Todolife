@@ -6,6 +6,7 @@ import { Task } from "@/types/task";
 import { useLanguage } from "@/context/LanguageContext";
 import { authFetch } from "@/lib/authFetch";
 import { BookOpen, Clock, Zap, Target, CheckCircle } from "lucide-react";
+import PageHelpTooltip from "@/components/ui/PageHelpTooltip";
 
 interface Idea {
     id: number;
@@ -294,8 +295,9 @@ export default function Dashboard() {
 
             <div className="bg-white/10 backdrop-blur-md border border-white/10 rounded-2xl shadow-lg p-5 mb-5 flex flex-col sm:flex-row sm:items-center gap-4 transition-all">
                 <div className="flex-1">
-                    <h1 className="text-2xl font-bold text-white">
-                        {getGreeting(d)}, {displayName} 👋
+                    <h1 className="text-2xl font-bold text-white flex items-center gap-2 flex-wrap">
+                        <span>{getGreeting(d)}, {displayName} 👋</span>
+                        <PageHelpTooltip subtitle={t.pageHelp.dashboard.subtitle} description={t.pageHelp.dashboard.description} />
                     </h1>
                     <p className="text-gray-300 text-sm mt-1">
                         {new Date().toLocaleDateString(locale === "lo" ? "lo-LA" : "en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}

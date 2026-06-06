@@ -9,7 +9,7 @@ import {
     UploadCloud, FileText, FileImage, FileType2,
     Download, ArrowUp, ZoomIn, ZoomOut, Maximize2,
     Undo2, Redo2, Type as TypeIcon, Pen, Image as ImageLucide,
-    Trash2, Info, List, X as XIcon, GripHorizontal,
+    Trash2, List, X as XIcon, GripHorizontal,
 } from "lucide-react";
 import { useAppContext } from "@/context/AppContext";
 import { useRouter } from "next/navigation";
@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import { saveTempData, loadTempData, clearTempData } from "@/lib/tempData";
 import { useAlert } from "@/hooks/useAlert";
 import { useLanguage } from "@/context/LanguageContext";
+import PageHelpTooltip from "@/components/ui/PageHelpTooltip";
 
 // ── Drag / resize ref type ───────────────────────────────────────────────────
 
@@ -1092,24 +1093,7 @@ export default function PdfEditor() {
                                     : <><FileImage size={20} className="inline-block mr-2 -mt-1 text-amber-500" />Image Converter</>
                                 }
                             </h1>
-                            <div className="relative group shrink-0">
-                                <button
-                                    type="button"
-                                    aria-label="Info"
-                                    className="flex items-center justify-center w-6 h-6 rounded-full bg-white/10 hover:bg-amber-500/20 text-gray-300 hover:text-amber-400 transition-colors"
-                                >
-                                    <Info size={13} />
-                                </button>
-                                <div className="absolute right-full mr-2 top-1/2 -translate-y-1/2 z-50 opacity-0 invisible group-hover:opacity-100 group-hover:visible group-focus-within:opacity-100 group-focus-within:visible transition-opacity duration-150 pointer-events-none">
-                                    <div className="relative bg-gray-800 text-white text-xs px-3 py-2 rounded-lg shadow-xl border border-amber-400/30 w-56">
-                                        {mode === "annotator"
-                                            ? "Upload a PDF, Word (.docx), or text file · add annotations · download as PDF"
-                                            : "Upload an image · convert to PDF or DOCX"
-                                        }
-                                        <div className="absolute top-1/2 -right-1 -translate-y-1/2 w-2 h-2 bg-gray-800 border-r border-t border-amber-400/30 rotate-45" />
-                                    </div>
-                                </div>
-                            </div>
+                            <PageHelpTooltip subtitle={t.pageHelp.pdfeditor.subtitle} description={t.pageHelp.pdfeditor.description} side="left" />
                         </div>
                         <p className="text-xs text-gray-400 mt-1.5">Document management &amp; conversion.</p>
                     </div>
@@ -1164,6 +1148,7 @@ export default function PdfEditor() {
                         ) : (
                             <><FileImage size={15} className="text-amber-500 shrink-0" /> <span className="truncate">Image Converter</span></>
                         )}
+                        <PageHelpTooltip subtitle={t.pageHelp.pdfeditor.subtitle} description={t.pageHelp.pdfeditor.description} side="bottom" iconSize={12} />
                     </h1>
                     <div className="ml-auto flex gap-1 bg-white/5 rounded-md p-1 border border-white/10 shrink-0">
                         <button

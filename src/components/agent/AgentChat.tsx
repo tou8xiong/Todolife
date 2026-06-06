@@ -11,6 +11,7 @@ import {
 import { buildSystemPrompt, parseTaskFromResponse, AgentSystemPromptOptions, ParsedUpdateData } from "@/utils/aiPrompts";
 import { authFetch } from "@/lib/authFetch";
 import { useLanguage } from "@/context/LanguageContext";
+import PageHelpTooltip from "@/components/ui/PageHelpTooltip";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -485,6 +486,7 @@ export default function AgentChat() {
                 ? (conversations.find((c) => c.id === activeId)?.title ?? "Conversation")
                 : t.agent.aiAgent}
             </span>
+            <PageHelpTooltip subtitle={t.pageHelp.agent.subtitle} description={t.pageHelp.agent.description} />
           </div>
         </div>
 

@@ -8,6 +8,7 @@ import { ConfirmDeleteButton } from "@/components/ui/ConfirmDeleteitems";
 import { CheckCircle2, Briefcase, BookOpen, Zap } from "lucide-react";
 import { useLanguage } from "@/context/LanguageContext";
 import { authFetch } from "@/lib/authFetch";
+import PageHelpTooltip from "@/components/ui/PageHelpTooltip";
 
 type TaskType = "work" | "study" | "activities";
 
@@ -162,8 +163,9 @@ export default function DoneTasks() {
               <CheckCircle2 size={18} className="text-green-600 dark:text-green-400 sm:w-5.5 sm:h-5.5" />
             </div>
             <div className="min-w-0">
-              <h1 className="text-xl sm:text-3xl font-bold text-white leading-tight truncate">
-                {t.tasks.completedTasks}
+              <h1 className="text-xl sm:text-3xl font-bold text-white leading-tight truncate flex items-center gap-2">
+                <span className="truncate">{t.tasks.completedTasks}</span>
+                <PageHelpTooltip subtitle={t.pageHelp.completetasks.subtitle} description={t.pageHelp.completetasks.description} />
               </h1>
               <p className="text-xs sm:text-sm text-gray-300 mt-0.5">
                 {doneTasks.length} {t.tasks.tasksDone}

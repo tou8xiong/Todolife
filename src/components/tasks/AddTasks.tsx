@@ -7,6 +7,7 @@ import AlertDialog from "@/components/ui/AlertDialog";
 import { useLanguage } from "@/context/LanguageContext";
 import { Briefcase, BookOpen, Zap, CalendarDays, Clock, X, Check } from "lucide-react";
 import { authFetch } from "@/lib/authFetch";
+import PageHelpTooltip from "@/components/ui/PageHelpTooltip";
 
 const VALID_TYPES = ["work", "study", "activities"];
 const VALID_PRIORITIES = ["high", "medium", "low"];
@@ -135,8 +136,9 @@ export default function AddTasks() {
             <div className="sm:w-[700px] sm:h-[750px] mt-[10px] w-full mx-1 bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-2xl border border-gray-700 flex flex-col">
 
                 <div className="text-center pt-3 pb-2">
-                    <h1 className="text-lg font-bold text-white font-serif tracking-tight">
+                    <h1 className="text-lg font-bold text-white font-serif tracking-tight inline-flex items-center justify-center gap-2">
                         {t.tasks.addNewTask}
+                        <PageHelpTooltip subtitle={t.pageHelp.newtasks.subtitle} description={t.pageHelp.newtasks.description} />
                     </h1>
                     <p className="text-gray-300 text-xs mt-0.5">Fill in the details below</p>
                 </div>

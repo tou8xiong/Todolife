@@ -8,6 +8,7 @@ import {
 import { toast } from "sonner";
 import { auth } from "@/lib/firebase";
 import { useLanguage } from "@/context/LanguageContext";
+import PageHelpTooltip from "@/components/ui/PageHelpTooltip";
 
 // ── Constants ────────────────────────────────────────────────────────────────
 const PRESET_VIDEOS = [
@@ -227,6 +228,15 @@ export default function TimerSettings() {
 
       <div className={`max-w-5xl w-full flex flex-col gap-6 mt-4 pb-12 transition-all ${isFocusMode ? "max-w-md" : ""}`}>
 
+        {!isFocusMode && (
+          <div className="flex items-center justify-center gap-2">
+            <h1 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2">
+              <Clock size={20} className="text-amber-400" />
+              Study Timer
+              <PageHelpTooltip subtitle={t.pageHelp.settimepage.subtitle} description={t.pageHelp.settimepage.description} />
+            </h1>
+          </div>
+        )}
 
         {/* Mode tabs */}
         <div className="flex items-center justify-center gap-1 bg-gray-800/80 border border-gray-700 rounded-md p-1 self-center">

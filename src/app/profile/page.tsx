@@ -8,6 +8,7 @@ import EmojiProfiles from "@/components/ui/cartoonvector";
 import Image from "next/image";
 import { useLanguage } from "@/context/LanguageContext";
 import { authFetch } from "@/lib/authFetch";
+import PageHelpTooltip from "@/components/ui/PageHelpTooltip";
 
 export default function Profile() {
   const { t } = useLanguage();
@@ -176,7 +177,10 @@ export default function Profile() {
               </label>
             </div>
 
-            <h2 className="text-2xl font-bold text-white mb-2">{user.displayName || "Unknown User"}</h2>
+            <h2 className="text-2xl font-bold text-white mb-2 flex items-center justify-center gap-2">
+              <span>{user.displayName || "Unknown User"}</span>
+              <PageHelpTooltip subtitle={t.pageHelp.profile.subtitle} description={t.pageHelp.profile.description} />
+            </h2>
             <div className="flex items-center gap-2 text-gray-300 text-sm bg-white/10 px-4 py-2 rounded-full border border-white/5">
               <MdEmail className="text-sky-400" />
               <span>{user.email}</span>

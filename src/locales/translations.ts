@@ -431,6 +431,66 @@ export const translations = {
       downloadAsFile: "Download as File",
     },
 
+    // ── Page Help Tooltips (per-page subtitle + description) ──────────────
+    pageHelp: {
+      home: {
+        subtitle: "Your TodoLife home",
+        description: "A friendly welcome, today's snapshot, and a quick way to add a new task.",
+      },
+      dashboard: {
+        subtitle: "Productivity at a glance",
+        description: "See completed, pending, day streak, and due-today counts plus today's tasks, weekly progress, and recent notes.",
+      },
+      mytasks: {
+        subtitle: "All your pending tasks",
+        description: "View, edit, mark done, or delete every task you haven't finished. Sorted by deadline so the most urgent surface first.",
+      },
+      newtasks: {
+        subtitle: "Add a new task",
+        description: "Set a title, type, priority, deadline date and time, plus an optional description.",
+      },
+      completetasks: {
+        subtitle: "Your completed work",
+        description: "Review tasks you've already finished. Grouped by type and sorted by completion date so you can celebrate progress.",
+      },
+      settimepage: {
+        subtitle: "Focus timer & study sessions",
+        description: "Stopwatch, Pomodoro, or countdown. Pick a task, focus, and your session is logged automatically.",
+      },
+      noteidea: {
+        subtitle: "Capture quick ideas",
+        description: "Drop short ideas as colourful sticky notes so nothing slips your mind. Synced to your account.",
+      },
+      notetext: {
+        subtitle: "Rich-text documents & folders",
+        description: "Write full notes with formatting, images, and lists. Organize them into folders and export to PDF.",
+      },
+      pdfeditor: {
+        subtitle: "Annotate & convert PDFs",
+        description: "Upload a PDF, Word, or text file and add annotations — or convert an image into PDF or DOCX.",
+      },
+      backgroundRemoval: {
+        subtitle: "Erase image backgrounds",
+        description: "Drop any image. AI removes the background fully in your browser and gives you back a transparent PNG.",
+      },
+      imagetotext: {
+        subtitle: "Extract text from images (OCR)",
+        description: "Upload an image and pull out its text. Supports multiple languages including Lao, Thai, Chinese, and more.",
+      },
+      agent: {
+        subtitle: "Your AI assistant",
+        description: "Chat to manage tasks, summarize text, or get task suggestions. Conversations are kept for 7 days.",
+      },
+      profile: {
+        subtitle: "Your account info",
+        description: "Update your display name, pick a profile photo or avatar, and view the email tied to your account.",
+      },
+      settings: {
+        subtitle: "App preferences",
+        description: "Switch theme and language, control notifications, manage your account, or delete it entirely.",
+      },
+    },
+
     // ── Common UI Elements ────────────────────────────────────────────────
     common: {
       buttons: {
@@ -894,6 +954,66 @@ export const translations = {
       dropToUpload: "ວາງເພື່ອອັບໂຫລດ",
       downloadAsPdf: "ດາວໂຫລດເປັນ PDF",
       downloadAsFile: "ດາວໂຫລດໄຟລ໌",
+    },
+
+    // ── Page Help Tooltips (per-page subtitle + description) ──────────────
+    pageHelp: {
+      home: {
+        subtitle: "ໜ້າຫຼັກ TodoLife",
+        description: "ທັກທາຍ, ເບິ່ງສະຫຼຸບປະຈຳວັນ ແລະ ເພີ່ມວຽກໃໝ່ໄດ້ໄວ.",
+      },
+      dashboard: {
+        subtitle: "ສະຫຼຸບປະສິດທິພາບໃນເບິ່ງດຽວ",
+        description: "ເບິ່ງວຽກສຳເລັດ, ກຳລັງດຳເນີນ, ສະຖິຕິຕໍ່ເນື່ອງ, ກຳນົດມື້ນີ້ ພ້ອມຄວາມຄືບໜ້າອາທິດ ແລະ ບັນທຶກຫຼ້າສຸດ.",
+      },
+      mytasks: {
+        subtitle: "ວຽກກຳລັງດຳເນີນທັງໝົດ",
+        description: "ເບິ່ງ, ແກ້ໄຂ, ໝາຍວ່າສຳເລັດ ຫຼື ລຶບວຽກທີ່ຍັງບໍ່ສຳເລັດ. ຮຽງຕາມວັນຄົບກຳນົດເພື່ອໃຫ້ວຽກດ່ວນຂຶ້ນກ່ອນ.",
+      },
+      newtasks: {
+        subtitle: "ເພີ່ມວຽກໃໝ່",
+        description: "ຕັ້ງຫົວຂໍ້, ປະເພດ, ລະດັບຄວາມສຳຄັນ, ວັນທີ ແລະ ເວລາຄົບກຳນົດ, ພ້ອມລາຍລະອຽດເສີມ.",
+      },
+      completetasks: {
+        subtitle: "ວຽກທີ່ສຳເລັດແລ້ວ",
+        description: "ກວດເບິ່ງວຽກທີ່ສຳເລັດແລ້ວ. ຈັດກຸ່ມຕາມປະເພດ ແລະ ຮຽງຕາມວັນທີ່ສຳເລັດ.",
+      },
+      settimepage: {
+        subtitle: "ໂມງໂຟກັສ ແລະ ຊ່ວງເວລາຮຽນ",
+        description: "ໂມງຈັບເວລາ, Pomodoro ຫຼື ນັບຖອຍຫຼັງ. ເລືອກວຽກ, ໂຟກັສ, ແລ້ວຊ່ວງເວລາຈະຖືກບັນທຶກອັດຕະໂນມັດ.",
+      },
+      noteidea: {
+        subtitle: "ຈັບແນວຄິດແບບໄວ",
+        description: "ບັນທຶກແນວຄິດສັ້ນໆແບບໂນ້ດຕິດສີສັນສົດໃສ ບໍ່ໃຫ້ລືມຫຍັງ. ຊິງຄ໌ກັບບັນຊີຂອງທ່ານ.",
+      },
+      notetext: {
+        subtitle: "ເອກະສານ ແລະ ໂຟລເດີ",
+        description: "ຂຽນບັນທຶກໂດຍລະອຽດພ້ອມຮູບແບບ, ຮູບພາບ ແລະ ລາຍການ. ຈັດໂຟລເດີ ແລະ ສົ່ງອອກເປັນ PDF.",
+      },
+      pdfeditor: {
+        subtitle: "ໝາຍ ແລະ ແປງ PDF",
+        description: "ອັບໂຫລດໄຟລ໌ PDF, Word ຫຼື ໄຟລ໌ຂໍ້ຄວາມເພື່ອໝາຍ — ຫຼື ແປງຮູບເປັນ PDF ຫຼື DOCX.",
+      },
+      backgroundRemoval: {
+        subtitle: "ລຶບພື້ນຫຼັງຮູບ",
+        description: "ວາງຮູບໃດໆ. AI ລຶບພື້ນຫຼັງໃນບຣາວເຊີ ແລະ ສົ່ງຄືນ PNG ໂປ່ງໃສ.",
+      },
+      imagetotext: {
+        subtitle: "ແຍກຂໍ້ຄວາມຈາກຮູບ (OCR)",
+        description: "ອັບໂຫລດຮູບ ແລະ ແຍກຂໍ້ຄວາມອອກ. ຮອງຮັບຫຼາຍພາສາ ລວມທັງລາວ, ໄທ, ຈີນ ແລະ ອື່ນໆ.",
+      },
+      agent: {
+        subtitle: "ຜູ້ຊ່ວຍ AI ຂອງທ່ານ",
+        description: "ສົນທະນາເພື່ອຈັດການວຽກ, ສະຫຼຸບຂໍ້ຄວາມ ຫຼື ໄດ້ຮັບການແນະນຳວຽກ. ການສົນທະນາຖືກເກັບ 7 ວັນ.",
+      },
+      profile: {
+        subtitle: "ຂໍ້ມູນບັນຊີຂອງທ່ານ",
+        description: "ປ່ຽນຊື່ສະແດງ, ເລືອກຮູບໂປຣໄຟລ໌ ຫຼື avatar ແລະ ເບິ່ງອີເມວທີ່ຜູກກັບບັນຊີ.",
+      },
+      settings: {
+        subtitle: "ການຕັ້ງຄ່າແອັບ",
+        description: "ປ່ຽນຮູບແບບ ແລະ ພາສາ, ຄວບຄຸມການແຈ້ງເຕືອນ, ຈັດການບັນຊີ ຫຼື ລຶບບັນຊີທັງໝົດ.",
+      },
     },
 
     // ── Common UI Elements ────────────────────────────────────────────────

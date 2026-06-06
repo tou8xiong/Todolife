@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import { useAlert } from "@/hooks/useAlert";
 import { authFetch } from "@/lib/authFetch";
 import { useLanguage } from "@/context/LanguageContext";
+import PageHelpTooltip from "@/components/ui/PageHelpTooltip";
 
 interface Idea {
     id: number;
@@ -147,7 +148,10 @@ export default function NooteBook() {
                 <div className="bg-white/10 backdrop-blur-md rounded-full p-4 shadow-md mb-3 border border-white/10">
                     <GiNotebook size={48} className="text-sky-500 dark:text-sky-400" />
                 </div>
-                <h1 className="text-3xl font-bold text-white tracking-tight">{t.noteIdea.title}</h1>
+                <h1 className="text-3xl font-bold text-white tracking-tight flex items-center gap-2">
+                    {t.noteIdea.title}
+                    <PageHelpTooltip subtitle={t.pageHelp.noteidea.subtitle} description={t.pageHelp.noteidea.description} />
+                </h1>
                 <p className="text-sm text-gray-300 mt-1">{t.noteIdea.subtitle}</p>
             </div>
 

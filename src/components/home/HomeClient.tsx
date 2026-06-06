@@ -2,6 +2,8 @@
 import AddTasks from "@/components/tasks/AddTasks";
 import Footer from "@/components/layout/Footer";
 import { useAppContext } from "@/context/AppContext";
+import { useLanguage } from "@/context/LanguageContext";
+import PageHelpTooltip from "@/components/ui/PageHelpTooltip";
 import { useEffect, useState, useCallback } from "react";
 
 function FloatingDots() {
@@ -60,6 +62,7 @@ function WaveText({ text, className = "" }: { text: string; className?: string }
 
 export default function HomeClient() {
   const { user } = useAppContext();
+  const { t } = useLanguage();
   const username = user?.displayName || user?.email?.split("@")[0] || "Guest";
   const [mounted, setMounted] = useState(false);
 
@@ -134,8 +137,9 @@ export default function HomeClient() {
                 {mounted ? <WaveText text={username} /> : username}
               </span>
             </p>
-            <span className="text-3xl sm:text-5xl inline-block animate-wave-text">
+            <span className="text-3xl sm:text-5xl inline-flex items-center gap-3 animate-wave-text">
               <WaveText text="Welcome To TODOLIFE" className="text-blue-400" />
+              <PageHelpTooltip subtitle={t.pageHelp.home.subtitle} description={t.pageHelp.home.description} iconSize={18} />
             </span>
           </h1>
           <h1 className="font-serif text-center text-base sm:text-lg text-gray-200 mt-4">

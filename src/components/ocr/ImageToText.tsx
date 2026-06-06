@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { useLanguage } from "@/context/LanguageContext";
+import PageHelpTooltip from "@/components/ui/PageHelpTooltip";
 
 interface HistoryItem {
     id: string;
@@ -387,8 +388,9 @@ export default function ImageToText() {
                                     <FileText className="w-6 h-6 sm:w-7 sm:h-7 text-sky-300" />
                                 </div>
                                 <div>
-                                    <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-white font-serif tracking-tight">
+                                    <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-white font-serif tracking-tight flex items-center gap-2">
                                         Image to Text
+                                        <PageHelpTooltip subtitle={t.pageHelp.imagetotext.subtitle} description={t.pageHelp.imagetotext.description} />
                                     </h1>
                                     <p className="text-xs sm:text-sm text-slate-400 mt-0.5">
                                         Multilingual OCR powered by Tesseract

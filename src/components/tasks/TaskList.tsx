@@ -5,6 +5,7 @@ import { auth } from "@/lib/firebase";
 import { Task } from "@/types/task";
 import { useLanguage } from "@/context/LanguageContext";
 import { ConfirmDeleteButton } from "@/components/ui/ConfirmDeleteitems";
+import PageHelpTooltip from "@/components/ui/PageHelpTooltip";
 import { saveTasksToDB } from "@/lib/taskDB";
 import { authFetch } from "@/lib/authFetch";
 
@@ -220,8 +221,9 @@ export default function TaskList() {
 
     return (
         <div className="max-h-[100vh] p-4 sm:p-7 max-w-full hide-scrollbar mx-auto font-serif border-0 border-amber-400 relative overflow-y-auto">
-            <h1 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-2 text-center text-amber-500 ">
+            <h1 className="text-2xl sm:text-3xl font-bold mb-6 sm:mb-2 text-center text-amber-500 flex items-center justify-center gap-2">
                 {t.tasks.yourTaskList}
+                <PageHelpTooltip subtitle={t.pageHelp.mytasks.subtitle} description={t.pageHelp.mytasks.description} />
             </h1>
             <hr className="bg-amber-400 text-amber-600 w-[96%] mb-5"></hr>
 

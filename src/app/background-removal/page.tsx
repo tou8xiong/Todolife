@@ -8,6 +8,7 @@ import { useAppContext } from "@/context/AppContext";
 import { saveTempData, loadTempData, clearTempData } from "@/lib/tempData";
 import { useAlert } from "@/hooks/useAlert";
 import { useLanguage } from "@/context/LanguageContext";
+import PageHelpTooltip from "@/components/ui/PageHelpTooltip";
 
 const BG_CONFIG = {
     device: "gpu" as const,
@@ -155,8 +156,11 @@ export default function BackgroundRemovalPage() {
                         <div className="inline-flex items-center gap-2 rounded-full border border-violet-500/30 bg-violet-500/10 px-3 py-1 text-xs font-semibold text-violet-300 uppercase tracking-widest">
                             <Sparkles size={12} /> {t.backgroundRemoval?.aiPowered || "AI-Powered"}
                         </div>
-                        <h1 className="text-2xl font-extrabold tracking-tight bg-gradient-to-br from-white via-gray-200 to-gray-400 bg-clip-text text-transparent">
-                            {t.backgroundRemoval?.title || "Remove Background"}
+                        <h1 className="text-2xl font-extrabold tracking-tight flex items-center gap-2">
+                            <span className="bg-gradient-to-br from-white via-gray-200 to-gray-400 bg-clip-text text-transparent">
+                                {t.backgroundRemoval?.title || "Remove Background"}
+                            </span>
+                            <PageHelpTooltip subtitle={t.pageHelp.backgroundRemoval.subtitle} description={t.pageHelp.backgroundRemoval.description} />
                         </h1>
                         <p className="text-gray-400 text-xs">
                             {t.backgroundRemoval?.description || "Drop any image and get a clean transparent PNG in seconds"} — {t.backgroundRemoval?.fullyInBrowser || "fully in-browser, no upload needed"}.
@@ -210,8 +214,9 @@ export default function BackgroundRemovalPage() {
                                 <div className="inline-flex items-center gap-1.5 rounded-full border border-violet-500/30 bg-violet-500/10 px-2.5 py-0.5 text-[10px] font-semibold text-violet-300 uppercase tracking-widest mb-1.5">
                                     <Sparkles size={10} /> {t.backgroundRemoval?.aiPowered || "AI-Powered"}
                                 </div>
-                                <h1 className="text-xl font-extrabold tracking-tight text-white">
+                                <h1 className="text-xl font-extrabold tracking-tight text-white flex items-center gap-2">
                                     {t.backgroundRemoval?.title || "Remove Background"}
+                                    <PageHelpTooltip subtitle={t.pageHelp.backgroundRemoval.subtitle} description={t.pageHelp.backgroundRemoval.description} />
                                 </h1>
                             </div>
                         </div>

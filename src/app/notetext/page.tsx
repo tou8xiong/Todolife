@@ -18,6 +18,7 @@ import { useTipTapEditor } from "@/hooks/useTipTapEditor";
 import { EditorContent } from "@tiptap/react";
 import { authFetch } from "@/lib/authFetch";
 import { useLanguage } from "@/context/LanguageContext";
+import PageHelpTooltip from "@/components/ui/PageHelpTooltip";
 
 interface Doc {
   id: number;
@@ -857,7 +858,10 @@ export default function NoteTextPage() {
           <div className="w-64 sm:w-72 shrink-0 bg-white/5 backdrop-blur-xl border-r border-white/10 flex flex-col max-md:hidden">
             <div className="p-4 border-b border-gray-200 dark:border-gray-800">
               <div className="flex items-center justify-between mb-3">
-                <h2 className="text-sm font-bold text-white">My Workspace</h2>
+                <h2 className="text-sm font-bold text-white flex items-center gap-1.5">
+                  My Workspace
+                  <PageHelpTooltip subtitle={t.pageHelp.notetext.subtitle} description={t.pageHelp.notetext.description} side="bottom" iconSize={11} />
+                </h2>
                 <div className="flex items-center gap-1">
                   <button
                     onClick={() => {
@@ -1360,8 +1364,8 @@ export default function NoteTextPage() {
                       <div className={`w-20 h-20 mx-auto mb-4 rounded-2xl ${getFolderColor(folders.findIndex(f => f.id === selectedFolderId)).bg} flex items-center justify-center`}>
                         <MdDescription size={40} className={getFolderColor(folders.findIndex(f => f.id === selectedFolderId)).text} />
                       </div>
-                      <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">No documents in this folder</h3>
-                      <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">Create a new document to add it to this folder</p>
+                      <h3 className="text-lg font-semibold text-gray-200 mb-2">No documents in this folder</h3>
+                      <p className="text-sm text-gray-400 mb-6">Create a new document to add it to this folder</p>
                       <button
                         onClick={handleNew}
                         className="inline-flex items-center gap-2 px-5 py-2.5 bg-sky-500 hover:bg-sky-600 text-white text-sm font-semibold rounded-md shadow-lg shadow-sky-500/25 hover:shadow-sky-500/40 transition-all"
@@ -1381,7 +1385,10 @@ export default function NoteTextPage() {
                         <MdGridView size={24} className="text-sky-600 dark:text-sky-400" />
                       </div>
                       <div>
-                        <h2 className="text-2xl font-bold text-white">All Documents</h2>
+                        <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+                          All Documents
+                          <PageHelpTooltip subtitle={t.pageHelp.notetext.subtitle} description={t.pageHelp.notetext.description} />
+                        </h2>
                         <p className="text-sm text-gray-300">{docs.length} documents</p>
                       </div>
                     </div>
