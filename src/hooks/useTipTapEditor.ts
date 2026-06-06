@@ -15,7 +15,7 @@ import Link from "@tiptap/extension-link";
 import { useState, useCallback, useEffect } from "react";
 
 export function useTipTapEditor() {
-  const [currentFontFamily, setCurrentFontFamily] = useState("Georgia");
+  const [currentFontFamily, setCurrentFontFamily] = useState("EB Garamond");
   const [currentFontSize, setCurrentFontSize] = useState("16");
   const [currentTextColor, setCurrentTextColor] = useState("#000000");
   const [currentHighlightColor, setCurrentHighlightColor] = useState("#ffff00");
@@ -218,6 +218,7 @@ export function useTipTapEditor() {
 
   const setFontFamily = useCallback((fontFamily: string) => {
     const fontMap: { [key: string]: string } = {
+      "EB Garamond": "var(--font-eb-garamond), Georgia, serif",
       "Georgia": "Georgia, serif",
       "Arial": "Arial, sans-serif",
       "Helvetica": "Helvetica, Arial, sans-serif",

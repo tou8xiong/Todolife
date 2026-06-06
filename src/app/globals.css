@@ -10,9 +10,10 @@
   --background: #ffffff;
   --foreground: #171717;
 
-  /* Fonts */
-  --font-sans: var(--font-geist-sans), Arial, Helvetica, sans-serif;
-  --font-mono: var(--font-geist-mono), monospace;
+  /* Fonts — EB Garamond as the project-wide default */
+  --font-sans: var(--font-eb-garamond), ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  --font-mono: var(--font-eb-garamond), ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  --font-serif: var(--font-eb-garamond), ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
 
   /* Brand colors */
   --color-primary: #16a34a;        /* green-600 */
@@ -41,7 +42,9 @@
 }
 
 body {
-  font-family: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  font-family: var(--font-eb-garamond), ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  font-optical-sizing: auto;
+  font-style: normal;
 }
 /* Hide scrollbar but still allow scrolling */
 .hide-scrollbar::-webkit-scrollbar {

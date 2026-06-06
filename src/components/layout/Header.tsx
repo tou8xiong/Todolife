@@ -76,21 +76,21 @@ export default function Header() {
           {/* Desktop nav buttons (md+) */}
           <nav className="hidden md:flex items-center gap-1 font-serif">
             <Link href="/newtasks"
-              className="px-3 py-2 rounded-xl text-sm hover:bg-amber-100 transition-colors">
+              className="px-4 py-2 rounded-xl text-base font-bold hover:bg-amber-100 transition-colors">
               {t.nav.newTasks}
             </Link>
             <Link href="/mytasks"
-              className="px-3 py-2 rounded-xl text-sm hover:bg-amber-100 transition-colors flex items-center gap-1.5">
+              className="px-4 py-2 rounded-xl text-base font-bold hover:bg-amber-100 transition-colors flex items-center gap-1.5">
               {t.nav.myTasks}
               {pending > 0 && (
-                <span className="rounded-full px-2 py-0.5 text-[10px] font-bold bg-slate-800 text-white">{pending}</span>
+                <span className="rounded-full px-2 py-0.5 text-[11px] font-bold bg-slate-800 text-white">{pending}</span>
               )}
             </Link>
             <Link href="/completetasks"
-              className="px-3 py-2 rounded-xl text-sm hover:bg-amber-100 transition-colors flex items-center gap-1.5">
+              className="px-4 py-2 rounded-xl text-base font-bold hover:bg-amber-100 transition-colors flex items-center gap-1.5">
               {t.nav.completeTasks}
               {user && completed > 0 && (
-                <span className="rounded-full px-2 py-0.5 text-[10px] font-bold bg-green-700 text-white">{completed}</span>
+                <span className="rounded-full px-2 py-0.5 text-[11px] font-bold bg-green-700 text-white">{completed}</span>
               )}
             </Link>
           </nav>

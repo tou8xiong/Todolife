@@ -8,7 +8,17 @@
       "Bash(curl -s http://localhost:11434/api/tags)",
       "Bash(where ollama:*)",
       "Bash(find:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(grep *)",
+      "Bash(Get-ChildItem -Path \"C:\\\\Users\\\\USER\\\\OneDrive\\\\Documents\\\\GitHub\\\\Todolife\" -Recurse -Directory)",
+      "Bash(Select-Object -First 20)",
+      "Bash(Format-Table FullName)",
+      "PowerShell(Get-ChildItem -Path src,components -Recurse -File | Where-Object { $_.Name -match \"\\(?i\\)note\" } | Select-Object -ExpandProperty FullName)",
+      "PowerShell(Select-String -Path .\\\\src\\\\locales\\\\translations.ts -Pattern \"noteText\" | Select-Object -First 30 | ForEach-Object { \"$\\($_.LineNumber\\): $\\($_.Line\\)\" })",
+      "PowerShell(npx tsc --noEmit 2>&1 | Select-Object -First 80)",
+      "PowerShell(npx tsc --noEmit 2>&1 | Out-String)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)"
     ]
   }
 }

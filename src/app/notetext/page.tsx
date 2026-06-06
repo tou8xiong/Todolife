@@ -63,6 +63,7 @@ const getFileColor = (index: number) => FILE_COLORS[index % FILE_COLORS.length];
 const getFolderColor = (index: number) => FOLDER_COLORS[index % FOLDER_COLORS.length];
 
 const FONT_FAMILIES = [
+  { label: "EB Garamond", value: "EB Garamond" },
   { label: "Georgia", value: "Georgia" },
   { label: "Arial", value: "Arial" },
   { label: "Helvetica", value: "Helvetica" },
@@ -229,7 +230,7 @@ export default function NoteTextPage() {
       .pdf-page {
         width: 900px;
         background: #ffffff;
-        font-family: Georgia, 'Times New Roman', serif;
+        font-family: var(--font-eb-garamond), Georgia, 'Times New Roman', serif;
         font-size: 16px;
         line-height: 1.4;
         color: #111827;
@@ -237,7 +238,7 @@ export default function NoteTextPage() {
       .pdf-title-area { text-align: center; padding: 40px 100px 16px; }
       .pdf-title {
         font-size: 36px; font-weight: 700; color: #1f2937;
-        font-family: Georgia, 'Times New Roman', serif;
+        font-family: var(--font-eb-garamond), Georgia, 'Times New Roman', serif;
         letter-spacing: -0.025em; margin-bottom: 8px;
       }
       .pdf-meta { font-size: 13px; color: #6b7280; }
@@ -256,8 +257,8 @@ export default function NoteTextPage() {
         border-left: 4px solid #38bdf8; padding-left: 16px;
         margin: 16px 0; font-style: italic; color: #64748b;
       }
-      .pdf-content pre  { background: #1e293b; color: #e2e8f0; padding: 16px; border-radius: 8px; font-family: monospace; }
-      .pdf-content code { background: #f1f5f9; padding: 2px 4px; border-radius: 4px; font-family: monospace; }
+      .pdf-content pre  { background: #1e293b; color: #e2e8f0; padding: 16px; border-radius: 8px; font-family: var(--font-eb-garamond), Georgia, 'Times New Roman', serif; }
+      .pdf-content code { background: #f1f5f9; padding: 2px 4px; border-radius: 4px; font-family: var(--font-eb-garamond), Georgia, 'Times New Roman', serif; }
       .pdf-content img  { max-width: 100%; height: auto; border-radius: 8px; margin: 16px 0; }
       .pdf-content a    { color: #0ea5e9; text-decoration: underline; }
       .pdf-content strong { font-weight: bold; }
@@ -1455,7 +1456,7 @@ export default function NoteTextPage() {
           min-height: 1100px;
           color: #111827;
           caret-color: #111827;
-          font-family: Georgia, 'Times New Roman', serif;
+          font-family: var(--font-eb-garamond), Georgia, 'Times New Roman', serif;
         }
         .tiptap-paper-sheet .ProseMirror:focus {
           outline: none;
@@ -1504,14 +1505,14 @@ export default function NoteTextPage() {
           color: #e2e8f0;
           padding: 16px;
           border-radius: 8px;
-          font-family: monospace;
+          font-family: var(--font-eb-garamond), Georgia, 'Times New Roman', serif;
           overflow: auto;
         }
         .tiptap-paper-sheet .ProseMirror code {
           background: #f1f5f9;
           padding: 2px 4px;
           border-radius: 4px;
-          font-family: monospace;
+          font-family: var(--font-eb-garamond), Georgia, 'Times New Roman', serif;
         }
         .tiptap-paper-sheet .ProseMirror hr {
           border: none;

@@ -671,8 +671,8 @@ export default function PdfEditor() {
                                 .p-8 { padding: 2rem !important; }
                                 .sm\\:p-16 { padding: 4rem !important; }
                                 .text-gray-900 { color: #111827 !important; }
-                                .font-serif { font-family: Georgia, serif !important; }
-                                .font-mono { font-family: monospace !important; }
+                                .font-serif { font-family: var(--font-eb-garamond), Georgia, serif !important; }
+                                .font-mono { font-family: var(--font-eb-garamond), Georgia, serif !important; }
                                 .leading-relaxed { line-height: 1.625 !important; }
                                 .min-h-full { min-height: 100% !important; }
                                 .absolute { position: absolute !important; }
@@ -977,7 +977,7 @@ export default function PdfEditor() {
                 {fileType === "docx" && (
                     <div
                         className="bg-white p-6 sm:p-16 text-gray-900 font-serif text-xs sm:text-base leading-relaxed min-h-full"
-                        style={{ fontFamily: "Georgia, serif", wordBreak: "break-word" }}
+                        style={{ fontFamily: "var(--font-eb-garamond), Georgia, serif", wordBreak: "break-word" }}
                         dangerouslySetInnerHTML={{ __html: docContent }}
                     />
                 )}

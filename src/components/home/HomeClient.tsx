@@ -2,9 +2,7 @@
 import AddTasks from "@/components/tasks/AddTasks";
 import Footer from "@/components/layout/Footer";
 import { useAppContext } from "@/context/AppContext";
-import { useLanguage } from "@/context/LanguageContext";
-import PageHelpTooltip from "@/components/ui/PageHelpTooltip";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 
 function FloatingDots() {
   const getDotStyle = (i: number) => {
@@ -43,26 +41,8 @@ function FloatingDots() {
   );
 }
 
-
-function WaveText({ text, className = "" }: { text: string; className?: string }) {
-  return (
-    <span className={`inline-flex ${className}`}>
-      {text.split("").map((char, i) => (
-        <span
-          key={i}
-          className="animate-wave"
-          style={{ animationDelay: `${i * 0.08}s`, display: 'inline-block' }}
-        >
-          {char === " " ? "\u00A0" : char}
-        </span>
-      ))}
-    </span>
-  );
-}
-
 export default function HomeClient() {
   const { user } = useAppContext();
-  const { t } = useLanguage();
   const username = user?.displayName || user?.email?.split("@")[0] || "Guest";
   const [mounted, setMounted] = useState(false);
 
@@ -73,12 +53,6 @@ export default function HomeClient() {
   return (
     <div className="bg-gradient-to-b from-gray-900 via-gray-800 to-gray-700 sm:w-full w-full flex flex-col justify-center overflow-x-hidden text-white relative">
       <style>{`
-        @keyframes wave {
-          0%, 100% { transform: translateY(0) rotate(0deg); }
-          25% { transform: translateY(-6px) rotate(-1deg); }
-          50% { transform: translateY(-3px) rotate(0.5deg); }
-          75% { transform: translateY(-8px) rotate(-0.5deg); }
-        }
         @keyframes floatDot {
           0% { transform: translateY(0) scale(0); opacity: 0; }
           10% { opacity: 0.6; }
@@ -86,65 +60,29 @@ export default function HomeClient() {
           90% { opacity: 0.6; }
           100% { transform: translateY(-110vh) scale(1); opacity: 0; }
         }
-        @keyframes trail {
-          0% { transform: scale(1); opacity: 0.9; }
-          100% { transform: scale(0.2); opacity: 0; }
-        }
-        @keyframes gradientMove {
-          0% { background-position: 0% 50%; }
-          50% { background-position: 100% 50%; }
-          100% { background-position: 0% 50%; }
-        }
-        @keyframes glow {
-          0%, 100% { filter: drop-shadow(0 0 8px rgba(147, 197, 253, 0.5)); }
-          50% { filter: drop-shadow(0 0 25px rgba(251, 191, 36, 0.7)); }
-        }
-        @keyframes seaWave {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-8px); }
-        }
-        .animate-wave {
-          display: inline-block;
-          animation: wave 2.5s ease-in-out infinite;
-        }
-        .animate-wave-text {
-          display: inline-block;
-          animation: seaWave 3s ease-in-out infinite;
-        }
         .animate-float-dot {
           animation: floatDot linear infinite;
-        }
-        .animate-trail {
-          animation: trail 0.6s ease-out forwards;
-        }
-        .animate-gradient {
-          background-size: 200% 200%;
-          animation: gradientMove 4s ease infinite;
-        }
-        .animate-glow {
-          animation: glow 2.5s ease-in-out infinite;
         }
       `}</style>
 
       {mounted && <FloatingDots />}
 
       <div className="min-h-screen sm:py-4 w-full flex flex-col lg:flex-row justify-center gap-2 relative z-10">
-        <div className="w-full max-w-xl flex flex-col gap-2">
-          <h1 className="text-2xl sm:text-4xl font-serif font-bold text-center">
-            <p className="text-2xl mb-5">
+        <div className="w-full max-w-xl flex flex-col gap-2 px-4 sm:px-6">
+          <h1 className="text-2xl sm:text-4xl font-serif font-bold text-center text-white break-words">
+            <p className="text-xl sm:text-2xl mb-5">
               Hi{" "}
-              <span className="text-5xl text-blue-300 animate-glow">
-                {mounted ? <WaveText text={username} /> : username}
+              <span className="text-3xl sm:text-5xl text-white break-words">
+                {username}
               </span>
             </p>
-            <span className="text-3xl sm:text-5xl inline-flex items-center gap-3 animate-wave-text">
-              <WaveText text="Welcome To TODOLIFE" className="text-blue-400" />
-              <PageHelpTooltip subtitle={t.pageHelp.home.subtitle} description={t.pageHelp.home.description} iconSize={18} />
+            <span className="text-2xl sm:text-5xl inline-block text-white break-words">
+              Welcome To TODOLIFE
             </span>
           </h1>
-          <h1 className="font-serif text-center text-base sm:text-lg text-gray-200 mt-4">
-            <span className="animate-wave-text">
-              <WaveText text="TODOLIFE will make your tasks done easier" className="text-blue-300" />
+          <h1 className="font-serif text-center text-sm sm:text-lg text-white mt-4 break-words">
+            <span className="text-white">
+              TODOLIFE will make your tasks done easier
             </span>
           </h1>
         </div>

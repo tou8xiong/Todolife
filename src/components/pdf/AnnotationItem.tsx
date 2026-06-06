@@ -111,7 +111,7 @@ export default function AnnotationItem({
                     ...sharedStyle,
                     color: ann.color,
                     fontSize: `${ann.fontSize * 0.75}px`,
-                    fontFamily: "Helvetica, sans-serif",
+                    fontFamily: "var(--font-eb-garamond), Georgia, serif",
                     fontWeight: ann.bold ? "bold" : "normal",
                     whiteSpace: "nowrap",
                     transform: "translateY(-50%)",
