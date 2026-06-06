@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { Task } from "@/types/task";
@@ -8,13 +8,14 @@ import { authFetch } from "@/lib/authFetch";
 import {
   BookOpen, Clock, Zap, Target, CheckCircle, Plus,
   Calendar, Timer, BarChart3, Lightbulb, AlertTriangle,
-  Play, Pause, RotateCcw, ArrowRight,
+  Play, Pause, RotateCcw, ArrowRight, TrendingUp,
 } from "lucide-react";
 import PageHelpTooltip from "@/components/ui/PageHelpTooltip";
 
 interface Idea {
     id: number;
     ideatext: string;
+    created_at?: string;
 }
 
 interface StudySession {
@@ -269,6 +270,236 @@ function WeeklyChart({ tasks }: { tasks: Task[] }) {
     );
 }
 
+// ── Feature Usage Chart ──────────────────────────────────────────────────────
+type RangeKey = "today" | "week" | "month" | "halfyear" | "year";
+
+type Bucket = {
+    key: string;
+    label: string;
+    start: number;
+    end: number;
+};
+
+function makeBuckets(range: RangeKey): Bucket[] {
+    const now = new Date();
+    const buckets: Bucket[] = [];
+
+    if (range === "today") {
+        // 24 hourly buckets for the current day
+        const dayStart = new Date(now);
+        dayStart.setHours(0, 0, 0, 0);
+        for (let h = 0; h < 24; h++) {
+            const s = new Date(dayStart);
+            s.setHours(h);
+            const e = new Date(s);
+            e.setHours(s.getHours() + 1);
+            buckets.push({
+                key: `h${h}`,
+                label: h % 3 === 0 ? `${h}h` : "",
+                start: s.getTime(),
+                end: e.getTime(),
+            });
+        }
+    } else if (range === "week") {
+        // 7 days, ending today
+        for (let i = 6; i >= 0; i--) {
+            const s = new Date(now);
+            s.setHours(0, 0, 0, 0);
+            s.setDate(s.getDate() - i);
+            const e = new Date(s);
+            e.setDate(s.getDate() + 1);
+            buckets.push({
+                key: s.toISOString().slice(0, 10),
+                label: s.toLocaleDateString(undefined, { weekday: "short" }),
+                start: s.getTime(),
+                end: e.getTime(),
+            });
+        }
+    } else if (range === "month") {
+        // 30 days
+        for (let i = 29; i >= 0; i--) {
+            const s = new Date(now);
+            s.setHours(0, 0, 0, 0);
+            s.setDate(s.getDate() - i);
+            const e = new Date(s);
+            e.setDate(s.getDate() + 1);
+            buckets.push({
+                key: s.toISOString().slice(0, 10),
+                label: i % 5 === 0 ? `${s.getDate()}` : "",
+                start: s.getTime(),
+                end: e.getTime(),
+            });
+        }
+    } else if (range === "halfyear") {
+        // 26 weeks
+        const weekStart = new Date(now);
+        weekStart.setHours(0, 0, 0, 0);
+        const dow = (weekStart.getDay() + 6) % 7;
+        weekStart.setDate(weekStart.getDate() - dow);
+        for (let i = 25; i >= 0; i--) {
+            const s = new Date(weekStart);
+            s.setDate(s.getDate() - i * 7);
+            const e = new Date(s);
+            e.setDate(s.getDate() + 7);
+            buckets.push({
+                key: `w${s.toISOString().slice(0, 10)}`,
+                label: i % 4 === 0 ? s.toLocaleDateString(undefined, { month: "short", day: "numeric" }) : "",
+                start: s.getTime(),
+                end: e.getTime(),
+            });
+        }
+    } else {
+        // 12 months
+        for (let i = 11; i >= 0; i--) {
+            const s = new Date(now.getFullYear(), now.getMonth() - i, 1);
+            const e = new Date(now.getFullYear(), now.getMonth() - i + 1, 1);
+            buckets.push({
+                key: `m${s.getFullYear()}-${s.getMonth()}`,
+                label: s.toLocaleDateString(undefined, { month: "short" }),
+                start: s.getTime(),
+                end: e.getTime(),
+            });
+        }
+    }
+    return buckets;
+}
+
+function FeatureUsageChart({
+    tasks,
+    ideas,
+    studySessions,
+}: {
+    tasks: Task[];
+    ideas: Idea[];
+    studySessions: StudySession[];
+}) {
+    const [range, setRange] = useState<RangeKey>("week");
+    const [hover, setHover] = useState<number | null>(null);
+
+    const ranges: { value: RangeKey; label: string }[] = [
+        { value: "today", label: "Today" },
+        { value: "week", label: "Week" },
+        { value: "month", label: "Month" },
+        { value: "halfyear", label: "6M" },
+        { value: "year", label: "Year" },
+    ];
+
+    const data = useMemo(() => {
+        const buckets = makeBuckets(range);
+        const taskTimes = tasks
+            .filter((t) => t.completedAt)
+            .map((t) => new Date(t.completedAt as string).getTime())
+            .filter((t) => !isNaN(t));
+        const ideaTimes = ideas
+            .filter((i) => i.created_at)
+            .map((i) => new Date(i.created_at as string).getTime())
+            .filter((t) => !isNaN(t));
+        const studyTimes = studySessions
+            .map((s) => new Date(s.timestamp).getTime())
+            .filter((t) => !isNaN(t));
+
+        return buckets.map((b) => {
+            const inBucket = (t: number) => t >= b.start && t < b.end;
+            const tCount = taskTimes.filter(inBucket).length;
+            const nCount = ideaTimes.filter(inBucket).length;
+            const sCount = studyTimes.filter(inBucket).length;
+            return { ...b, tasks: tCount, notes: nCount, study: sCount, total: tCount + nCount + sCount };
+        });
+    }, [tasks, ideas, studySessions, range]);
+
+    const max = Math.max(...data.map((d) => d.total), 1);
+    const grandTotal = data.reduce((acc, d) => acc + d.total, 0);
+
+    return (
+        <Card className="p-4 sm:p-5 flex flex-col gap-4">
+            <div className="flex items-start justify-between gap-3 flex-wrap">
+                <div className="min-w-0">
+                    <SectionTitle icon={TrendingUp} color="text-amber-400">Feature Usage</SectionTitle>
+                    <p className="text-xs text-gray-400 mt-1">
+                        {grandTotal} {grandTotal === 1 ? "activity" : "activities"} in selected range
+                    </p>
+                </div>
+                <div className="flex gap-0.5 p-1 bg-gray-800/60 rounded-md border border-gray-700/50 flex-wrap">
+                    {ranges.map((r) => (
+                        <button
+                            key={r.value}
+                            onClick={() => setRange(r.value)}
+                            className={`px-2.5 sm:px-3 py-1 text-xs font-semibold rounded-md transition-colors ${range === r.value
+                                ? "bg-amber-500 text-gray-900"
+                                : "text-gray-300 hover:text-white hover:bg-white/5"
+                                }`}
+                        >
+                            {r.label}
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-[11px] sm:text-xs">
+                <span className="flex items-center gap-1.5 text-emerald-300">
+                    <span className="w-2.5 h-2.5 rounded-sm bg-emerald-400" />Tasks done
+                </span>
+                <span className="flex items-center gap-1.5 text-yellow-300">
+                    <span className="w-2.5 h-2.5 rounded-sm bg-yellow-400" />Notes added
+                </span>
+                <span className="flex items-center gap-1.5 text-blue-300">
+                    <span className="w-2.5 h-2.5 rounded-sm bg-blue-400" />Study sessions
+                </span>
+            </div>
+
+            <div className="relative">
+                <div className="flex items-end gap-0.5 sm:gap-1 h-40 sm:h-48 pt-2">
+                    {data.map((b, i) => {
+                        const heightPct = (b.total / max) * 100;
+                        const taskPct = b.total > 0 ? (b.tasks / b.total) * 100 : 0;
+                        const notePct = b.total > 0 ? (b.notes / b.total) * 100 : 0;
+                        const studyPct = b.total > 0 ? (b.study / b.total) * 100 : 0;
+                        const isHover = hover === i;
+                        return (
+                            <div
+                                key={b.key}
+                                className="flex-1 flex flex-col justify-end min-w-0 h-full relative"
+                                onMouseEnter={() => setHover(i)}
+                                onMouseLeave={() => setHover(null)}
+                            >
+                                <div
+                                    className={`w-full flex flex-col-reverse rounded-t overflow-hidden transition-all ${isHover ? "ring-1 ring-amber-400/60" : ""}`}
+                                    style={{
+                                        height: `${heightPct}%`,
+                                        minHeight: b.total > 0 ? "4px" : "2px",
+                                        opacity: b.total > 0 ? 1 : 0.15,
+                                        background: b.total === 0 ? "rgba(251,191,36,0.5)" : undefined,
+                                    }}
+                                >
+                                    {b.tasks > 0 && <div style={{ height: `${taskPct}%` }} className="bg-emerald-400" />}
+                                    {b.notes > 0 && <div style={{ height: `${notePct}%` }} className="bg-yellow-400" />}
+                                    {b.study > 0 && <div style={{ height: `${studyPct}%` }} className="bg-blue-400" />}
+                                </div>
+
+                                {isHover && b.total > 0 && (
+                                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 z-10 whitespace-nowrap px-2 py-1.5 rounded-md bg-gray-950 border border-gray-700 shadow-lg text-[11px] leading-tight pointer-events-none">
+                                        <p className="font-bold text-white">{b.tasks + b.notes + b.study} total</p>
+                                        {b.tasks > 0 && <p className="text-emerald-400">{b.tasks} tasks</p>}
+                                        {b.notes > 0 && <p className="text-yellow-400">{b.notes} notes</p>}
+                                        {b.study > 0 && <p className="text-blue-400">{b.study} study</p>}
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })}
+                </div>
+                <div className="flex gap-0.5 sm:gap-1 mt-1.5">
+                    {data.map((b, i) => (
+                        <div key={`l-${b.key}`} className="flex-1 min-w-0 text-center text-[10px] text-gray-400 truncate">
+                            {b.label}
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </Card>
+    );
+}
+
 // ── Dashboard Page ───────────────────────────────────────────────────────────
 export default function Dashboard() {
     const { locale, t } = useLanguage();
@@ -411,6 +642,9 @@ export default function Dashboard() {
                         </Card>
                     ))}
                 </div>
+
+                {/* ── Feature Usage Chart ── */}
+                <FeatureUsageChart tasks={tasks} ideas={ideas} studySessions={studySessions} />
 
                 {/* ── Today's Tasks + Study Stats ── */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
