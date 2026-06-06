@@ -5,7 +5,11 @@ import { auth } from "@/lib/firebase";
 import { Task } from "@/types/task";
 import { useLanguage } from "@/context/LanguageContext";
 import { authFetch } from "@/lib/authFetch";
-import { BookOpen, Clock, Zap, Target, CheckCircle } from "lucide-react";
+import {
+  BookOpen, Clock, Zap, Target, CheckCircle, Plus,
+  Calendar, Timer, BarChart3, Lightbulb, AlertTriangle,
+  Play, Pause, RotateCcw, ArrowRight,
+} from "lucide-react";
 import PageHelpTooltip from "@/components/ui/PageHelpTooltip";
 
 interface Idea {
@@ -15,7 +19,7 @@ interface Idea {
 
 interface StudySession {
     id: number;
-    duration: number; // in centiseconds
+    duration: number;
     timestamp: string;
     videoName: string;
 }
@@ -33,10 +37,45 @@ function formatDuration(centis: number) {
     const h = Math.floor(totalSeconds / 3600);
     const m = Math.floor((totalSeconds % 3600) / 60);
     const s = totalSeconds % 60;
-
     if (h > 0) return `${h}h ${m}m`;
     if (m > 0) return `${m}m ${s}s`;
     return `${s}s`;
+}
+
+// Shared card shell — keeps every section visually cohesive
+function Card({
+    children,
+    className = "",
+}: {
+    children: React.ReactNode;
+    className?: string;
+}) {
+    return (
+        <div
+            className={`bg-gray-900/70 backdrop-blur-sm border border-gray-700/60 rounded-md shadow-lg ${className}`}
+        >
+            {children}
+        </div>
+    );
+}
+
+function SectionTitle({
+    icon: Icon,
+    color = "text-amber-400",
+    children,
+}: {
+    icon: React.ElementType;
+    color?: string;
+    children: React.ReactNode;
+}) {
+    return (
+        <h2 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+            <span className={`inline-flex items-center justify-center w-7 h-7 rounded-md bg-white/5 ${color}`}>
+                <Icon size={16} />
+            </span>
+            {children}
+        </h2>
+    );
 }
 
 // ── Study Stats ──────────────────────────────────────────────────────────────
@@ -47,39 +86,43 @@ function StudyStats({ sessions }: { sessions: StudySession[] }) {
     const recent = [...sessions].reverse().slice(0, 3);
 
     return (
-        <div className="bg-white/10 backdrop-blur-md border border-white/10 rounded-2xl shadow-lg p-5 flex flex-col gap-4">
-            <div className="flex items-center justify-between">
-                <h2 className="text-lg font-bold text-white flex items-center gap-2">
-                    <BookOpen size={20} className="text-blue-500" /> {d.studyStats}
-                </h2>
-                <div className="px-3 py-1 bg-blue-900/50 text-blue-300 rounded-full text-xs font-bold">
+        <Card className="p-4 sm:p-5 flex flex-col gap-4">
+            <div className="flex items-center justify-between gap-2">
+                <SectionTitle icon={BookOpen} color="text-blue-400">{d.studyStats}</SectionTitle>
+                <span className="shrink-0 px-2.5 py-1 bg-blue-500/15 text-blue-300 border border-blue-500/20 rounded-md text-xs font-bold">
                     {d.total}: {formatDuration(totalCentis)}
-                </div>
+                </span>
             </div>
 
             {sessions.length === 0 ? (
-                <p className="text-gray-500 dark:text-gray-200 text-sm italic">{d.noStudySessions}</p>
+                <div className="flex flex-col items-center justify-center gap-2 py-6 rounded-md border border-dashed border-gray-700 bg-white/5">
+                    <BookOpen size={22} className="text-gray-500" />
+                    <p className="text-xs text-gray-400 text-center px-3 break-words">{d.noStudySessions}</p>
+                </div>
             ) : (
-                <div className="space-y-3">
-                    <p className="text-xs text-gray-400 dark:text-gray-200 uppercase font-bold tracking-wider">{d.recentSessions}</p>
+                <div className="space-y-2.5">
+                    <p className="text-[11px] text-gray-400 uppercase font-bold tracking-wider">{d.recentSessions}</p>
                     {recent.map((s) => (
-                        <div key={s.id} className="flex items-center gap-3 p-3 bg-white/5 rounded-xl border border-white/10">
-                            <div className="p-2 bg-white/10 rounded-lg shadow-sm">
-                                <Clock size={16} className="text-amber-400" />
+                        <div key={s.id} className="flex items-center gap-3 p-2.5 bg-white/5 rounded-md border border-gray-700/40">
+                            <div className="p-1.5 bg-amber-500/15 rounded-md shrink-0">
+                                <Clock size={14} className="text-amber-400" />
                             </div>
                             <div className="flex-1 min-w-0">
                                 <p className="text-sm font-semibold text-white truncate">{s.videoName}</p>
-                                <p className="text-xs text-gray-300">{new Date(s.timestamp).toLocaleDateString()}</p>
+                                <p className="text-[11px] text-gray-400">{new Date(s.timestamp).toLocaleDateString()}</p>
                             </div>
-                            <span className="text-sm font-mono font-bold text-amber-400">{formatDuration(s.duration)}</span>
+                            <span className="text-sm font-mono font-bold text-amber-400 shrink-0">{formatDuration(s.duration)}</span>
                         </div>
                     ))}
                 </div>
             )}
-            <a href="/settimepage" className="text-xs text-blue-500 hover:underline mt-1 block">
-                {d.openStudyHub} →
+            <a
+                href="/settimepage"
+                className="flex items-center gap-1 text-xs font-semibold text-blue-400 hover:text-blue-300 transition-colors mt-auto"
+            >
+                {d.openStudyHub} <ArrowRight size={12} />
             </a>
-        </div>
+        </Card>
     );
 }
 
@@ -119,12 +162,13 @@ function PomodoroTimer({ tasks }: { tasks: Task[] }) {
     const progress = ((DURATION - secondsLeft) / DURATION) * 100;
 
     return (
-        <div className="bg-white/10 backdrop-blur-md border border-white/10 rounded-2xl shadow-lg p-5 flex flex-col gap-3 transition-all">
-            <h2 className="text-lg font-bold text-white">⏱ {d.focusTimer}</h2>
+        <Card className="p-4 sm:p-5 flex flex-col gap-3">
+            <SectionTitle icon={Timer} color="text-amber-400">{d.focusTimer}</SectionTitle>
+
             <select
                 value={focusTask}
                 onChange={(e) => setFocusTask(e.target.value)}
-                className="border rounded-lg p-2 text-sm text-slate-900 dark:text-white bg-white dark:bg-gray-700 dark:border-gray-600 outline-none"
+                className="w-full rounded-md px-3 py-2 text-sm bg-gray-800 border border-gray-700 text-white outline-none focus:border-amber-400/60 focus:ring-1 focus:ring-amber-400/40 transition-colors"
             >
                 <option value="">{d.selectTaskToFocus}</option>
                 {tasks.map((t) => (
@@ -132,35 +176,43 @@ function PomodoroTimer({ tasks }: { tasks: Task[] }) {
                 ))}
             </select>
             {focusTask && (
-                <p className="text-xs text-amber-600 font-medium truncate">{d.focusing} {focusTask}</p>
+                <p className="text-xs text-amber-400 font-medium truncate">{d.focusing} {focusTask}</p>
             )}
-            <div className="text-5xl font-mono text-center text-slate-900 dark:text-white py-2">
+
+            <div className="text-5xl sm:text-6xl font-mono font-bold text-center text-white py-2 tracking-tight">
                 {minutes}:{seconds}
             </div>
-            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+            <div className="w-full bg-gray-800 rounded-full h-1.5 overflow-hidden">
                 <div
-                    className="bg-amber-400 h-2 rounded-full transition-all duration-1000"
+                    className="bg-gradient-to-r from-amber-400 to-amber-500 h-full rounded-full transition-all duration-1000"
                     style={{ width: `${progress}%` }}
                 />
             </div>
-            <p className="text-center text-xs text-gray-500 dark:text-gray-200">{d.pomodoroSession}</p>
-            <div className="flex gap-2 justify-center">
+            <p className="text-center text-[11px] text-gray-400 uppercase tracking-wider">{d.pomodoroSession}</p>
+
+            <div className="flex gap-2 justify-center mt-1">
                 <button
                     onClick={() => setRunning(true)}
                     disabled={running}
-                    className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md disabled:opacity-40 text-sm transition-colors"
-                >{d.start}</button>
+                    className="flex items-center gap-1.5 px-3 sm:px-4 py-2 bg-green-500/15 hover:bg-green-500/25 disabled:hover:bg-green-500/15 text-green-400 border border-green-500/30 rounded-md disabled:opacity-40 text-sm font-semibold transition-colors"
+                >
+                    <Play size={14} /> {d.start}
+                </button>
                 <button
                     onClick={() => setRunning(false)}
                     disabled={!running}
-                    className="px-4 py-2 bg-yellow-400 hover:bg-yellow-500 text-white rounded-md disabled:opacity-40 text-sm transition-colors"
-                >{d.pause}</button>
+                    className="flex items-center gap-1.5 px-3 sm:px-4 py-2 bg-yellow-500/15 hover:bg-yellow-500/25 disabled:hover:bg-yellow-500/15 text-yellow-400 border border-yellow-500/30 rounded-md disabled:opacity-40 text-sm font-semibold transition-colors"
+                >
+                    <Pause size={14} /> {d.pause}
+                </button>
                 <button
                     onClick={() => { setRunning(false); setSecondsLeft(DURATION); }}
-                    className="px-4 py-2 bg-red-400 hover:bg-red-500 text-white rounded-md text-sm transition-colors"
-                >{d.reset}</button>
+                    className="flex items-center gap-1.5 px-3 sm:px-4 py-2 bg-red-500/15 hover:bg-red-500/25 text-red-400 border border-red-500/30 rounded-md text-sm font-semibold transition-colors"
+                >
+                    <RotateCcw size={14} /> {d.reset}
+                </button>
             </div>
-        </div>
+        </Card>
     );
 }
 
@@ -172,6 +224,7 @@ function WeeklyChart({ tasks }: { tasks: Task[] }) {
     const today = new Date();
     const dayOfWeek = today.getDay();
     const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+    const todayIdx = (dayOfWeek + 6) % 7;
 
     const counts = days.map((_, i) => {
         const d = new Date(today);
@@ -181,23 +234,38 @@ function WeeklyChart({ tasks }: { tasks: Task[] }) {
     });
 
     const max = Math.max(...counts, 1);
+    const total = counts.reduce((a, b) => a + b, 0);
 
     return (
-        <div className="bg-white/10 backdrop-blur-md border border-white/10 rounded-2xl shadow-lg p-5 transition-all">
-            <h2 className="text-lg font-bold text-white mb-4">📈 {d.weeklyProgress}</h2>
-            <div className="flex items-end gap-2 h-28">
-                {days.map((day, i) => (
-                    <div key={day} className="flex flex-col items-center flex-1 gap-1">
-                        <span className="text-xs text-gray-500 dark:text-gray-200">{counts[i] || ""}</span>
-                        <div
-                            className="w-full bg-amber-400 rounded-t transition-all"
-                            style={{ height: `${(counts[i] / max) * 100}%`, minHeight: counts[i] > 0 ? "6px" : "2px", opacity: counts[i] > 0 ? 1 : 0.15 }}
-                        />
-                        <span className="text-xs text-gray-500 dark:text-gray-200">{day}</span>
-                    </div>
-                ))}
+        <Card className="p-4 sm:p-5 flex flex-col gap-3">
+            <div className="flex items-center justify-between gap-2">
+                <SectionTitle icon={BarChart3} color="text-purple-400">{d.weeklyProgress}</SectionTitle>
+                <span className="shrink-0 px-2.5 py-1 bg-purple-500/15 text-purple-300 border border-purple-500/20 rounded-md text-xs font-bold">
+                    {total}
+                </span>
             </div>
-        </div>
+            <div className="flex items-end gap-2 h-32 sm:h-36 pt-2">
+                {days.map((day, i) => {
+                    const isToday = i === todayIdx;
+                    return (
+                        <div key={day} className="flex flex-col items-center flex-1 gap-1 min-w-0">
+                            <span className={`text-[11px] font-bold ${counts[i] > 0 ? (isToday ? "text-amber-400" : "text-white") : "text-transparent"}`}>
+                                {counts[i] || "·"}
+                            </span>
+                            <div
+                                className={`w-full rounded-t transition-all ${isToday ? "bg-amber-400" : "bg-amber-400/60"}`}
+                                style={{
+                                    height: `${(counts[i] / max) * 100}%`,
+                                    minHeight: counts[i] > 0 ? "8px" : "3px",
+                                    opacity: counts[i] > 0 ? 1 : 0.2,
+                                }}
+                            />
+                            <span className={`text-[11px] ${isToday ? "text-amber-400 font-bold" : "text-gray-400"}`}>{day}</span>
+                        </div>
+                    );
+                })}
+            </div>
+        </Card>
     );
 }
 
@@ -211,13 +279,11 @@ export default function Dashboard() {
     const [studySessions, setStudySessions] = useState<StudySession[]>([]);
     const [streakDays, setStreak] = useState(0);
     const [redirecting, setRedirecting] = useState(false);
-    const [loadingTasks, setLoadingTasks] = useState(true);
 
     const todayStr = new Date().toISOString().split("T")[0];
 
     const loadData = async (email: string) => {
         try {
-            setLoadingTasks(true);
             const [tasksRes, ideasRes] = await Promise.all([
                 authFetch(`/api/tasks`),
                 authFetch(`/api/ideas`),
@@ -241,8 +307,6 @@ export default function Dashboard() {
             setStreak(s);
         } catch (err) {
             console.error("Failed to load dashboard data", err);
-        } finally {
-            setLoadingTasks(false);
         }
     };
 
@@ -285,124 +349,170 @@ export default function Dashboard() {
     if (redirecting || !user) {
         return (
             <div className="min-h-screen bg-tool flex items-center justify-center">
-                <div className="animate-spin h-8 w-8 border-4 border-sky-500 border-t-transparent rounded-full" />
+                <div className="animate-spin h-8 w-8 border-4 border-amber-400 border-t-transparent rounded-full" />
             </div>
         );
     }
 
+    const priorityStyle = (p?: string) => {
+        const k = p?.toLowerCase();
+        if (k === "high") return "bg-red-500/15 text-red-300 border-red-500/30";
+        if (k === "medium") return "bg-amber-500/15 text-amber-300 border-amber-500/30";
+        return "bg-emerald-500/15 text-emerald-300 border-emerald-500/30";
+    };
+    const priorityLabel = (p?: string) =>
+        p === "High" ? t.tasks.high : p === "Medium" ? t.tasks.medium : p === "Low" ? t.tasks.low : p;
+
+    const stats = [
+        { icon: CheckCircle, label: d.completedToday, value: todayDoneCount, accent: "text-emerald-400", bg: "bg-emerald-500/15", border: "border-emerald-500/25" },
+        { icon: Clock, label: d.pending, value: pendingTasks.length, accent: "text-amber-400", bg: "bg-amber-500/15", border: "border-amber-500/25" },
+        { icon: Zap, label: d.dayStreak, value: streakDays, accent: "text-orange-400", bg: "bg-orange-500/15", border: "border-orange-500/25" },
+        { icon: Target, label: d.dueToday, value: todayTasks.length, accent: "text-blue-400", bg: "bg-blue-500/15", border: "border-blue-500/25" },
+    ];
+
     return (
-        <div className="min-h-screen bg-tool p-4 sm:p-6 font-serif text-white">
+        <div className="min-h-screen bg-tool px-3 sm:px-5 lg:px-6 py-4 sm:py-6 font-serif text-white">
+            <div className="max-w-6xl mx-auto flex flex-col gap-4 sm:gap-5">
 
-            <div className="bg-white/10 backdrop-blur-md border border-white/10 rounded-2xl shadow-lg p-5 mb-5 flex flex-col sm:flex-row sm:items-center gap-4 transition-all">
-                <div className="flex-1">
-                    <h1 className="text-2xl font-bold text-white flex items-center gap-2 flex-wrap">
-                        <span>{getGreeting(d)}, {displayName} 👋</span>
-                        <PageHelpTooltip subtitle={t.pageHelp.dashboard.subtitle} description={t.pageHelp.dashboard.description} />
-                    </h1>
-                    <p className="text-gray-300 text-sm mt-1">
-                        {new Date().toLocaleDateString(locale === "lo" ? "lo-LA" : "en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
-                    </p>
-                </div>
-                <a
-                    href="/newtasks"
-                    className="flex items-center gap-2 px-5 py-2.5 bg-amber-500 hover:bg-amber-600 dark:bg-amber-400 dark:hover:bg-amber-500 text-white rounded-xl text-sm font-semibold transition-colors shadow-sm"
-                >
-                    <span className="text-lg leading-none">+</span> {d.addATask}
-                </a>
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-5">
-                {[
-                    { icon: <CheckCircle size={20} className="text-green-400" />, label: d.completedToday, value: todayDoneCount, color: "text-green-400" },
-                    { icon: <Clock size={20} className="text-amber-400" />, label: d.pending, value: pendingTasks.length, color: "text-amber-400" },
-                    { icon: <Zap size={20} className="text-orange-400" />, label: d.dayStreak, value: streakDays, color: "text-orange-400" },
-                    { icon: <Target size={20} className="text-blue-400" />, label: d.dueToday, value: todayTasks.length, color: "text-blue-400" },
-                ].map((card, idx) => (
-                    <div key={idx} className="bg-white/10 backdrop-blur-md border border-white/10 rounded-2xl shadow-lg p-4 flex flex-col gap-1 transition-all">
-                        <span className="text-2xl">{card.icon}</span>
-                        <span className={`text-3xl font-bold ${card.color}`}>{card.value}</span>
-                        <span className="text-xs text-gray-300">{card.label}</span>
+                {/* ── Hero ── */}
+                <Card className="relative overflow-hidden p-5 sm:p-6">
+                    <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 via-transparent to-blue-500/10 pointer-events-none" />
+                    <div className="relative flex flex-col sm:flex-row sm:items-center gap-4">
+                        <div className="flex-1 min-w-0">
+                            <h1 className="text-xl sm:text-3xl font-bold text-white flex items-center gap-2 flex-wrap">
+                                <span className="break-words">{getGreeting(d)}, {displayName} <span className="inline-block">👋</span></span>
+                                <PageHelpTooltip subtitle={t.pageHelp.dashboard.subtitle} description={t.pageHelp.dashboard.description} />
+                            </h1>
+                            <p className="text-gray-300 text-xs sm:text-sm mt-1 flex items-center gap-1.5">
+                                <Calendar size={14} className="shrink-0" />
+                                {new Date().toLocaleDateString(locale === "lo" ? "lo-LA" : "en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
+                            </p>
+                        </div>
+                        <a
+                            href="/newtasks"
+                            className="shrink-0 inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-gray-900 rounded-md text-sm font-bold transition-colors shadow-md shadow-amber-500/20"
+                        >
+                            <Plus size={16} /> {d.addATask}
+                        </a>
                     </div>
-                ))}
-            </div>
+                </Card>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-5">
-                <div className="lg:col-span-2 bg-white/10 backdrop-blur-md border border-white/10 rounded-2xl shadow-lg p-5 transition-all">
-                    <h2 className="text-lg font-bold text-white mb-3">📅 {d.todaysTasks}</h2>
-                    {todayTasks.length === 0 ? (
-                        <p className="text-gray-500 dark:text-gray-200 text-sm">{d.noTasksToday}</p>
+                {/* ── Stat cards ── */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+                    {stats.map((s, i) => (
+                        <Card key={i} className={`p-3 sm:p-4 flex items-center gap-3 hover:border-gray-600/80 transition-colors`}>
+                            <div className={`shrink-0 inline-flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-md ${s.bg} border ${s.border}`}>
+                                <s.icon size={18} className={s.accent} />
+                            </div>
+                            <div className="min-w-0">
+                                <p className={`text-xl sm:text-2xl font-bold ${s.accent} leading-tight`}>{s.value}</p>
+                                <p className="text-[11px] sm:text-xs text-gray-400 truncate">{s.label}</p>
+                            </div>
+                        </Card>
+                    ))}
+                </div>
+
+                {/* ── Today's Tasks + Study Stats ── */}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                    <Card className="lg:col-span-2 p-4 sm:p-5 flex flex-col gap-3">
+                        <SectionTitle icon={Calendar} color="text-amber-400">{d.todaysTasks}</SectionTitle>
+                        {todayTasks.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center gap-2 py-8 rounded-md border border-dashed border-gray-700 bg-white/5">
+                                <CheckCircle size={26} className="text-gray-500" />
+                                <p className="text-sm text-gray-400 text-center px-3 break-words">{d.noTasksToday}</p>
+                            </div>
+                        ) : (
+                            <ul className="flex flex-col gap-2">
+                                {todayTasks.map((task) => (
+                                    <li key={task.id} className="flex items-center gap-3 p-3 rounded-md border border-gray-700/50 bg-white/5 hover:bg-white/10 transition-colors">
+                                        <button
+                                            onClick={() => handleMarkDone(task.id)}
+                                            aria-label="Mark done"
+                                            className="w-5 h-5 rounded-full border-2 border-amber-400 hover:bg-amber-400 shrink-0 transition-colors"
+                                        />
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-sm font-semibold text-white truncate">{task.title}</p>
+                                            {task.time && (
+                                                <p className="text-[11px] text-gray-400 flex items-center gap-1 mt-0.5">
+                                                    <Clock size={11} /> {task.time}
+                                                </p>
+                                            )}
+                                        </div>
+                                        {task.priority && (
+                                            <span className={`text-[11px] px-2 py-0.5 rounded-md font-semibold border capitalize shrink-0 ${priorityStyle(task.priority)}`}>
+                                                {priorityLabel(task.priority)}
+                                            </span>
+                                        )}
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </Card>
+                    <StudyStats sessions={studySessions} />
+                </div>
+
+                {/* ── Pomodoro + Weekly Chart ── */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <PomodoroTimer tasks={pendingTasks} />
+                    <WeeklyChart tasks={tasks} />
+                </div>
+
+                {/* ── Recent Notes ── */}
+                <Card className="p-4 sm:p-5 flex flex-col gap-3">
+                    <div className="flex items-center justify-between gap-2">
+                        <SectionTitle icon={Lightbulb} color="text-yellow-400">{d.recentNotes}</SectionTitle>
+                        <a
+                            href="/noteidea"
+                            className="shrink-0 flex items-center gap-1 text-xs font-semibold text-yellow-400 hover:text-yellow-300 transition-colors"
+                        >
+                            {d.viewAllNotes} <ArrowRight size={12} />
+                        </a>
+                    </div>
+                    {ideas.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center gap-2 py-6 rounded-md border border-dashed border-gray-700 bg-white/5">
+                            <Lightbulb size={22} className="text-gray-500" />
+                            <p className="text-xs text-gray-400 text-center px-3 break-words">{d.noNotesYet}</p>
+                        </div>
                     ) : (
+                        <ul className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                            {[...ideas].reverse().slice(0, 3).map((idea) => (
+                                <li
+                                    key={idea.id}
+                                    className="text-sm text-gray-200 p-3 bg-white/5 border border-gray-700/50 rounded-md break-words line-clamp-3"
+                                >
+                                    {idea.ideatext}
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                </Card>
+
+                {/* ── Overdue Tasks ── */}
+                {overdueTasks.length > 0 && (
+                    <Card className="p-4 sm:p-5 border-red-500/30 bg-red-950/30 flex flex-col gap-3">
+                        <SectionTitle icon={AlertTriangle} color="text-red-400">{d.overdueTasks}</SectionTitle>
                         <ul className="flex flex-col gap-2">
-                            {todayTasks.map((task) => (
-                                <li key={task.id} className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-transparent hover:bg-gray-100 dark:hover:bg-gray-700 transition">
-                                    <button
-                                        onClick={() => handleMarkDone(task.id)}
-                                        className="w-5 h-5 rounded-full border-2 border-amber-400 hover:bg-amber-400 shrink-0 transition"
-                                    />
+                            {overdueTasks.map((task) => (
+                                <li key={task.id} className="flex items-center gap-3 p-3 bg-gray-900/60 border border-red-500/20 rounded-md">
+                                    <div className="shrink-0 inline-flex items-center justify-center w-8 h-8 rounded-md bg-red-500/15 border border-red-500/30">
+                                        <Clock size={14} className="text-red-400" />
+                                    </div>
                                     <div className="flex-1 min-w-0">
                                         <p className="text-sm font-semibold text-white truncate">{task.title}</p>
-                                        {task.time && <p className="text-xs text-gray-300">{task.time}</p>}
+                                        <p className="text-[11px] text-red-300">{d.due} {task.date} {task.time}</p>
                                     </div>
-                                    <span className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 ${task.priority?.toLowerCase() === "high" ? "bg-red-100 text-red-600" :
-                                        task.priority?.toLowerCase() === "medium" ? "bg-amber-100 text-amber-700 dark:bg-yellow-100 dark:text-yellow-600" :
-                                            "bg-green-100 text-green-600"
-                                        }`}>{task.priority === "High" ? t.tasks.high : task.priority === "Medium" ? t.tasks.medium : task.priority === "Low" ? t.tasks.low : task.priority}</span>
+                                    <button
+                                        onClick={() => handleMarkDone(task.id)}
+                                        className="text-xs px-3 py-1.5 bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-500/30 font-semibold rounded-md shrink-0 transition-colors"
+                                    >
+                                        {t.done}
+                                    </button>
                                 </li>
                             ))}
                         </ul>
-                    )}
-                </div>
-                <StudyStats sessions={studySessions} />
+                    </Card>
+                )}
             </div>
-
-            {/* 4 — Pomodoro + Weekly Chart */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
-                <PomodoroTimer tasks={pendingTasks} />
-                <WeeklyChart tasks={tasks} />
-            </div>
-
-            {/* 5 — Notes Preview */}
-            <div className="grid grid-cols-1 gap-4 mb-5">
-                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm dark:shadow p-5 transition-colors duration-300">
-                    <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-3">💡 {d.recentNotes}</h2>
-                    {ideas.length === 0 ? (
-                        <p className="text-gray-500 dark:text-gray-200 text-sm">{d.noNotesYet}</p>
-                    ) : (
-                        <ul className="flex flex-col gap-2">
-                            {[...ideas].reverse().slice(0, 3).map((idea) => (
-                                <li key={idea.id} className="text-sm text-slate-700 dark:text-gray-300 p-3 bg-gray-50 dark:bg-gray-700 rounded-xl truncate">
-                                    💡 {idea.ideatext}
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-                    <a href="/noteidea" className="text-xs text-sky-600 dark:text-amber-500 hover:underline mt-3 block">
-                        {d.viewAllNotes} →
-                    </a>
-                </div>
-            </div>
-
-            {/* 6 — Overdue Tasks */}
-            {overdueTasks.length > 0 && (
-                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-2xl shadow-sm p-5 transition-colors duration-300">
-                    <h2 className="text-lg font-bold text-red-600 mb-3">⚠️ {d.overdueTasks}</h2>
-                    <ul className="flex flex-col gap-2">
-                        {overdueTasks.map((task) => (
-                            <li key={task.id} className="flex items-center gap-3 p-3 bg-white dark:bg-gray-800 rounded-xl border border-red-100 dark:border-red-800 shadow-sm dark:shadow-none">
-                                <span className="text-xl shrink-0">⏰</span>
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{task.title}</p>
-                                    <p className="text-xs text-red-500 dark:text-red-400">{d.due} {task.date} {task.time}</p>
-                                </div>
-                                <button
-                                    onClick={() => handleMarkDone(task.id)}
-                                    className="text-xs px-3 py-1 bg-emerald-100 text-emerald-700 hover:bg-emerald-200 dark:bg-green-500 dark:text-white dark:hover:bg-green-600 font-semibold rounded-md shrink-0 transition-colors"
-                                >{t.done}</button>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-            )}
         </div>
     );
 }
