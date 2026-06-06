@@ -602,7 +602,7 @@ export default function Dashboard() {
     ];
 
     return (
-        <div className="min-h-screen bg-tool px-3 sm:px-5 lg:px-6 py-4 sm:py-6 font-serif text-white">
+        <div className="min-h-screen bg-tool px-3 sm:px-5 lg:px-6 pt-4 sm:pt-6 pb-16 sm:pb-20 font-serif text-white">
             <div className="max-w-6xl mx-auto flex flex-col gap-4 sm:gap-5">
 
                 {/* ── Hero ── */}
