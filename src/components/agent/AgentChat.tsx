@@ -399,15 +399,15 @@ export default function AgentChat() {
       {/* ── Sidebar ───────────────────────────────────────────────────── */}
       <aside className={`
         fixed top-16 bottom-0 left-0 z-40 md:static md:top-auto md:bottom-auto
-        w-64 shrink-0 bg-tool border-r border-gray-700 flex flex-col
-        transition-transform duration-300 ease-in-out
+        w-64 shrink-0 bg-white dark:bg-tool border-r border-slate-200 dark:border-gray-700 flex flex-col
+        transition-transform duration-300 ease-in-out shadow-sm dark:shadow-none
         ${sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
       `}>
         {/* New Chat button */}
-        <div className="p-3 border-b border-gray-700/60">
+        <div className="p-3 border-b border-slate-200 dark:border-gray-700/60">
           <button
             onClick={startNewChat}
-            className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-md border border-gray-700 hover:bg-gray-800 text-gray-300 hover:text-white text-sm transition-all"
+            className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-md border border-slate-200 dark:border-gray-700 hover:bg-slate-100 dark:hover:bg-gray-800 text-slate-600 dark:text-gray-300 hover:text-slate-900 dark:hover:text-white text-sm transition-all"
           >
             <SquarePen size={15} className="shrink-0 text-sky-400" />
             <span className="font-medium">{t.agent.newChat}</span>
@@ -417,7 +417,7 @@ export default function AgentChat() {
         {/* Conversation list */}
         <div className="flex-1 overflow-y-auto p-2">
           {conversations.length === 0 ? (
-            <p className="text-xs text-gray-600 text-center mt-8 px-3 leading-relaxed">
+            <p className="text-xs text-slate-400 dark:text-gray-600 text-center mt-8 px-3 leading-relaxed">
               {t.agent.noConversations}<br />{t.agent.startNewChat}
             </p>
           ) : (
@@ -425,7 +425,7 @@ export default function AgentChat() {
               const groupLabel = group.label === "Today" ? t.agent.today : group.label === "Yesterday" ? t.agent.yesterday : t.agent.previous7Days;
               return (
               <div key={group.label} className="mb-4">
-                <p className="text-[10px] font-semibold text-gray-600 uppercase tracking-widest px-3 mb-1">
+                <p className="text-[10px] font-semibold text-slate-400 dark:text-gray-600 uppercase tracking-widest px-3 mb-1">
                   {groupLabel}
                 </p>
                 <ul className="flex flex-col gap-0.5">
@@ -435,19 +435,19 @@ export default function AgentChat() {
                         onClick={() => selectConv(conv)}
                         className={`w-full text-left px-3 py-2 rounded-md text-xs transition-all pr-8 leading-snug
                           ${activeId === conv.id
-                            ? "bg-gray-700 text-white"
-                            : "text-gray-300 hover:bg-gray-800 hover:text-gray-200"
+                            ? "bg-slate-100 dark:bg-gray-700 text-slate-900 dark:text-white"
+                            : "text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-gray-800 hover:text-slate-900 dark:hover:text-gray-200"
                           }`}
                       >
                         <span className="block truncate">{conv.title}</span>
-                        <span className={`text-[10px] mt-0.5 block opacity-50 ${activeId === conv.id ? "text-sky-400" : ""}`}>
+                        <span className={`text-[10px] mt-0.5 block opacity-60 ${activeId === conv.id ? "text-sky-500 dark:text-sky-400" : ""}`}>
                           {conv.mode}
                         </span>
                       </button>
                       {/* Delete on hover */}
                       <button
                         onClick={(e) => { e.stopPropagation(); if (userEmail) deleteConv(userEmail, conv.id); }}
-                        className="absolute right-1.5 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 p-1 rounded-md hover:bg-red-900/40 text-gray-500 hover:text-red-400 transition-all"
+                        className="absolute right-1.5 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 p-1 rounded-md hover:bg-red-100 dark:hover:bg-red-900/40 text-slate-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 transition-all"
                         title="Delete conversation"
                       >
                         <Trash2 size={12} />
@@ -461,8 +461,8 @@ export default function AgentChat() {
           )}
         </div>
 
-        <div className="px-4 py-3 border-t border-gray-700/60">
-          <p className="text-[10px] text-white text-center tracking-widest uppercase">{t.agent.chatsKept}</p>
+        <div className="px-4 py-3 border-t border-slate-200 dark:border-gray-700/60">
+          <p className="text-[10px] text-slate-500 dark:text-gray-400 text-center tracking-widest uppercase">{t.agent.chatsKept}</p>
         </div>
       </aside>
 
@@ -470,18 +470,18 @@ export default function AgentChat() {
       <div className="flex-1 flex flex-col overflow-hidden">
 
         {/* Top bar */}
-        <div className="bg-gray-800 border-b border-gray-700 px-4 py-3 flex items-center gap-3 shrink-0">
+        <div className="bg-slate-50 dark:bg-gray-800 border-b border-slate-200 dark:border-gray-700 px-4 py-3 flex items-center gap-3 shrink-0">
           {/* Mobile sidebar toggle */}
           <button
             onClick={() => setSidebarOpen((v) => !v)}
-            className="md:hidden p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-300"
+            className="md:hidden p-1.5 rounded-md hover:bg-slate-200 dark:hover:bg-gray-700 text-slate-500 dark:text-gray-300"
           >
             <Menu size={20} />
           </button>
 
           <div className="flex items-center gap-2">
-            <Bot size={18} className="text-sky-400 shrink-0" />
-            <span className="font-semibold text-white text-sm">
+            <Bot size={18} className="text-sky-500 dark:text-sky-400 shrink-0" />
+            <span className="font-semibold text-slate-900 dark:text-white text-sm">
               {activeId
                 ? (conversations.find((c) => c.id === activeId)?.title ?? "Conversation")
                 : t.agent.aiAgent}
@@ -494,7 +494,7 @@ export default function AgentChat() {
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 flex flex-col gap-4">
 
           {historyLoading && (
-            <div className="flex items-center justify-center py-12 gap-2 text-gray-300 text-xs">
+            <div className="flex items-center justify-center py-12 gap-2 text-slate-500 dark:text-gray-300 text-xs">
               <Loader2 size={14} className="animate-spin" />
               {t.agent.loadingConversation}
             </div>
@@ -502,16 +502,16 @@ export default function AgentChat() {
 
           {!historyLoading && !activeId && messages.length === 0 && (
             <div className="flex flex-col items-center justify-center h-full py-20 gap-4 text-center">
-              <div className="p-5 rounded-full bg-gray-800 shadow-md border border-gray-700">
-                <Bot size={36} className="text-sky-400" />
+              <div className="p-5 rounded-full bg-slate-100 dark:bg-gray-800 shadow-md border border-slate-200 dark:border-gray-700">
+                <Bot size={36} className="text-sky-500 dark:text-sky-400" />
               </div>
-              <h2 className="text-2xl font-bold text-white">{t.agent.howCanIHelp}</h2>
+              <h2 className="text-2xl font-bold text-slate-900 dark:text-white">{t.agent.howCanIHelp}</h2>
               {mode === "chat" && (
-                <span className="text-xs bg-sky-900/30 text-sky-300 border border-sky-800 px-3 py-1 rounded-full">
+                <span className="text-xs bg-sky-50 dark:bg-sky-900/30 text-sky-600 dark:text-sky-300 border border-sky-200 dark:border-sky-800 px-3 py-1 rounded-full">
                   {pendingCount} {t.agent.pending} · {doneCount} {t.agent.done}
                 </span>
               )}
-              <p className="text-sm text-gray-300 max-w-sm">{currentMode.hint}</p>
+              <p className="text-sm text-slate-600 dark:text-gray-300 max-w-sm">{currentMode.hint}</p>
             </div>
           )}
 
@@ -526,14 +526,14 @@ export default function AgentChat() {
                 <div className={`px-4 py-3 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap shadow-sm
                   ${msg.role === "user"
                     ? "bg-sky-500 text-white rounded-br-sm"
-                    : "bg-gray-700 text-gray-100 border border-gray-600 rounded-bl-sm"
+                    : "bg-slate-100 dark:bg-gray-700 text-slate-800 dark:text-gray-100 border border-slate-200 dark:border-gray-600 rounded-bl-sm"
                   }`}>
                   {msg.content}
                 </div>
               </div>
 
               {msg.taskCreated && (
-                <div className="flex items-center gap-2 ml-10 px-3 py-1.5 rounded-xl bg-green-900/30 border border-green-800 text-green-300 text-xs">
+                <div className="flex items-center gap-2 ml-10 px-3 py-1.5 rounded-xl bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 text-green-700 dark:text-green-300 text-xs">
                   <CheckCircle2 size={13} className="shrink-0" />
                   Task created: <strong>{msg.taskCreated.title}</strong>
                   {msg.taskCreated.priority && <span className="capitalize opacity-70">· {msg.taskCreated.priority}</span>}
@@ -542,14 +542,14 @@ export default function AgentChat() {
               )}
 
               {msg.taskDeleted && (
-                <div className="flex items-center gap-2 ml-10 px-3 py-1.5 rounded-xl bg-red-900/30 border border-red-800 text-red-300 text-xs">
+                <div className="flex items-center gap-2 ml-10 px-3 py-1.5 rounded-xl bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-xs">
                   <Trash2 size={13} className="shrink-0" />
                   Task deleted: <strong>{msg.taskDeleted.title}</strong>
                 </div>
               )}
 
               {msg.taskUpdated && (
-                <div className="flex items-center gap-2 ml-10 px-3 py-1.5 rounded-xl bg-sky-900/30 border border-sky-800 text-sky-300 text-xs">
+                <div className="flex items-center gap-2 ml-10 px-3 py-1.5 rounded-xl bg-sky-50 dark:bg-sky-900/30 border border-sky-200 dark:border-sky-800 text-sky-700 dark:text-sky-300 text-xs">
                   <CheckCircle2 size={13} className="shrink-0" />
                   Task updated
                   {msg.taskUpdated.fields.title && <span>: <strong>{msg.taskUpdated.fields.title}</strong></span>}
@@ -565,15 +565,15 @@ export default function AgentChat() {
               <div className="shrink-0 w-7 h-7 rounded-full bg-sky-900/40 border border-sky-800 flex items-center justify-center">
                 <Bot size={14} className="text-sky-500" />
               </div>
-              <div className="px-4 py-3 rounded-2xl rounded-bl-sm bg-gray-700 border border-gray-600 flex items-center gap-2 shadow-sm">
-                <Loader2 size={14} className="text-sky-400 animate-spin" />
-                <span className="text-xs text-gray-300">{t.agent.thinking}</span>
+              <div className="px-4 py-3 rounded-2xl rounded-bl-sm bg-slate-100 dark:bg-gray-700 border border-slate-200 dark:border-gray-600 flex items-center gap-2 shadow-sm">
+                <Loader2 size={14} className="text-sky-500 dark:text-sky-400 animate-spin" />
+                <span className="text-xs text-slate-500 dark:text-gray-300">{t.agent.thinking}</span>
               </div>
             </div>
           )}
 
           {error && (
-            <div className="flex items-start gap-2.5 px-4 py-3 rounded-xl bg-red-900/30 border border-red-800 text-red-300 text-xs">
+            <div className="flex items-start gap-2.5 px-4 py-3 rounded-xl bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 text-xs">
               <AlertCircle size={15} className="shrink-0 mt-0.5" />
               <span>{error}</span>
             </div>
@@ -583,8 +583,8 @@ export default function AgentChat() {
         </div>
 
         {/* Input area */}
-        <div className="p-4 bg-gray-800 border-t border-gray-700">
-          <div className="max-w-3xl mx-auto bg-gray-700 rounded-2xl shadow-md border border-gray-600 focus-within:border-sky-500 transition-colors p-2 flex gap-2 items-end">
+        <div className="p-4 bg-slate-50 dark:bg-gray-800 border-t border-slate-200 dark:border-gray-700">
+          <div className="max-w-3xl mx-auto bg-white dark:bg-gray-700 rounded-2xl shadow-md border border-slate-200 dark:border-gray-600 focus-within:border-sky-500 transition-colors p-2 flex gap-2 items-end">
             <textarea
               ref={textareaRef}
               value={input}
@@ -592,7 +592,7 @@ export default function AgentChat() {
               onKeyDown={handleKeyDown}
               placeholder={currentMode.placeholder}
               rows={2}
-              className="flex-1 resize-none bg-transparent text-sm text-white placeholder-gray-400 outline-none px-2 py-1 max-h-36"
+              className="flex-1 resize-none bg-transparent text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-gray-400 outline-none px-2 py-1 max-h-36"
             />
 
             {/* Mode dropdown */}
@@ -607,18 +607,18 @@ export default function AgentChat() {
               </button>
 
               {dropdownOpen && (
-                <div className="absolute bottom-full right-0 mb-2 w-48 bg-gray-700 rounded-xl shadow-xl border border-gray-600 overflow-hidden z-50">
+                <div className="absolute bottom-full right-0 mb-2 w-48 bg-white dark:bg-gray-700 rounded-xl shadow-xl border border-slate-200 dark:border-gray-600 overflow-hidden z-50">
                   {MODES.map(({ id, label, icon: Icon, hint }) => (
                     <button
                       key={id}
                       onClick={() => { setMode(id); setDropdownOpen(false); setTimeout(() => textareaRef.current?.focus(), 100); }}
                       className={`w-full flex items-start gap-3 px-3 py-2.5 text-left transition-colors
-                        ${mode === id ? "bg-sky-800/50 text-sky-300" : "text-gray-300 hover:bg-gray-600"}`}
+                        ${mode === id ? "bg-sky-50 dark:bg-sky-800/50 text-sky-600 dark:text-sky-300" : "text-slate-700 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-gray-600"}`}
                     >
                       <Icon size={15} className="shrink-0 mt-0.5" />
                       <div>
                         <p className="text-xs font-semibold leading-tight">{label}</p>
-                        <p className="text-[10px] text-gray-300 leading-tight mt-0.5">{hint}</p>
+                        <p className="text-[10px] text-slate-500 dark:text-gray-300 leading-tight mt-0.5">{hint}</p>
                       </div>
                     </button>
                   ))}
@@ -635,7 +635,7 @@ export default function AgentChat() {
               <Send size={16} />
             </button>
           </div>
-          <p className="text-center text-[10px] text-gray-300 mt-2">Enter to send · Shift+Enter for new line</p>
+          <p className="text-center text-[10px] text-slate-400 dark:text-gray-400 mt-2">Enter to send · Shift+Enter for new line</p>
         </div>
       </div>
     </div>
