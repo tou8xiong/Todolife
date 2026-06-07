@@ -133,20 +133,20 @@ export default function AddTasks() {
                 message="The date and time you selected is already in the past. Please choose a future date and time."
                 onClose={() => setAlertOpen(false)}
             />
-            <div className="sm:w-[700px] sm:h-[750px] mt-[10px] w-full mx-1 bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-2xl border border-gray-700 flex flex-col">
+            <div className="sm:w-[700px] sm:h-[750px] mt-[10px] w-full mx-1 bg-white dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl shadow-2xl border border-slate-200 dark:border-gray-700 flex flex-col">
 
                 <div className="text-center pt-3 pb-2">
-                    <h1 className="text-lg font-bold text-white font-serif tracking-tight inline-flex items-center justify-center gap-2">
+                    <h1 className="text-lg font-bold text-slate-900 dark:text-white font-serif tracking-tight inline-flex items-center justify-center gap-2">
                         {t.tasks.addNewTask}
                         <PageHelpTooltip subtitle={t.pageHelp.newtasks.subtitle} description={t.pageHelp.newtasks.description} />
                     </h1>
-                    <p className="text-gray-300 text-xs mt-0.5">Fill in the details below</p>
+                    <p className="text-slate-600 dark:text-gray-300 text-xs mt-0.5">Fill in the details below</p>
                 </div>
 
                 <form className="px-4 sm:px-6 pb-4 space-y-3">
 
                     <div className="space-y-1">
-                        <label className="text-xs font-semibold text-gray-300 uppercase tracking-wide">{t.tasks.taskTitle}</label>
+                        <label className="text-xs font-semibold text-slate-600 dark:text-gray-300 uppercase tracking-wide">{t.tasks.taskTitle}</label>
                         <input
                             type="text"
                             placeholder="Enter task title..."
@@ -154,26 +154,26 @@ export default function AddTasks() {
                             autoComplete="off"
                             value={task.title}
                             onChange={handleChange}
-                            className={`w-full p-2 rounded-lg bg-gray-700/50 border text-white placeholder-gray-500 focus:outline-none transition-colors ${errors.title ? "border-red-500 focus:border-red-400" : "border-gray-600 focus:border-amber-400"
+                            className={`w-full p-2 rounded-lg bg-slate-100 dark:bg-gray-700/50 border text-slate-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none transition-colors ${errors.title ? "border-red-500 focus:border-red-400" : "border-slate-300 dark:border-gray-600 focus:border-amber-400"
                                 }`}
                         />
                         {errors.title && <p className="text-red-500 dark:text-red-400 text-xs">{errors.title}</p>}
                     </div>
 
                     <div className="space-y-1">
-                        <label className="text-xs font-semibold text-gray-300 uppercase tracking-wide">Description</label>
+                        <label className="text-xs font-semibold text-slate-600 dark:text-gray-300 uppercase tracking-wide">Description</label>
                         <textarea
                             name="description"
                             value={task.description}
                             onChange={handleChange}
                             placeholder="Add task details (optional)..."
                             rows={2}
-                            className="w-full p-2 rounded-lg bg-gray-700/50 border border-gray-600 text-white placeholder-gray-500 focus:outline-none focus:border-amber-400 transition-colors resize-none"
+                            className="w-full p-2 rounded-lg bg-slate-100 dark:bg-gray-700/50 border border-slate-300 dark:border-gray-600 text-slate-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:border-amber-400 transition-colors resize-none"
                         />
                     </div>
 
                     <div className="space-y-1">
-                        <label className="text-xs font-semibold text-gray-300 uppercase tracking-wide">{t.tasks.taskType}</label>
+                        <label className="text-xs font-semibold text-slate-600 dark:text-gray-300 uppercase tracking-wide">{t.tasks.taskType}</label>
                         <div className="grid grid-cols-3 gap-2">
                             {[
                                 { value: "work", label: t.tasks.work, icon: Briefcase, color: "blue" },
@@ -182,9 +182,9 @@ export default function AddTasks() {
                             ].map(({ value, label, icon: Icon, color }) => {
                                 const isActive = task.type === value;
                                 const colorClasses = {
-                                    blue: isActive ? "bg-blue-500/20 border-blue-500 text-blue-400" : "bg-gray-700/50 border-gray-600 text-gray-400 hover:border-blue-500/50",
-                                    violet: isActive ? "bg-violet-500/20 border-violet-500 text-violet-400" : "bg-gray-700/50 border-gray-600 text-gray-400 hover:border-violet-500/50",
-                                    amber: isActive ? "bg-amber-500/20 border-amber-500 text-amber-400" : "bg-gray-700/50 border-gray-600 text-gray-400 hover:border-amber-500/50",
+                                    blue: isActive ? "bg-blue-500/20 border-blue-500 text-blue-400" : "bg-slate-100 dark:bg-gray-700/50 border-slate-300 dark:border-gray-600 text-slate-500 dark:text-gray-400 hover:border-blue-500/50",
+                                    violet: isActive ? "bg-violet-500/20 border-violet-500 text-violet-400" : "bg-slate-100 dark:bg-gray-700/50 border-slate-300 dark:border-gray-600 text-slate-500 dark:text-gray-400 hover:border-violet-500/50",
+                                    amber: isActive ? "bg-amber-500/20 border-amber-500 text-amber-400" : "bg-slate-100 dark:bg-gray-700/50 border-slate-300 dark:border-gray-600 text-slate-500 dark:text-gray-400 hover:border-amber-500/50",
                                 };
                                 return (
                                     <button
@@ -203,7 +203,7 @@ export default function AddTasks() {
                     </div>
 
                     <div className="space-y-1">
-                        <label className="text-xs font-semibold text-gray-300 uppercase tracking-wide">{t.tasks.priorityLevel}</label>
+                        <label className="text-xs font-semibold text-slate-600 dark:text-gray-300 uppercase tracking-wide">{t.tasks.priorityLevel}</label>
                         <div className="grid grid-cols-3 gap-2">
                             {[
                                 { value: "high", label: t.tasks.high, color: "red" },
@@ -212,9 +212,9 @@ export default function AddTasks() {
                             ].map(({ value, label, color }) => {
                                 const isActive = task.priority === value;
                                 const colorClasses = {
-                                    red: isActive ? "bg-red-500/20 border-red-500 text-red-400" : "bg-gray-700/50 border-gray-600 text-gray-400 hover:border-red-500/50",
-                                    orange: isActive ? "bg-orange-500/20 border-orange-500 text-orange-400" : "bg-gray-700/50 border-gray-600 text-gray-400 hover:border-orange-500/50",
-                                    green: isActive ? "bg-green-500/20 border-green-500 text-green-400" : "bg-gray-700/50 border-gray-600 text-gray-400 hover:border-green-500/50",
+                                    red: isActive ? "bg-red-500/20 border-red-500 text-red-400" : "bg-slate-100 dark:bg-gray-700/50 border-slate-300 dark:border-gray-600 text-slate-500 dark:text-gray-400 hover:border-red-500/50",
+                                    orange: isActive ? "bg-orange-500/20 border-orange-500 text-orange-400" : "bg-slate-100 dark:bg-gray-700/50 border-slate-300 dark:border-gray-600 text-slate-500 dark:text-gray-400 hover:border-orange-500/50",
+                                    green: isActive ? "bg-green-500/20 border-green-500 text-green-400" : "bg-slate-100 dark:bg-gray-700/50 border-slate-300 dark:border-gray-600 text-slate-500 dark:text-gray-400 hover:border-green-500/50",
                                 };
                                 return (
                                     <button
@@ -233,7 +233,7 @@ export default function AddTasks() {
 
                     <div className="grid grid-cols-2 gap-2">
                         <div className="space-y-1">
-                            <label className="text-xs font-semibold text-gray-300 uppercase tracking-wide flex items-center gap-1">
+                            <label className="text-xs font-semibold text-slate-600 dark:text-gray-300 uppercase tracking-wide flex items-center gap-1">
                                 <CalendarDays size={12} /> {t.tasks.dueDate}
                             </label>
                             <input
@@ -241,13 +241,13 @@ export default function AddTasks() {
                                 onChange={handleChange}
                                 type="date"
                                 name="date"
-                                className={`w-full p-2 rounded-lg bg-gray-700/50 border text-white focus:outline-none transition-colors ${errors.date ? "border-red-500 focus:border-red-400" : "border-gray-600 focus:border-amber-400"
+                                className={`w-full p-2 rounded-lg bg-slate-100 dark:bg-gray-700/50 border text-slate-900 dark:text-white focus:outline-none transition-colors ${errors.date ? "border-red-500 focus:border-red-400" : "border-slate-300 dark:border-gray-600 focus:border-amber-400"
                                     }`}
                             />
                             {errors.date && <p className="text-red-500 dark:text-red-400 text-xs">{errors.date}</p>}
                         </div>
                         <div className="space-y-1">
-                            <label className="text-xs font-semibold text-gray-300 uppercase tracking-wide flex items-center gap-1">
+                            <label className="text-xs font-semibold text-slate-600 dark:text-gray-300 uppercase tracking-wide flex items-center gap-1">
                                 <Clock size={12} /> {t.tasks.dueTime}
                             </label>
                             <input
@@ -255,7 +255,7 @@ export default function AddTasks() {
                                 type="time"
                                 name="time"
                                 onChange={handleChange}
-                                className={`w-full p-2 rounded-lg bg-gray-700/50 border text-white focus:outline-none transition-colors ${errors.time ? "border-red-500 focus:border-red-400" : "border-gray-600 focus:border-amber-400"
+                                className={`w-full p-2 rounded-lg bg-slate-100 dark:bg-gray-700/50 border text-slate-900 dark:text-white focus:outline-none transition-colors ${errors.time ? "border-red-500 focus:border-red-400" : "border-slate-300 dark:border-gray-600 focus:border-amber-400"
                                     }`}
                             />
                             {errors.time && <p className="text-red-500 dark:text-red-400 text-xs">{errors.time}</p>}
@@ -266,7 +266,7 @@ export default function AddTasks() {
                         <button
                             type="button"
                             onClick={handleCancel}
-                            className="flex-1 flex items-center justify-center gap-1 px-4 py-2 rounded-md bg-gray-700 hover:bg-gray-600 text-gray-300 font-semibold transition-all border border-gray-600"
+                            className="flex-1 flex items-center justify-center gap-1 px-4 py-2 rounded-md bg-slate-100 dark:bg-gray-700 hover:bg-slate-200 dark:hover:bg-gray-600 text-slate-600 dark:text-gray-300 font-semibold transition-all border border-slate-300 dark:border-gray-600"
                         >
                             <X size={16} /> {t.cancel}
                         </button>

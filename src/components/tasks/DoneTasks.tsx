@@ -44,12 +44,12 @@ function TaskTypeColumn({ tasks, type, label, icon: Icon, color, selectedType, o
   return (
     <div className={`${isVisible ? "flex" : "hidden"} sm:flex flex-col flex-1 min-w-0`}>
       {/* Column header */}
-      <div className="flex items-center justify-between px-2.5 py-2 mb-2 rounded-md bg-gray-800/60 border border-gray-700/50">
+      <div className="flex items-center justify-between px-2.5 py-2 mb-2 rounded-md bg-slate-100 dark:bg-gray-800/60 border border-slate-200 dark:border-gray-700/50">
         <div className="flex items-center gap-1.5 min-w-0">
           <Icon size={15} className={`${color} shrink-0`} />
           <span className={`text-xs sm:text-sm font-bold ${color} truncate`}>{label}</span>
         </div>
-        <span className="shrink-0 text-xs font-semibold px-2 py-0.5 rounded-full bg-white/10 text-gray-300 ml-1">
+        <span className="shrink-0 text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-200 dark:bg-white/10 text-slate-600 dark:text-gray-300 ml-1">
           {filtered.length}
         </span>
       </div>
@@ -57,9 +57,9 @@ function TaskTypeColumn({ tasks, type, label, icon: Icon, color, selectedType, o
       {/* Task list — scrollable, adapts height to viewport */}
       <div className="overflow-y-auto hide-scrollbar space-y-2 max-h-[58vh] sm:max-h-[calc(100vh-320px)]">
         {filtered.length === 0 ? (
-          <div className="flex flex-col items-center justify-center min-h-[10rem] gap-2 p-4 rounded-md border border-dashed border-gray-700 bg-white/5">
-            <CheckCircle2 size={24} className="text-gray-500" />
-            <p className="text-xs text-gray-400 text-center px-2 break-words">{t.tasks.noCompletedTasks}</p>
+          <div className="flex flex-col items-center justify-center min-h-[10rem] gap-2 p-4 rounded-md border border-dashed border-slate-300 dark:border-gray-700 bg-slate-50 dark:bg-white/5">
+            <CheckCircle2 size={24} className="text-slate-400 dark:text-gray-500" />
+            <p className="text-xs text-slate-500 dark:text-gray-400 text-center px-2 break-words">{t.tasks.noCompletedTasks}</p>
           </div>
         ) : (
           filtered.map((task) => (
@@ -177,11 +177,11 @@ export default function DoneTasks() {
               <CheckCircle2 size={18} className="text-amber-600 dark:text-amber-400 sm:w-5.5 sm:h-5.5" />
             </div>
             <div className="min-w-0">
-              <h1 className="text-xl sm:text-3xl font-bold text-white leading-tight truncate flex items-center gap-2">
+              <h1 className="text-xl sm:text-3xl font-bold text-slate-900 dark:text-white leading-tight truncate flex items-center gap-2">
                 <span className="truncate">{t.tasks.completedTasks}</span>
                 <PageHelpTooltip subtitle={t.pageHelp.completetasks.subtitle} description={t.pageHelp.completetasks.description} />
               </h1>
-              <p className="text-xs sm:text-sm text-gray-300 mt-0.5">
+              <p className="text-xs sm:text-sm text-slate-600 dark:text-gray-300 mt-0.5">
                 {doneTasks.length} {t.tasks.tasksDone}
               </p>
             </div>
@@ -191,7 +191,7 @@ export default function DoneTasks() {
             <div className="shrink-0 relative" ref={menuRef}>
               <button
                 onClick={() => setShowMenu((prev) => !prev)}
-                className="p-2.5 rounded-md text-gray-300 hover:bg-gray-700/50 hover:text-white transition-colors"
+                className="p-2.5 rounded-md text-slate-500 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-gray-700/50 hover:text-slate-900 dark:hover:text-white transition-colors"
                 title="More options"
                 aria-label="More options"
                 aria-expanded={showMenu}
@@ -199,7 +199,7 @@ export default function DoneTasks() {
                 <MoreVertical size={20} />
               </button>
               {showMenu && (
-                <div className="absolute right-0 mt-2 w-56 bg-gray-900 rounded-xl shadow-xl border border-gray-700/60 z-50 p-2">
+                <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-gray-900 rounded-xl shadow-xl border border-slate-200 dark:border-gray-700/60 z-50 p-2">
                   <AlertDialog.Root>
                     <AlertDialog.Trigger asChild>
                       <button
@@ -212,16 +212,16 @@ export default function DoneTasks() {
                     </AlertDialog.Trigger>
                     <AlertDialog.Portal>
                       <AlertDialog.Overlay className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50" />
-                      <AlertDialog.Content className="fixed left-1/2 top-1/2 z-50 w-[90vw] max-w-md -translate-x-1/2 -translate-y-1/2 p-5 sm:p-6 bg-gray-900 border border-gray-800 shadow-2xl rounded-2xl font-serif">
-                        <AlertDialog.Title className="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
+                      <AlertDialog.Content className="fixed left-1/2 top-1/2 z-50 w-[90vw] max-w-md -translate-x-1/2 -translate-y-1/2 p-5 sm:p-6 bg-white dark:bg-gray-900 border border-slate-200 dark:border-gray-800 shadow-2xl rounded-2xl font-serif">
+                        <AlertDialog.Title className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
                           <span className="text-red-500">⚠️</span> Are you sure?
                         </AlertDialog.Title>
-                        <AlertDialog.Description className="text-sm text-gray-400 leading-relaxed mt-2">
+                        <AlertDialog.Description className="text-sm text-slate-500 dark:text-gray-400 leading-relaxed mt-2">
                           This will permanently delete all completed tasks. This action cannot be undone.
                         </AlertDialog.Description>
                         <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2.5 mt-5">
                           <AlertDialog.Cancel asChild>
-                            <button className="px-4 py-2.5 rounded-md font-medium text-gray-300 bg-white/5 hover:bg-white/10 border border-white/10 transition-colors">
+                            <button className="px-4 py-2.5 rounded-md font-medium text-slate-600 dark:text-gray-300 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 border border-slate-200 dark:border-white/10 transition-colors">
                               Cancel
                             </button>
                           </AlertDialog.Cancel>
@@ -254,11 +254,11 @@ export default function DoneTasks() {
                 key={type}
                 onClick={() => setSelectedType(type)}
                 className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-1 rounded-md text-xs font-semibold transition-all duration-150 min-w-0
-                  ${isActive ? "bg-white/20 text-white shadow-sm" : "text-gray-400 active:bg-white/10"}`}
+                  ${isActive ? "bg-white/20 dark:bg-white/20 text-slate-900 dark:text-white shadow-sm" : "text-slate-500 dark:text-gray-400 active:bg-slate-200 dark:active:bg-white/10"}`}
               >
                 <Icon size={13} className={`shrink-0 ${isActive ? color : ""}`} />
                 <span className="truncate">{label}</span>
-                <span className={`text-xs font-bold ${isActive ? color : "text-gray-400 dark:text-gray-500"}`}>{count}</span>
+                <span className={`text-xs font-bold ${isActive ? color : "text-slate-400 dark:text-gray-500"}`}>{count}</span>
               </button>
             );
           })}
@@ -270,8 +270,8 @@ export default function DoneTasks() {
             <div className="p-4 sm:p-5 rounded-full bg-gray-100 dark:bg-gray-800/60 border border-gray-200 dark:border-gray-700">
               <CheckCircle2 size={36} className="text-gray-400 dark:text-gray-500 sm:w-10 sm:h-10" />
             </div>
-            <p className="text-gray-300 text-base sm:text-lg font-medium">{t.tasks.noCompletedTasks}</p>
-            <p className="text-gray-400 text-sm">{t.tasks.completeTaskHint}</p>
+            <p className="text-slate-600 dark:text-gray-300 text-base sm:text-lg font-medium">{t.tasks.noCompletedTasks}</p>
+            <p className="text-slate-500 dark:text-gray-400 text-sm">{t.tasks.completeTaskHint}</p>
           </div>
         ) : (
           <section className="flex gap-2 sm:gap-3 lg:gap-4">
