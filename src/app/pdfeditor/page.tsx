@@ -1082,12 +1082,12 @@ export default function PdfEditor() {
             )}
 
             {/* Right sidebar — title, mode buttons, download */}
-            <aside className="hidden lg:flex fixed right-0 top-16 w-64 h-[calc(100vh-4rem)] flex-col gap-4 p-5 bg-gray-900/95 backdrop-blur border-l border-white/10 z-30">
+            <aside className="hidden lg:flex fixed right-0 top-16 w-64 h-[calc(100vh-4rem)] flex-col gap-4 p-5 bg-white dark:bg-gray-900/95 backdrop-blur border-l border-slate-200 dark:border-white/10 z-30 shadow-sm dark:shadow-none">
                 {/* Title block */}
                 <div className="flex items-start gap-2">
                     <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                            <h1 className="text-xl font-bold text-white leading-tight">
+                            <h1 className="text-xl font-bold text-slate-900 dark:text-white leading-tight">
                                 {mode === "annotator"
                                     ? <><FileText size={20} className="inline-block mr-2 -mt-1 text-amber-500" />PDF Annotator</>
                                     : <><FileImage size={20} className="inline-block mr-2 -mt-1 text-amber-500" />Image Converter</>
@@ -1095,11 +1095,11 @@ export default function PdfEditor() {
                             </h1>
                             <PageHelpTooltip subtitle={t.pageHelp.pdfeditor.subtitle} description={t.pageHelp.pdfeditor.description} side="left" />
                         </div>
-                        <p className="text-xs text-gray-400 mt-1.5">Document management &amp; conversion.</p>
+                        <p className="text-xs text-slate-500 dark:text-gray-400 mt-1.5">Document management &amp; conversion.</p>
                     </div>
                 </div>
 
-                <div className="h-px bg-white/10" />
+                <div className="h-px bg-slate-200 dark:bg-white/10" />
 
                 {/* Mode buttons (vertical) */}
                 <div className="flex flex-col gap-2">
@@ -1107,7 +1107,7 @@ export default function PdfEditor() {
                         onClick={() => switchMode("annotator")}
                         className={`flex items-center gap-2.5 w-full px-3 py-2.5 text-sm font-semibold rounded-md transition-colors ${mode === "annotator"
                             ? "bg-amber-500 text-white shadow"
-                            : "bg-white/5 hover:bg-white/10 text-gray-300"
+                            : "bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-600 dark:text-gray-300"
                             }`}
                     >
                         <Pen size={15} className="shrink-0" />
@@ -1117,7 +1117,7 @@ export default function PdfEditor() {
                         onClick={() => switchMode("converter")}
                         className={`flex items-center gap-2.5 w-full px-3 py-2.5 text-sm font-semibold rounded-md transition-colors ${mode === "converter"
                             ? "bg-amber-500 text-white shadow"
-                            : "bg-white/5 hover:bg-white/10 text-gray-300"
+                            : "bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-600 dark:text-gray-300"
                             }`}
                     >
                         <FileImage size={15} className="shrink-0" />
@@ -1128,7 +1128,7 @@ export default function PdfEditor() {
                 {/* Download at bottom */}
                 {hasFile && (
                     <div className="mt-auto">
-                        <div className="h-px bg-white/10 mb-3" />
+                        <div className="h-px bg-slate-200 dark:bg-white/10 mb-3" />
                         <button
                             onClick={requestDownload}
                             className="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold rounded-md shadow transition-colors"
@@ -1140,9 +1140,9 @@ export default function PdfEditor() {
             </aside>
 
             {/* Mobile-only header: title + mode switcher (replaces hidden right sidebar) */}
-            <div className="lg:hidden -mx-4 sm:-mx-6 -mt-4 sm:-mt-6 mb-3 sm:mb-4 bg-gray-900/95 backdrop-blur-md border-b border-white/10">
+            <div className="lg:hidden -mx-4 sm:-mx-6 -mt-4 sm:-mt-6 mb-3 sm:mb-4 bg-white dark:bg-gray-900/95 backdrop-blur-md border-b border-slate-200 dark:border-white/10">
                 <div className="flex items-center gap-2 px-4 sm:px-6 py-3">
-                    <h1 className="text-sm font-bold text-white flex items-center gap-1.5 shrink-0 min-w-0 truncate">
+                    <h1 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-1.5 shrink-0 min-w-0 truncate">
                         {mode === "annotator" ? (
                             <><FileText size={15} className="text-amber-500 shrink-0" /> <span className="truncate">PDF Annotator</span></>
                         ) : (
@@ -1150,17 +1150,17 @@ export default function PdfEditor() {
                         )}
                         <PageHelpTooltip subtitle={t.pageHelp.pdfeditor.subtitle} description={t.pageHelp.pdfeditor.description} side="bottom" iconSize={12} />
                     </h1>
-                    <div className="ml-auto flex gap-1 bg-white/5 rounded-md p-1 border border-white/10 shrink-0">
+                    <div className="ml-auto flex gap-1 bg-slate-100 dark:bg-white/5 rounded-md p-1 border border-slate-200 dark:border-white/10 shrink-0">
                         <button
                             onClick={() => switchMode("annotator")}
-                            className={`flex items-center gap-1 px-2.5 py-1 rounded text-xs font-semibold transition-colors ${mode === "annotator" ? "bg-amber-500 text-white shadow" : "text-gray-300 hover:bg-white/10"}`}
+                            className={`flex items-center gap-1 px-2.5 py-1 rounded text-xs font-semibold transition-colors ${mode === "annotator" ? "bg-amber-500 text-white shadow" : "text-slate-600 dark:text-gray-300 hover:bg-slate-200 dark:hover:bg-white/10"}`}
                         >
                             <Pen size={12} />
                             <span>{t.pdfEditor.annotator}</span>
                         </button>
                         <button
                             onClick={() => switchMode("converter")}
-                            className={`flex items-center gap-1 px-2.5 py-1 rounded text-xs font-semibold transition-colors ${mode === "converter" ? "bg-amber-500 text-white shadow" : "text-gray-300 hover:bg-white/10"}`}
+                            className={`flex items-center gap-1 px-2.5 py-1 rounded text-xs font-semibold transition-colors ${mode === "converter" ? "bg-amber-500 text-white shadow" : "text-slate-600 dark:text-gray-300 hover:bg-slate-200 dark:hover:bg-white/10"}`}
                         >
                             <FileImage size={12} />
                             <span>{t.pdfEditor.converter}</span>
@@ -1179,17 +1179,17 @@ export default function PdfEditor() {
                     className={`relative w-full max-w-2xl rounded-md border-2 border-dashed backdrop-blur-md transition-all duration-300
                         ${dragOver
                             ? "bg-amber-500/15 border-amber-400 shadow-[0_0_40px_rgba(251,191,36,0.15)]"
-                            : "bg-white/10 border-white/30 hover:border-amber-400/70 hover:bg-white/15"
+                            : "bg-slate-100 dark:bg-white/10 border-slate-300 dark:border-white/30 hover:border-amber-400/70 hover:bg-slate-200/70 dark:hover:bg-white/15"
                         }`}
                 >
                     <label className="flex flex-col items-center justify-center gap-3 py-10 sm:py-14 cursor-pointer">
                         <UploadCloud
                             size={56}
                             strokeWidth={1.8}
-                            className={`transition-colors duration-300 ${dragOver ? "text-amber-400" : "text-white"}`}
+                            className={`transition-colors duration-300 ${dragOver ? "text-amber-400" : "text-slate-600 dark:text-white"}`}
                         />
                         <div className="text-center space-y-1">
-                            <p className="text-sm font-semibold text-white">
+                            <p className="text-sm font-semibold text-slate-900 dark:text-white">
                                 {dragOver
                                     ? t.pdfEditor.dropToUpload
                                     : mode === "annotator"
@@ -1197,7 +1197,7 @@ export default function PdfEditor() {
                                         : t.pdfEditor.uploadYourImage
                                 }
                             </p>
-                            <p className="text-xs text-gray-400">
+                            <p className="text-xs text-slate-500 dark:text-gray-400">
                                 {mode === "annotator"
                                     ? "PDF, DOCX, TXT · ( Size limit: 20MB)"
                                     : "PNG, JPG, JPEG · ( Size limit: 20MB)"
@@ -1217,14 +1217,14 @@ export default function PdfEditor() {
                 <div className="flex flex-col gap-3">
                     {/* Converter sticky control bar */}
                     {mode === "converter" && (
-                        <div className="sticky top-16 z-30 -mx-4 sm:-mx-6 lg:-mt-6 lg:-mr-8 bg-gray-900/95 backdrop-blur-md border-b border-white/10">
+                        <div className="sticky top-16 z-30 -mx-4 sm:-mx-6 lg:-mt-6 lg:-mr-8 bg-white dark:bg-gray-900/95 backdrop-blur-md border-b border-slate-200 dark:border-white/10">
                             <div className="flex items-center gap-2 px-4 sm:px-6 py-3">
-                                <span className="text-xs font-semibold text-gray-300 flex items-center gap-1.5">
+                                <span className="text-xs font-semibold text-slate-600 dark:text-gray-300 flex items-center gap-1.5">
                                     <FileImage size={13} className="text-amber-400" />
                                     Image Converter
                                 </span>
-                                <div className="h-4 w-px bg-white/15 mx-1" />
-                                <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold bg-white/10 hover:bg-white/15 text-gray-300 cursor-pointer transition-colors">
+                                <div className="h-4 w-px bg-slate-300 dark:bg-white/15 mx-1" />
+                                <label className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold bg-slate-100 dark:bg-white/10 hover:bg-slate-200 dark:hover:bg-white/15 text-slate-600 dark:text-gray-300 cursor-pointer transition-colors">
                                     <UploadCloud size={13} />
                                     Add New
                                     <input
@@ -1239,7 +1239,7 @@ export default function PdfEditor() {
                                         setFileType(null); setImageData(""); setAnnotations([]);
                                         setSelectedId(null);
                                     }}
-                                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold bg-white/10 hover:bg-red-500/20 hover:text-red-400 text-gray-300 transition-colors"
+                                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold bg-slate-100 dark:bg-white/10 hover:bg-red-100 dark:hover:bg-red-500/20 hover:text-red-500 dark:hover:text-red-400 text-slate-600 dark:text-gray-300 transition-colors"
                                 >
                                     <XIcon size={13} />
                                     Close
@@ -1258,7 +1258,7 @@ export default function PdfEditor() {
 
                     {/* Sticky control bar: toolbar + zoom + undo/redo */}
                     {mode === "annotator" && (
-                        <div className="sticky top-16 z-30 -mx-4 sm:-mx-6 -mt-4 sm:-mt-6 lg:-mr-8 bg-gray-900/95 backdrop-blur-md border-b border-white/10">
+                        <div className="sticky top-16 z-30 -mx-4 sm:-mx-6 -mt-4 sm:-mt-6 lg:-mr-8 bg-white dark:bg-gray-900/95 backdrop-blur-md border-b border-slate-200 dark:border-white/10">
                             <div className="flex flex-col">
                                 <Toolbar
                                     activeTool={activeTool}
@@ -1285,12 +1285,12 @@ export default function PdfEditor() {
                                 />
 
                                 {/* Zoom + undo/redo row */}
-                                <div className="flex flex-wrap items-center gap-1.5 bg-gray-800/40 border-t border-white/10 px-4 sm:px-6 py-1.5">
+                                <div className="flex flex-wrap items-center gap-1.5 bg-slate-100 dark:bg-gray-800/40 border-t border-slate-200 dark:border-white/10 px-4 sm:px-6 py-1.5">
                                     <button
                                         onClick={undo}
                                         disabled={historyRef.current.length === 0}
                                         title="Undo (Ctrl+Z)"
-                                        className="flex items-center justify-center w-8 h-8 rounded-md text-gray-300 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                                        className="flex items-center justify-center w-8 h-8 rounded-md text-slate-500 dark:text-gray-300 hover:bg-slate-200 dark:hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                                     >
                                         <Undo2 size={15} />
                                     </button>
@@ -1298,41 +1298,41 @@ export default function PdfEditor() {
                                         onClick={redo}
                                         disabled={futureRef.current.length === 0}
                                         title="Redo (Ctrl+Y)"
-                                        className="flex items-center justify-center w-8 h-8 rounded-md text-gray-300 hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                                        className="flex items-center justify-center w-8 h-8 rounded-md text-slate-500 dark:text-gray-300 hover:bg-slate-200 dark:hover:bg-white/10 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                                     >
                                         <Redo2 size={15} />
                                     </button>
-                                    <div className="h-5 w-px bg-white/15 mx-1" />
+                                    <div className="h-5 w-px bg-slate-300 dark:bg-white/15 mx-1" />
                                     <button
                                         onClick={zoomOut}
                                         title="Zoom out (−)"
-                                        className="flex items-center justify-center w-8 h-8 rounded-md text-gray-300 hover:bg-white/10 transition-colors"
+                                        className="flex items-center justify-center w-8 h-8 rounded-md text-slate-500 dark:text-gray-300 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors"
                                     >
                                         <ZoomOut size={15} />
                                     </button>
-                                    <span className="text-xs text-gray-300 tabular-nums w-12 text-center font-mono">
+                                    <span className="text-xs text-slate-500 dark:text-gray-300 tabular-nums w-12 text-center font-mono">
                                         {Math.round(zoom * 100)}%
                                     </span>
                                     <button
                                         onClick={zoomIn}
                                         title="Zoom in (+)"
-                                        className="flex items-center justify-center w-8 h-8 rounded-md text-gray-300 hover:bg-white/10 transition-colors"
+                                        className="flex items-center justify-center w-8 h-8 rounded-md text-slate-500 dark:text-gray-300 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors"
                                     >
                                         <ZoomIn size={15} />
                                     </button>
                                     <button
                                         onClick={zoomFit}
                                         title="Reset zoom (0)"
-                                        className="flex items-center justify-center w-8 h-8 rounded-md text-gray-300 hover:bg-white/10 transition-colors"
+                                        className="flex items-center justify-center w-8 h-8 rounded-md text-slate-500 dark:text-gray-300 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors"
                                     >
                                         <Maximize2 size={14} />
                                     </button>
-                                    <span className="text-[10px] text-gray-400 hidden md:inline font-mono">
+                                    <span className="text-[10px] text-slate-400 dark:text-gray-400 hidden md:inline font-mono">
                                         T · P · I · Esc · Del · Ctrl+Z
                                     </span>
                                     <button
                                         onClick={() => setShowAnnotationsModal((v) => !v)}
-                                        className={`ml-auto flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold transition-colors border ${showAnnotationsModal ? "bg-amber-500/20 border-amber-400/50 text-amber-300" : "bg-white/5 hover:bg-white/10 border-white/10 text-gray-300"}`}
+                                        className={`ml-auto flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold transition-colors border ${showAnnotationsModal ? "bg-amber-500/20 border-amber-400/50 text-amber-600 dark:text-amber-300" : "bg-slate-50 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 border-slate-200 dark:border-white/10 text-slate-500 dark:text-gray-300"}`}
                                         title="Open annotations panel"
                                     >
                                         <List size={13} />
@@ -1394,22 +1394,22 @@ export default function PdfEditor() {
             {/* Floating, draggable Annotations modal */}
             {mode === "annotator" && hasFile && showAnnotationsModal && (
                 <div
-                    className="fixed z-50 w-72 max-w-[calc(100vw-1rem)] bg-gray-900/95 backdrop-blur-md border border-amber-400/30 shadow-2xl rounded-xl select-none"
+                    className="fixed z-50 w-72 max-w-[calc(100vw-1rem)] bg-white dark:bg-gray-900/95 backdrop-blur-md border border-amber-400/30 shadow-2xl rounded-xl select-none"
                     style={{ left: modalPos.x, top: modalPos.y }}
                 >
                     {/* Drag handle / header */}
                     <div
                         onMouseDown={startModalDrag}
-                        className="flex items-center gap-2 px-3 py-2 border-b border-white/10 bg-white/5 rounded-t-xl cursor-move"
+                        className="flex items-center gap-2 px-3 py-2 border-b border-slate-200 dark:border-white/10 bg-slate-50 dark:bg-white/5 rounded-t-xl cursor-move"
                     >
                         <GripHorizontal size={14} className="text-gray-500 shrink-0" />
-                        <p className="text-xs font-semibold text-white flex-1">
+                        <p className="text-xs font-semibold text-slate-900 dark:text-white flex-1">
                             Annotations
                             <span className="ml-2 text-amber-400 font-mono">{annotations.length}</span>
                         </p>
                         <button
                             onClick={() => setShowAnnotationsModal(false)}
-                            className="p-1 rounded text-gray-400 hover:bg-white/10 hover:text-white transition-colors"
+                            className="p-1 rounded text-slate-400 dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-white/10 hover:text-slate-900 dark:hover:text-white transition-colors"
                             title="Close"
                         >
                             <XIcon size={13} />
@@ -1430,7 +1430,7 @@ export default function PdfEditor() {
                                         const isSel = ann.id === selectedId;
                                         const Icon = ann.type === "text" ? TypeIcon : ann.type === "image" ? ImageLucide : Pen;
                                         return (
-                                            <li key={ann.id} className={`rounded-lg border transition-colors ${isSel ? "bg-amber-500/15 border-amber-400/40" : "border-transparent hover:bg-white/5"}`}>
+                                            <li key={ann.id} className={`rounded-lg border transition-colors ${isSel ? "bg-amber-500/15 border-amber-400/40" : "border-transparent hover:bg-slate-100 dark:hover:bg-white/5"}`}>
                                                 <div className="flex items-center gap-2 px-2 py-1.5">
                                                     <Icon size={12} className="shrink-0 text-amber-400" />
                                                     {ann.type === "text" ? (
@@ -1438,13 +1438,13 @@ export default function PdfEditor() {
                                                             value={(ann as TextAnnotation).text}
                                                             onChange={(e) => updateAnnotation({ ...(ann as TextAnnotation), text: e.target.value })}
                                                             onFocus={() => { setSelectedId(ann.id); scrollToAnnotation(ann); }}
-                                                            className="flex-1 min-w-0 bg-transparent text-xs text-gray-200 focus:outline-none focus:bg-white/10 rounded px-1"
+                                                            className="flex-1 min-w-0 bg-transparent text-xs text-slate-700 dark:text-gray-200 focus:outline-none focus:bg-slate-100 dark:focus:bg-white/10 rounded px-1"
                                                             placeholder="(empty)"
                                                         />
                                                     ) : (
                                                         <button
                                                             onClick={() => { setSelectedId(ann.id); scrollToAnnotation(ann); }}
-                                                            className="flex-1 text-left text-xs text-gray-200 truncate"
+                                                            className="flex-1 text-left text-xs text-slate-700 dark:text-gray-200 truncate"
                                                         >
                                                             {ann.type === "image" ? "Image" : "Stroke"}
                                                         </button>
@@ -1453,7 +1453,7 @@ export default function PdfEditor() {
                                                     <button
                                                         onClick={() => deleteAnnotation(ann.id)}
                                                         title="Delete"
-                                                        className="shrink-0 p-1 rounded text-gray-500 hover:text-red-400 hover:bg-red-500/10"
+                                                        className="shrink-0 p-1 rounded text-slate-400 dark:text-gray-500 hover:text-red-400 hover:bg-red-500/10"
                                                     >
                                                         <Trash2 size={11} />
                                                     </button>
