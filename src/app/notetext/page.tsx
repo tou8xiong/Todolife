@@ -1291,7 +1291,7 @@ export default function NoteTextPage() {
                     <span className="text-[10px] font-bold uppercase tracking-wider">New Paper</span>
                   </button>
 
-                  <div className="ml-auto flex items-center gap-1.5 text-xs font-medium text-gray-400 bg-white/5 px-3 py-1.5 rounded-lg border border-white/10">
+                  <div className="ml-auto flex items-center gap-1.5 text-xs font-medium text-slate-500 dark:text-gray-400 bg-slate-100 dark:bg-white/5 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-white/10">
                     <MdDescription size={14} />
                     <span>{pages.length} {pages.length === 1 ? 'Page' : 'Pages'}</span>
                   </div>
@@ -1322,8 +1322,8 @@ export default function NoteTextPage() {
                       <MdFolderOpen size={24} className={getFolderColor(folders.findIndex(f => f.id === selectedFolderId)).text} />
                     </div>
                     <div>
-                      <h2 className="text-2xl font-bold text-white">{selectedFolder?.name}</h2>
-                      <p className="text-sm text-gray-300">{displayedDocs.length} documents</p>
+                      <h2 className="text-2xl font-bold text-slate-900 dark:text-white">{selectedFolder?.name}</h2>
+                      <p className="text-sm text-slate-500 dark:text-gray-300">{displayedDocs.length} documents</p>
                     </div>
                   </div>
 
@@ -1335,16 +1335,16 @@ export default function NoteTextPage() {
                           <div
                             key={doc.id}
                             onClick={() => handleOpen(doc)}
-                            className={`group relative p-5 rounded-2xl bg-white/5 backdrop-blur-md border ${color.border} hover:shadow-xl hover:scale-[1.02] transition-all duration-200 cursor-pointer`}
+                            className={`group relative p-5 rounded-2xl bg-white dark:bg-white/5 backdrop-blur-md border border-slate-200 dark:${color.border} hover:shadow-xl hover:scale-[1.02] transition-all duration-200 cursor-pointer shadow-sm dark:shadow-none`}
                           >
                             <div className="flex items-start gap-3">
-                              <div className={`p-2 rounded-xl bg-white/10 border border-white/10 shadow-sm`}>
+                              <div className={`p-2 rounded-xl bg-slate-100 dark:bg-white/10 border border-slate-200 dark:border-white/10 shadow-sm`}>
                                 <MdDescription size={20} className={color.text} />
                               </div>
                               <div className="flex-1 min-w-0">
-                                <h3 className="font-semibold text-white truncate mb-1">{doc.title}</h3>
+                                <h3 className="font-semibold text-slate-900 dark:text-white truncate mb-1">{doc.title}</h3>
                                 {doc.updated_at && (
-                                  <p className="text-xs text-gray-400">{formatDate(doc.updated_at)}</p>
+                                  <p className="text-xs text-slate-500 dark:text-gray-400">{formatDate(doc.updated_at)}</p>
                                 )}
                               </div>
                             </div>
@@ -1365,8 +1365,8 @@ export default function NoteTextPage() {
                       <div className={`w-20 h-20 mx-auto mb-4 rounded-2xl ${getFolderColor(folders.findIndex(f => f.id === selectedFolderId)).bg} flex items-center justify-center`}>
                         <MdDescription size={40} className={getFolderColor(folders.findIndex(f => f.id === selectedFolderId)).text} />
                       </div>
-                      <h3 className="text-lg font-semibold text-gray-200 mb-2">No documents in this folder</h3>
-                      <p className="text-sm text-gray-400 mb-6">Create a new document to add it to this folder</p>
+                      <h3 className="text-lg font-semibold text-slate-800 dark:text-gray-200 mb-2">No documents in this folder</h3>
+                      <p className="text-sm text-slate-500 dark:text-gray-400 mb-6">Create a new document to add it to this folder</p>
                       <button
                         onClick={handleNew}
                         className="inline-flex items-center gap-2 px-5 py-2.5 bg-sky-500 hover:bg-sky-600 text-white text-sm font-semibold rounded-md shadow-lg shadow-sky-500/25 hover:shadow-sky-500/40 transition-all"
@@ -1389,11 +1389,11 @@ export default function NoteTextPage() {
                         <MdGridView size={24} className="text-sky-600 dark:text-sky-400" />
                       </div>
                       <div>
-                        <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+                        <h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
                           All Documents
                           <PageHelpTooltip subtitle={t.pageHelp.notetext.subtitle} description={t.pageHelp.notetext.description} />
                         </h2>
-                        <p className="text-sm text-gray-300">{docs.length} documents</p>
+                        <p className="text-sm text-slate-500 dark:text-gray-300">{docs.length} documents</p>
                       </div>
                     </div>
                     <button
@@ -1413,16 +1413,16 @@ export default function NoteTextPage() {
                             key={doc.id}
                             onClick={() => handleOpen(doc)}
                             onContextMenu={(e) => handleContextMenu(e, "file", doc.id)}
-                            className={`group relative p-5 rounded-md bg-white/5 backdrop-blur-md border ${color.border} hover:shadow-xl hover:scale-[1.02] transition-all duration-200 text-left cursor-pointer`}
+                            className={`group relative p-5 rounded-md bg-white dark:bg-white/5 backdrop-blur-md border border-slate-200 dark:${color.border} hover:shadow-xl hover:scale-[1.02] transition-all duration-200 text-left cursor-pointer shadow-sm dark:shadow-none`}
                           >
                             <div className="flex items-start gap-3">
-                              <div className={`p-2.5 rounded-xl bg-white/10 border border-white/10 shadow-sm`}>
+                              <div className={`p-2.5 rounded-xl bg-slate-100 dark:bg-white/10 border border-slate-200 dark:border-white/10 shadow-sm`}>
                                 <MdDescription size={22} className={color.text} />
                               </div>
                               <div className="flex-1 min-w-0">
-                                <h3 className="font-semibold text-white truncate mb-1">{doc.title}</h3>
+                                <h3 className="font-semibold text-slate-900 dark:text-white truncate mb-1">{doc.title}</h3>
                                 {doc.updated_at && (
-                                  <p className="text-xs text-gray-400">{formatDate(doc.updated_at)}</p>
+                                  <p className="text-xs text-slate-500 dark:text-gray-400">{formatDate(doc.updated_at)}</p>
                                 )}
                               </div>
                             </div>
@@ -1435,8 +1435,8 @@ export default function NoteTextPage() {
                       <div className="w-24 h-24 mx-auto mb-6 rounded-3xl bg-gradient-to-br from-sky-100 to-sky-200 dark:from-sky-900/30 dark:to-sky-800/20 flex items-center justify-center">
                         <MdNoteAdd size={48} className="text-sky-400" />
                       </div>
-                      <p className="text-2xl font-bold mb-2 text-white">No documents yet</p>
-                      <p className="text-sm mb-8 text-center text-gray-300 max-w-md mx-auto">Create your first document to get started</p>
+                      <p className="text-2xl font-bold mb-2 text-slate-900 dark:text-white">No documents yet</p>
+                      <p className="text-sm mb-8 text-center text-slate-500 dark:text-gray-300 max-w-md mx-auto">Create your first document to get started</p>
                       <button
                         onClick={handleNew}
                         className="flex items-center gap-2 px-6 py-3 bg-sky-500 hover:bg-sky-600 text-white text-sm font-semibold rounded-md shadow-lg shadow-sky-500/25 hover:shadow-sky-500/40 transition-all"
