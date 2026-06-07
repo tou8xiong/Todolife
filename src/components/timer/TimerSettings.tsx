@@ -230,7 +230,7 @@ export default function TimerSettings() {
 
         {!isFocusMode && (
           <div className="flex items-center justify-center gap-2">
-            <h1 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2">
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
               <Clock size={20} className="text-amber-400" />
               Study Timer
               <PageHelpTooltip subtitle={t.pageHelp.settimepage.subtitle} description={t.pageHelp.settimepage.description} />
@@ -239,7 +239,7 @@ export default function TimerSettings() {
         )}
 
         {/* Mode tabs */}
-        <div className="flex items-center justify-center gap-1 bg-gray-800/80 border border-gray-700 rounded-md p-1 self-center">
+        <div className="flex items-center justify-center gap-1 bg-white dark:bg-gray-800/80 border border-slate-200 dark:border-gray-700 rounded-md p-1 self-center">
           {([
             { id: "stopwatch", label: t.timer.stopwatch, icon: Clock },
             { id: "pomodoro",  label: t.timer.pomodoro,  icon: Flame },
@@ -249,7 +249,7 @@ export default function TimerSettings() {
               key={id}
               onClick={() => switchMode(id)}
               className={`flex items-center gap-1.5 px-4 py-2 rounded-md text-sm font-semibold transition-all ${
-                mode === id ? "bg-amber-500 text-white shadow" : "text-gray-400 hover:text-white hover:bg-gray-700/50"
+                mode === id ? "bg-amber-500 text-white shadow" : "text-slate-500 dark:text-gray-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-gray-700/50"
               }`}
             >
               <Icon size={15} /> {label}
@@ -261,7 +261,7 @@ export default function TimerSettings() {
         <div className={`grid gap-5 ${isFocusMode ? "grid-cols-1" : "grid-cols-1 lg:grid-cols-5"}`}>
 
           {/* ── Timer Card ── */}
-          <div className="lg:col-span-2 bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-md p-6 flex flex-col items-center gap-5">
+          <div className="lg:col-span-2 bg-white dark:bg-gray-800/80 backdrop-blur-sm border border-slate-200 dark:border-gray-700 rounded-md p-6 flex flex-col items-center gap-5">
 
             {/* Pomodoro phase badge */}
             {mode === "pomodoro" && (
@@ -306,7 +306,7 @@ export default function TimerSettings() {
               <div className="flex items-center gap-2">
                 {(["h", "m", "s"] as const).map((unit) => (
                   <div key={unit} className="flex flex-col items-center gap-1">
-                    <span className="text-[10px] text-gray-400 uppercase">{unit}</span>
+                    <span className="text-[10px] text-slate-500 dark:text-gray-400 uppercase">{unit}</span>
                     <input
                       type="number" min={0} max={unit === "h" ? 23 : 59}
                       value={countdownInput[unit]}
@@ -316,7 +316,7 @@ export default function TimerSettings() {
                         setCountdownInput(next);
                         setCountdown(next.h * 3600 + next.m * 60 + next.s);
                       }}
-                      className="w-14 text-center bg-gray-700 border border-gray-600 text-white rounded-md px-2 py-1.5 text-lg font-mono focus:outline-none focus:border-amber-400"
+                      className="w-14 text-center bg-slate-100 dark:bg-gray-700 border border-slate-300 dark:border-gray-600 text-slate-900 dark:text-white rounded-md px-2 py-1.5 text-lg font-mono focus:outline-none focus:border-amber-400"
                     />
                   </div>
                 ))}
@@ -328,7 +328,7 @@ export default function TimerSettings() {
               value={focusLabel}
               onChange={(e) => setFocusLabel(e.target.value)}
               placeholder={t.timer.whatWorkingOn}
-              className="w-full text-center text-sm bg-gray-700/50 border border-gray-600 text-white rounded-md px-3 py-2 focus:outline-none focus:border-amber-400 placeholder:text-gray-500"
+              className="w-full text-center text-sm bg-slate-100 dark:bg-gray-700/50 border border-slate-300 dark:border-gray-600 text-slate-900 dark:text-white rounded-md px-3 py-2 focus:outline-none focus:border-amber-400 placeholder:text-slate-400 dark:placeholder:text-gray-500"
             />
 
             {/* Controls */}
@@ -351,7 +351,7 @@ export default function TimerSettings() {
               )}
               <button
                 onClick={reset}
-                className="flex items-center gap-2 px-5 py-2.5 bg-gray-700 hover:bg-gray-600 text-white rounded-md font-bold transition-all active:scale-95 border border-gray-600"
+                className="flex items-center gap-2 px-5 py-2.5 bg-slate-200 dark:bg-gray-700 hover:bg-slate-300 dark:hover:bg-gray-600 text-slate-900 dark:text-white rounded-md font-bold transition-all active:scale-95 border border-slate-300 dark:border-gray-600"
               >
                 <RotateCcw size={18} /> {t.timer.reset}
               </button>
@@ -368,13 +368,13 @@ export default function TimerSettings() {
 
             {/* Quick stats */}
             {!isFocusMode && (
-              <div className="grid grid-cols-2 gap-3 w-full pt-1 border-t border-gray-700">
-                <div className="bg-gray-700/40 rounded-md p-3 text-center">
-                  <p className="text-gray-400 text-[10px] uppercase tracking-wider mb-0.5">{t.timer.today}</p>
-                  <p className="text-white font-bold">{todaySessions.length} {t.timer.sessions}</p>
+              <div className="grid grid-cols-2 gap-3 w-full pt-1 border-t border-slate-200 dark:border-gray-700">
+                <div className="bg-slate-100 dark:bg-gray-700/40 rounded-md p-3 text-center">
+                  <p className="text-slate-500 dark:text-gray-400 text-[10px] uppercase tracking-wider mb-0.5">{t.timer.today}</p>
+                  <p className="text-slate-900 dark:text-white font-bold">{todaySessions.length} {t.timer.sessions}</p>
                 </div>
-                <div className="bg-gray-700/40 rounded-md p-3 text-center">
-                  <p className="text-gray-400 text-[10px] uppercase tracking-wider mb-0.5">{t.timer.total}</p>
+                <div className="bg-slate-100 dark:bg-gray-700/40 rounded-md p-3 text-center">
+                  <p className="text-slate-500 dark:text-gray-400 text-[10px] uppercase tracking-wider mb-0.5">{t.timer.total}</p>
                   <p className="text-amber-400 font-bold">{fmtDuration(todayCentis)}</p>
                 </div>
               </div>
@@ -386,8 +386,8 @@ export default function TimerSettings() {
             <div className="lg:col-span-3 flex flex-col gap-5">
 
               {/* Lo-fi radio */}
-              <div className="bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-md p-5 space-y-4">
-                <h2 className="text-sm font-bold text-white flex items-center gap-2">
+              <div className="bg-white dark:bg-gray-800/80 backdrop-blur-sm border border-slate-200 dark:border-gray-700 rounded-md p-5 space-y-4">
+                <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-2">
                   <Music size={16} className="text-amber-400" /> {t.timer.lofiRadio}
                 </h2>
 
@@ -428,12 +428,12 @@ export default function TimerSettings() {
               </div>
 
               {/* Session history */}
-              <div className="bg-gray-800/80 backdrop-blur-sm border border-gray-700 rounded-md overflow-hidden">
+              <div className="bg-white dark:bg-gray-800/80 backdrop-blur-sm border border-slate-200 dark:border-gray-700 rounded-md overflow-hidden">
                 <button
                   onClick={() => setShowHistory(!showHistory)}
-                  className="w-full flex items-center justify-between px-5 py-3.5 hover:bg-gray-700/30 transition-colors"
+                  className="w-full flex items-center justify-between px-5 py-3.5 hover:bg-slate-100 dark:hover:bg-gray-700/30 transition-colors"
                 >
-                  <span className="flex items-center gap-2 text-sm font-bold text-white">
+                  <span className="flex items-center gap-2 text-sm font-bold text-slate-900 dark:text-white">
                     <ListChecks size={16} className="text-amber-400" />
                     {t.timer.sessionHistory}
                     {sessions.length > 0 && (
@@ -442,21 +442,21 @@ export default function TimerSettings() {
                       </span>
                     )}
                   </span>
-                  {showHistory ? <ChevronUp size={16} className="text-gray-400" /> : <ChevronDown size={16} className="text-gray-400" />}
+                  {showHistory ? <ChevronUp size={16} className="text-slate-500 dark:text-gray-400" /> : <ChevronDown size={16} className="text-slate-500 dark:text-gray-400" />}
                 </button>
 
                 {showHistory && (
-                  <div className="border-t border-gray-700 max-h-56 overflow-y-auto">
+                  <div className="border-t border-slate-200 dark:border-gray-700 max-h-56 overflow-y-auto">
                     {sessions.length === 0 ? (
-                      <p className="text-gray-500 text-sm text-center py-6">{t.timer.noSessions}</p>
+                      <p className="text-slate-500 dark:text-gray-500 text-sm text-center py-6">{t.timer.noSessions}</p>
                     ) : (
-                      <ul className="divide-y divide-gray-700/50">
+                      <ul className="divide-y divide-slate-200 dark:divide-gray-700/50">
                         {sessions.map((s) => (
-                          <li key={s.id} className="flex items-center gap-3 px-5 py-3 hover:bg-gray-700/20 transition-colors">
+                          <li key={s.id} className="flex items-center gap-3 px-5 py-3 hover:bg-slate-50 dark:hover:bg-gray-700/20 transition-colors">
                             <BarChart2 size={14} className="text-amber-400 shrink-0" />
                             <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium text-white truncate">{s.label}</p>
-                              <p className="text-[11px] text-gray-400">
+                              <p className="text-sm font-medium text-slate-900 dark:text-white truncate">{s.label}</p>
+                              <p className="text-[11px] text-slate-500 dark:text-gray-400">
                                 {s.mode} · {s.videoName} · {new Date(s.timestamp).toLocaleDateString()}
                               </p>
                             </div>
@@ -465,7 +465,7 @@ export default function TimerSettings() {
                             )}
                             <button
                               onClick={() => deleteSession(s.id)}
-                              className="p-1 rounded-md hover:bg-red-900/30 text-gray-500 hover:text-red-400 transition-colors shrink-0"
+                              className="p-1 rounded-md hover:bg-red-900/30 text-slate-400 dark:text-gray-500 hover:text-red-400 transition-colors shrink-0"
                             >
                               <Trash2 size={13} />
                             </button>

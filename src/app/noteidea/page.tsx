@@ -144,11 +144,11 @@ export default function NooteBook() {
                 <div className="bg-white/10 backdrop-blur-md rounded-full p-4 shadow-md mb-3 border border-white/10">
                     <GiNotebook size={48} className="text-sky-500 dark:text-sky-400" />
                 </div>
-                <h1 className="text-3xl font-bold text-white tracking-tight flex items-center gap-2">
+                <h1 className="text-3xl font-bold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
                     {t.noteIdea.title}
                     <PageHelpTooltip subtitle={t.pageHelp.noteidea.subtitle} description={t.pageHelp.noteidea.description} />
                 </h1>
-                <p className="text-sm text-gray-300 mt-1">{t.noteIdea.subtitle}</p>
+                <p className="text-sm text-slate-600 dark:text-gray-300 mt-1">{t.noteIdea.subtitle}</p>
             </div>
 
             {/* Input Card */}
@@ -178,14 +178,14 @@ export default function NooteBook() {
             {/* Notes List */}
             <div className="max-w-2xl mx-auto">
                 <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-base font-bold text-white">
+                    <h2 className="text-base font-bold text-slate-900 dark:text-white">
                         {t.noteIdea.yourIdeas}
-                        <span className="ml-2 text-xs font-normal text-gray-300">({ideas.length})</span>
+                        <span className="ml-2 text-xs font-normal text-slate-600 dark:text-gray-300">({ideas.length})</span>
                     </h2>
                 </div>
 
                 {ideas.length === 0 ? (
-                    <div className="flex flex-col items-center py-20 text-gray-400 dark:text-gray-400">
+                    <div className="flex flex-col items-center py-20 text-slate-500 dark:text-gray-400">
                         <GiNotebook size={64} />
                         <p className="mt-3 text-sm">{t.noteIdea.noIdeas}</p>
                     </div>
@@ -227,7 +227,7 @@ export default function NooteBook() {
                                     </div>
                                 ) : (
                                     <>
-                                        <p className="flex-1 text-gray-100 text-sm leading-relaxed break-words">
+                                        <p className="flex-1 text-slate-800 dark:text-gray-100 text-sm leading-relaxed break-words">
                                             {idea.ideatext}
                                         </p>
                                         <button
