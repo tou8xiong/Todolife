@@ -792,7 +792,7 @@ export default function NoteTextPage() {
       {initialLoading ? (
         <div className="flex h-[calc(100vh-4rem)] bg-linear-to-b from-slate-50 to-white dark:from-gray-900 dark:to-gray-600 overflow-hidden transition-colors">
           {/* Sidebar skeleton */}
-          <div className="w-64 sm:w-72 shrink-0 bg-white/5 backdrop-blur-xl border-r border-white/10 flex flex-col max-md:hidden">
+          <div className="w-64 sm:w-72 shrink-0 bg-slate-50 dark:bg-white/5 backdrop-blur-xl border-r border-slate-200 dark:border-white/10 flex flex-col max-md:hidden shadow-sm dark:shadow-none">
             {/* Sidebar header */}
             <div className="p-4 border-b border-white/10">
               <div className="flex items-center justify-between mb-3">
@@ -808,18 +808,18 @@ export default function NoteTextPage() {
               <div className="h-10 bg-white/10 rounded-md animate-pulse mb-3" />
               <div className="h-px bg-white/10 my-2" />
               <div className="flex items-center gap-2 px-3 mb-2">
-                <div className="h-3 w-14 bg-white/10 rounded animate-pulse" />
+                <div className="h-3 w-14 bg-slate-200 dark:bg-white/10 rounded animate-pulse" />
               </div>
               {[72, 56, 80, 64].map((w, i) => (
                 <div key={i} className="flex items-center gap-2 px-3 py-2">
-                  <div className="w-4 h-4 bg-white/10 rounded animate-pulse shrink-0" />
+                  <div className="w-4 h-4 bg-slate-200 dark:bg-white/10 rounded animate-pulse shrink-0" />
                   <div className="w-7 h-7 bg-white/10 rounded-lg animate-pulse shrink-0" />
-                  <div className={`h-3 bg-white/10 rounded animate-pulse`} style={{ width: `${w}%` }} />
+                  <div className={`h-3 bg-slate-200 dark:bg-white/10 rounded animate-pulse`} style={{ width: `${w}%` }} />
                 </div>
               ))}
             </div>
             <div className="p-4 border-t border-white/10">
-              <div className="h-4 w-24 bg-white/10 rounded animate-pulse" />
+              <div className="h-4 w-24 bg-slate-200 dark:bg-white/10 rounded animate-pulse" />
             </div>
           </div>
 
@@ -831,7 +831,7 @@ export default function NoteTextPage() {
                 <div className="w-12 h-12 bg-white/10 rounded-2xl animate-pulse" />
                 <div className="space-y-2">
                   <div className="h-5 w-36 bg-white/15 rounded animate-pulse" />
-                  <div className="h-3 w-24 bg-white/10 rounded animate-pulse" />
+                  <div className="h-3 w-24 bg-slate-200 dark:bg-white/10 rounded animate-pulse" />
                 </div>
               </div>
               <div className="h-9 w-32 bg-sky-500/30 rounded-md animate-pulse" />
@@ -857,10 +857,10 @@ export default function NoteTextPage() {
         </div>
       ) : (
         <div className="flex h-[calc(100vh-4rem)] bg-linear-to-b from-slate-50 to-white dark:from-gray-900 dark:to-gray-600 overflow-hidden transition-colors font-serif">
-          <div className="w-64 sm:w-72 shrink-0 bg-white/5 backdrop-blur-xl border-r border-white/10 flex flex-col max-md:hidden">
+          <div className="w-64 sm:w-72 shrink-0 bg-slate-50 dark:bg-white/5 backdrop-blur-xl border-r border-slate-200 dark:border-white/10 flex flex-col max-md:hidden shadow-sm dark:shadow-none">
             <div className="p-4 border-b border-gray-200 dark:border-gray-800">
               <div className="flex items-center justify-between mb-3">
-                <h2 className="text-sm font-bold text-white flex items-center gap-1.5">
+                <h2 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
                   My Workspace
                 </h2>
                 <div className="flex items-center gap-1">
@@ -879,7 +879,7 @@ export default function NoteTextPage() {
                       }
                       setShowNewFolderInput(true);
                     }}
-                    className="p-2 rounded-md hover:bg-white/10 text-gray-300 hover:text-sky-400 transition-all"
+                    className="p-2 rounded-md hover:bg-slate-200 dark:hover:bg-white/10 text-slate-500 dark:text-gray-300 hover:text-sky-500 dark:hover:text-sky-400 transition-all"
                     title="New Folder"
                   >
                     <MdCreateNewFolder size={18} />
@@ -903,7 +903,7 @@ export default function NoteTextPage() {
                     onKeyDown={(e) => e.key === "Enter" && createFolder()}
                     onBlur={() => { if (!newFolderName.trim()) setShowNewFolderInput(false); }}
                     placeholder={t.noteText.folderNamePlaceholder}
-                    className="w-full text-sm px-3 py-2 rounded-md border border-white/10 bg-white/5 text-white focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all placeholder:text-gray-500"
+                    className="w-full text-sm px-3 py-2 rounded-md border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-sky-500 transition-all placeholder:text-slate-400 dark:placeholder:text-gray-500"
                     autoFocus
                   />
                   <div className="flex gap-2">
@@ -915,7 +915,7 @@ export default function NoteTextPage() {
                     </button>
                     <button
                       onClick={() => { setShowNewFolderInput(false); setNewFolderName(""); }}
-                      className="flex-1 text-sm px-3 py-1.5 rounded-md bg-white/5 text-gray-300 hover:bg-white/10 transition-colors"
+                      className="flex-1 text-sm px-3 py-1.5 rounded-md bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-gray-300 hover:bg-slate-200 dark:hover:bg-white/10 transition-colors"
                     >
                       {t.cancel}
                     </button>
@@ -933,20 +933,20 @@ export default function NoteTextPage() {
                 }}
                 className={`w-full text-left px-3 py-2.5 rounded-md text-sm font-medium transition-all flex items-center gap-3 group
               ${selectedFolderId === null && !activeDoc
-                    ? "bg-white/10 text-white border border-white/20"
-                    : "text-gray-300 hover:bg-white/5 hover:text-white"
+                    ? "bg-slate-100 dark:bg-white/10 text-slate-900 dark:text-white border border-slate-200 dark:border-white/20"
+                    : "text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white"
                   }`}
               >
                 <MdGridView size={18} />
                 <span>{t.noteText.allDocuments}</span>
-                <span className="ml-auto text-xs bg-white/10 text-white px-2 py-0.5 rounded-full">{docs.length}</span>
+                <span className="ml-auto text-xs bg-slate-200 dark:bg-white/10 text-slate-700 dark:text-white px-2 py-0.5 rounded-full">{docs.length}</span>
               </button>
 
               <div className="border-t border-gray-100 dark:border-gray-800 my-3" />
 
               <div className="flex items-center gap-2 px-3 mb-2">
-                <p className="text-[11px] text-gray-300 uppercase tracking-wider font-semibold">{t.noteText.folders}</p>
-                <span className="text-[11px] text-gray-400">{folders.length}</span>
+                <p className="text-[11px] text-slate-500 dark:text-gray-300 uppercase tracking-wider font-semibold">{t.noteText.folders}</p>
+                <span className="text-[11px] text-slate-400 dark:text-gray-400">{folders.length}</span>
               </div>
 
               {folders.map((folder, index) => {
@@ -962,8 +962,8 @@ export default function NoteTextPage() {
                       onContextMenu={(e) => handleContextMenu(e, "folder", folder.id)}
                       className={`w-full text-left px-3 py-2.5 rounded-md text-sm font-medium transition-all flex items-center gap-2 group
                     ${isSelected
-                          ? "bg-white/15 text-white border border-white/20 shadow-sm"
-                          : "text-gray-300 hover:bg-white/5 hover:text-white border border-transparent"
+                          ? "bg-slate-100 dark:bg-white/15 text-slate-900 dark:text-white border border-slate-200 dark:border-white/20 shadow-sm"
+                          : "text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-white/5 hover:text-slate-900 dark:hover:text-white border border-transparent"
                         }`}
                     >
                       {isExpanded ? (
@@ -979,7 +979,7 @@ export default function NoteTextPage() {
                         )}
                       </span>
                       <span className="truncate">{folder.name}</span>
-                      <span className={`ml-auto text-xs px-2 py-0.5 rounded-full ${isSelected ? "bg-white/20 text-white" : "bg-white/5 text-gray-300"} group-hover:bg-white/10 transition-colors`}>
+                      <span className={`ml-auto text-xs px-2 py-0.5 rounded-full ${isSelected ? "bg-slate-200 dark:bg-white/20 text-slate-700 dark:text-white" : "bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-gray-300"} group-hover:bg-slate-200 dark:group-hover:bg-white/10 transition-colors`}>
                         {folderDocs.length}
                       </span>
                     </button>
@@ -997,8 +997,8 @@ export default function NoteTextPage() {
                                 onContextMenu={(e) => handleContextMenu(e, "file", doc.id)}
                                 className={`w-full text-left px-3 py-2 rounded-md text-sm transition-all flex items-center gap-2 group
                               ${isActive
-                                    ? "bg-white/10 shadow-sm border border-white/20 text-white"
-                                    : "hover:bg-white/5 text-gray-300 hover:text-white"
+                                    ? "bg-slate-100 dark:bg-white/10 shadow-sm border border-slate-200 dark:border-white/20 text-slate-900 dark:text-white"
+                                    : "hover:bg-slate-100 dark:hover:bg-white/5 text-slate-600 dark:text-gray-300 hover:text-slate-900 dark:hover:text-white"
                                   }`}
                               >
                                 <span className={`p-1 rounded ${color.bg} shrink-0`}>
@@ -1019,17 +1019,17 @@ export default function NoteTextPage() {
 
               {docs.length === 0 && folders.length === 0 && (
                 <div className="text-center py-12 px-4">
-                  <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-white/5 flex items-center justify-center">
-                    <MdNoteAdd size={32} className="text-gray-400" />
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-slate-100 dark:bg-white/5 flex items-center justify-center">
+                    <MdNoteAdd size={32} className="text-slate-400 dark:text-gray-400" />
                   </div>
-                  <p className="text-sm text-gray-300 mb-1">{t.noteText.noDocuments}</p>
-                  <p className="text-xs text-gray-400">{t.noteText.clickToCreate}</p>
+                  <p className="text-sm text-slate-600 dark:text-gray-300 mb-1">{t.noteText.noDocuments}</p>
+                  <p className="text-xs text-slate-400 dark:text-gray-400">{t.noteText.clickToCreate}</p>
                 </div>
               )}
             </div>
 
             <div className="p-4 border-t border-gray-200 dark:border-gray-800">
-              <Link href="/noteidea" className="flex items-center gap-2 text-sm text-gray-300 hover:text-sky-400 transition-colors">
+              <Link href="/noteidea" className="flex items-center gap-2 text-sm text-slate-600 dark:text-gray-300 hover:text-sky-500 dark:hover:text-sky-400 transition-colors">
                 <MdArrowBack size={16} />
                 <span>{t.noteText.ideaNotes}</span>
               </Link>
@@ -1040,7 +1040,7 @@ export default function NoteTextPage() {
             {contentLoading ? (
               <div className="flex-1 overflow-auto p-6 sm:p-10">
                 <div className="max-w-6xl mx-auto space-y-4">
-                  <div className="h-8 bg-white/10 rounded animate-pulse w-1/3 mb-6" />
+                  <div className="h-8 bg-slate-200 dark:bg-white/10 rounded animate-pulse w-1/3 mb-6" />
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                     {[1, 2, 3, 4, 5, 6].map(i => (
                       <div key={i} className="h-32 bg-white/10 rounded-2xl animate-pulse" />
@@ -1050,7 +1050,7 @@ export default function NoteTextPage() {
               </div>
             ) : activeDoc ? (
               <>
-                <div className="bg-white/5 backdrop-blur-md border-b border-white/10 px-6 py-4 flex items-center gap-4 shrink-0">
+                <div className="bg-slate-50 dark:bg-white/5 backdrop-blur-md border-b border-slate-200 dark:border-white/10 px-6 py-4 flex items-center gap-4 shrink-0">
                   {selectedFolder && (
                     <span className="flex items-center gap-1.5 text-xs font-medium text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-900/30 px-3 py-1.5 rounded-lg border border-sky-200 dark:border-sky-800">
                       <MdFolder size={14} />
@@ -1061,14 +1061,14 @@ export default function NoteTextPage() {
                     <span className="text-xs text-gray-400 hidden sm:block">{t.noteText.ctrlSToSave}</span>
                     <button
                       onClick={() => { setMoveTargetFolder(activeDoc?.folder_id || null); setShowMoveModal(true); }}
-                      className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 text-white text-sm font-medium rounded-md transition-all border border-white/10"
+                      className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-900 dark:text-white text-sm font-medium rounded-md transition-all border border-slate-200 dark:border-white/10"
                     >
                       <MdFolder size={16} />
                       {t.noteText.move}
                     </button>
                     <button
                       onClick={() => setShowExportModal(true)}
-                      className="flex items-center gap-2 px-4 py-2 bg-white/5 hover:bg-white/10 text-white text-sm font-medium rounded-md transition-all border border-white/10"
+                      className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-white/5 hover:bg-slate-200 dark:hover:bg-white/10 text-slate-900 dark:text-white text-sm font-medium rounded-md transition-all border border-slate-200 dark:border-white/10"
                     >
                       <LuFileDown size={16} />
                       Export
@@ -1084,14 +1084,14 @@ export default function NoteTextPage() {
                   </div>
                 </div>
 
-                <div className="bg-white/5 backdrop-blur-md border-b border-white/10 px-2 py-2 flex items-center gap-1 flex-nowrap overflow-x-auto shrink-0">
+                <div className="bg-slate-50 dark:bg-white/5 backdrop-blur-md border-b border-slate-200 dark:border-white/10 px-2 py-2 flex items-center gap-1 flex-nowrap overflow-x-auto shrink-0">
                   <select
                     value={currentFontFamily}
                     onChange={(e) => setFontFamily(e.target.value)}
-                    className="text-xs px-2 py-1.5 rounded-lg border border-white/10 bg-white/5 text-white focus:outline-none cursor-pointer min-w-[120px] hover:border-white/20 transition-colors"
+                    className="text-xs px-2 py-1.5 rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 text-slate-900 dark:text-white focus:outline-none cursor-pointer min-w-[120px] hover:border-slate-300 dark:hover:border-white/20 transition-colors"
                   >
                     {FONT_FAMILIES.map((font) => (
-                      <option key={font.value} value={font.value} style={{ fontFamily: font.value }} className="bg-gray-900 text-white">
+                      <option key={font.value} value={font.value} style={{ fontFamily: font.value }} className="bg-white dark:bg-gray-900 text-slate-900 dark:text-white">
                         {font.label}
                       </option>
                     ))}
@@ -1100,10 +1100,10 @@ export default function NoteTextPage() {
                   <select
                     value={currentFontSize}
                     onChange={(e) => setFontSize(e.target.value)}
-                    className="text-xs px-2 py-1.5 rounded-lg border border-white/10 bg-white/5 text-white focus:outline-none cursor-pointer w-20 hover:border-white/20 transition-colors"
+                    className="text-xs px-2 py-1.5 rounded-lg border border-slate-200 dark:border-white/10 bg-white dark:bg-white/5 text-slate-900 dark:text-white focus:outline-none cursor-pointer w-20 hover:border-slate-300 dark:hover:border-white/20 transition-colors"
                   >
                     {FONT_SIZES.map((s) => (
-                      <option key={s} value={s} className="bg-gray-900 text-white">{s}px</option>
+                      <option key={s} value={s} className="bg-white dark:bg-gray-900 text-slate-900 dark:text-white">{s}px</option>
                     ))}
                   </select>
 
@@ -1115,7 +1115,7 @@ export default function NoteTextPage() {
                     className={`w-8 h-8 flex items-center justify-center rounded-md transition-all
                   ${activeFormats.has("bold")
                         ? "bg-sky-500/20 text-sky-400 ring-2 ring-sky-500/50"
-                        : "hover:bg-white/5 text-gray-300 hover:text-white"}`}
+                        : "hover:bg-slate-100 dark:hover:bg-white/5 text-slate-600 dark:text-gray-300 hover:text-slate-900 dark:hover:text-white"}`}
                   >
                     <strong className="text-sm">B</strong>
                   </button>
@@ -1126,7 +1126,7 @@ export default function NoteTextPage() {
                     className={`w-8 h-8 flex items-center justify-center rounded-md transition-all
                   ${activeFormats.has("italic")
                         ? "bg-sky-500/20 text-sky-400 ring-2 ring-sky-500/50"
-                        : "hover:bg-white/5 text-gray-300 hover:text-white"}`}
+                        : "hover:bg-slate-100 dark:hover:bg-white/5 text-slate-600 dark:text-gray-300 hover:text-slate-900 dark:hover:text-white"}`}
                   >
                     <em className="text-sm">I</em>
                   </button>
@@ -1137,7 +1137,7 @@ export default function NoteTextPage() {
                     className={`w-8 h-8 flex items-center justify-center rounded-md transition-all
                   ${activeFormats.has("underline")
                         ? "bg-sky-500/20 text-sky-400 ring-2 ring-sky-500/50"
-                        : "hover:bg-white/5 text-gray-300 hover:text-white"}`}
+                        : "hover:bg-slate-100 dark:hover:bg-white/5 text-slate-600 dark:text-gray-300 hover:text-slate-900 dark:hover:text-white"}`}
                   >
                     <u className="text-sm">U</u>
                   </button>
@@ -1148,7 +1148,7 @@ export default function NoteTextPage() {
                     className={`w-8 h-8 flex items-center justify-center rounded-md transition-all
                   ${activeFormats.has("strikeThrough")
                         ? "bg-sky-500/20 text-sky-400 ring-2 ring-sky-500/50"
-                        : "hover:bg-white/5 text-gray-300 hover:text-white"}`}
+                        : "hover:bg-slate-100 dark:hover:bg-white/5 text-slate-600 dark:text-gray-300 hover:text-slate-900 dark:hover:text-white"}`}
                   >
                     <s className="text-sm">S</s>
                   </button>
@@ -1159,10 +1159,10 @@ export default function NoteTextPage() {
                     <button
                       onClick={() => colorInputRef.current?.click()}
                       title="Text Color"
-                      className="w-8 h-8 flex flex-col items-center justify-center rounded-md hover:bg-white/5 transition-colors"
+                      className="w-8 h-8 flex flex-col items-center justify-center rounded-md hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"
                     >
-                      <span className="text-sm font-bold text-white leading-none">A</span>
-                      <span className="w-5 h-1.5 rounded-sm mt-0.5 shadow-sm border border-white/10" style={{ backgroundColor: textColorPreview }} />
+                      <span className="text-sm font-bold text-slate-900 dark:text-white leading-none">A</span>
+                      <span className="w-5 h-1.5 rounded-sm mt-0.5 shadow-sm border border-slate-200 dark:border-white/10" style={{ backgroundColor: textColorPreview }} />
                     </button>
                     <input
                       ref={colorInputRef}
@@ -1177,7 +1177,7 @@ export default function NoteTextPage() {
                     <button
                       onClick={() => highlightInputRef.current?.click()}
                       title="Highlight Color"
-                      className="w-8 h-8 flex items-center justify-center rounded-md hover:bg-white/5 transition-colors"
+                      className="w-8 h-8 flex items-center justify-center rounded-md hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"
                     >
                       <span className="text-xs font-bold px-1 py-0.5 rounded shadow-sm" style={{ backgroundColor: highlightColorPreview, color: "#000" }}>
                         H
@@ -1200,7 +1200,7 @@ export default function NoteTextPage() {
                     className={`w-8 h-8 flex items-center justify-center rounded-md transition-all
                   ${activeFormats.has("justifyLeft")
                         ? "bg-sky-500/20 text-sky-400 ring-2 ring-sky-500/50"
-                        : "hover:bg-white/5 text-gray-300 hover:text-white"}`}
+                        : "hover:bg-slate-100 dark:hover:bg-white/5 text-slate-600 dark:text-gray-300 hover:text-slate-900 dark:hover:text-white"}`}
                   >
                     <MdFormatAlignLeft size={18} />
                   </button>
@@ -1211,7 +1211,7 @@ export default function NoteTextPage() {
                     className={`w-8 h-8 flex items-center justify-center rounded-md transition-all
                   ${activeFormats.has("justifyCenter")
                         ? "bg-sky-500/20 text-sky-400 ring-2 ring-sky-500/50"
-                        : "hover:bg-white/5 text-gray-300 hover:text-white"}`}
+                        : "hover:bg-slate-100 dark:hover:bg-white/5 text-slate-600 dark:text-gray-300 hover:text-slate-900 dark:hover:text-white"}`}
                   >
                     <MdFormatAlignCenter size={18} />
                   </button>
@@ -1222,7 +1222,7 @@ export default function NoteTextPage() {
                     className={`w-8 h-8 flex items-center justify-center rounded-md transition-all
                   ${activeFormats.has("justifyRight")
                         ? "bg-sky-500/20 text-sky-400 ring-2 ring-sky-500/50"
-                        : "hover:bg-white/5 text-gray-300 hover:text-white"}`}
+                        : "hover:bg-slate-100 dark:hover:bg-white/5 text-slate-600 dark:text-gray-300 hover:text-slate-900 dark:hover:text-white"}`}
                   >
                     <MdFormatAlignRight size={18} />
                   </button>
@@ -1233,7 +1233,7 @@ export default function NoteTextPage() {
                     className={`w-8 h-8 flex items-center justify-center rounded-md transition-all
                   ${activeFormats.has("justifyFull")
                         ? "bg-sky-500/20 text-sky-400 ring-2 ring-sky-500/50"
-                        : "hover:bg-white/5 text-gray-300 hover:text-white"}`}
+                        : "hover:bg-slate-100 dark:hover:bg-white/5 text-slate-600 dark:text-gray-300 hover:text-slate-900 dark:hover:text-white"}`}
                   >
                     <MdFormatAlignJustify size={18} />
                   </button>
@@ -1246,7 +1246,7 @@ export default function NoteTextPage() {
                     className={`w-8 h-8 flex items-center justify-center rounded-md transition-all
                   ${isBulletList
                         ? "bg-sky-500/20 text-sky-400 ring-2 ring-sky-500/50"
-                        : "hover:bg-white/5 text-gray-300 hover:text-white"}`}
+                        : "hover:bg-slate-100 dark:hover:bg-white/5 text-slate-600 dark:text-gray-300 hover:text-slate-900 dark:hover:text-white"}`}
                   >
                     <MdFormatListBulleted size={18} />
                   </button>
@@ -1257,7 +1257,7 @@ export default function NoteTextPage() {
                     className={`w-8 h-8 flex items-center justify-center rounded-md transition-all
                   ${isOrderedList
                         ? "bg-sky-500/20 text-sky-400 ring-2 ring-sky-500/50"
-                        : "hover:bg-white/5 text-gray-300 hover:text-white"}`}
+                        : "hover:bg-slate-100 dark:hover:bg-white/5 text-slate-600 dark:text-gray-300 hover:text-slate-900 dark:hover:text-white"}`}
                   >
                     <MdFormatListNumbered size={18} />
                   </button>
@@ -1267,7 +1267,7 @@ export default function NoteTextPage() {
                   <button
                     onClick={() => setShowImageModal(true)}
                     title="Insert Image"
-                    className="w-8 h-8 flex items-center justify-center rounded-md hover:bg-white/5 text-gray-300 hover:text-white transition-all"
+                    className="w-8 h-8 flex items-center justify-center rounded-md hover:bg-slate-100 dark:hover:bg-white/5 text-slate-600 dark:text-gray-300 hover:text-slate-900 dark:hover:text-white transition-all"
                   >
                     <MdImage size={18} />
                   </button>
@@ -1275,7 +1275,7 @@ export default function NoteTextPage() {
                   <button
                     onClick={() => setShowLinkModal(true)}
                     title="Insert Link"
-                    className="w-8 h-8 flex items-center justify-center rounded-md hover:bg-white/5 text-gray-300 hover:text-white transition-all"
+                    className="w-8 h-8 flex items-center justify-center rounded-md hover:bg-slate-100 dark:hover:bg-white/5 text-slate-600 dark:text-gray-300 hover:text-slate-900 dark:hover:text-white transition-all"
                   >
                     <MdLink size={18} />
                   </button>
