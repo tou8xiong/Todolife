@@ -142,6 +142,12 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-title" content="TodoLife" />
         <link rel="apple-touch-icon" href="/icon-192.png" />
         <link rel="canonical" href={BASE_URL} />
+        {/* Anti-flash: resolve theme before first paint. Must stay tiny + synchronous. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var s=localStorage.getItem('todolife-theme')||'dark';document.documentElement.classList.add(s==='light'?'light':'dark');document.documentElement.style.colorScheme=s==='light'?'light':'dark';}catch(e){document.documentElement.classList.add('dark');}})();`,
+          }}
+        />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

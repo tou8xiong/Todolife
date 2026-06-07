@@ -1052,7 +1052,7 @@ export default function PdfEditor() {
     );
 
     return (
-        <div className="min-h-screen bg-tool p-4 sm:p-6 lg:pr-[18rem] font-serif text-white transition-all duration-300">
+        <div className="min-h-screen bg-tool p-4 sm:p-6 lg:pr-[18rem] font-serif text-slate-900 dark:text-white transition-all duration-300">
 
             {mode === "annotator" && (
                 <DownloadModal

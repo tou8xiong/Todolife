@@ -34,7 +34,7 @@ export default function DoneTaskCard({ task, onDelete }: DoneTaskCardProps) {
     : null;
 
   return (
-    <div className="w-full p-5 sm:p-7 shadow-md rounded-md border-l-4 hover:shadow-xl transition-all duration-200 bg-white border-amber-400 break-words">
+    <div className="w-full p-5 sm:p-7 shadow-md rounded-md border-l-4 hover:shadow-xl transition-all duration-200 bg-white border-amber-400 break-words animate-fade-in-up">
 
       {/* Top row: title + priority badge */}
       <div className="flex items-start gap-2">

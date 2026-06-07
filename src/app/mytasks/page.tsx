@@ -10,7 +10,7 @@ export default function MyTasks() {
     return (
         <div
             className="min-h-screen border-0 border-amber-300 font-serif text-base
-         sm:text-lg bg-linear-to-b from-gray-900 to-gray-600 px-3 sm:px-6 py-4">
+         sm:text-lg bg-linear-to-b from-slate-50 to-white dark:from-gray-900 dark:to-gray-600 px-3 sm:px-6 py-4 transition-colors">
             <ListsPage />
         </div>
     )

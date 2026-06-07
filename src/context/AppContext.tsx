@@ -88,6 +88,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (!email) return;
     setProfileLoading(true);
     try {
+      // Refresh Firebase user so displayName/photoURL changes propagate to consumers (Header, etc.)
+      if (auth.currentUser) {
+        await auth.currentUser.reload();
+        setUser(auth.currentUser ? { ...auth.currentUser } : null);
+      }
+
       const res = await authFetch(
         `/api/profile`,
         { cache: "no-store" }

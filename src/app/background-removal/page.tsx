@@ -147,7 +147,7 @@ export default function BackgroundRemovalPage() {
     ];
 
     return (
-        <div className="min-h-screen bg-gray-950 text-white font-sans flex">
+        <div className="min-h-screen bg-slate-50 dark:bg-gray-950 text-slate-900 dark:text-white font-sans flex transition-colors">
 
             {/* ── Desktop sidebar (hidden on mobile) ── */}
             <aside className="w-64 lg:w-80 shrink-0 bg-gray-900 border-r border-white/5 flex-col hidden md:flex">

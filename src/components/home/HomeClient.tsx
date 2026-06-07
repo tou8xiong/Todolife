@@ -51,7 +51,7 @@ export default function HomeClient() {
   }, []);
 
   return (
-    <div className="bg-gradient-to-b from-gray-900 via-gray-800 to-gray-700 sm:w-full w-full flex flex-col justify-center overflow-x-hidden text-white relative">
+    <div className="bg-gradient-to-b from-slate-50 via-white to-slate-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-700 sm:w-full w-full flex flex-col justify-center overflow-x-hidden text-slate-900 dark:text-white relative transition-colors">
       <style>{`
         @keyframes floatDot {
           0% { transform: translateY(0) scale(0); opacity: 0; }
@@ -68,25 +68,27 @@ export default function HomeClient() {
       {mounted && <FloatingDots />}
 
       <div className="min-h-screen sm:py-4 w-full flex flex-col lg:flex-row justify-center gap-2 relative z-10">
-        <div className="w-full max-w-xl flex flex-col gap-2 px-4 sm:px-6">
-          <h1 className="text-2xl sm:text-4xl font-serif font-bold text-center text-white break-words">
+        <div className="w-full max-w-xl flex flex-col gap-2 px-4 sm:px-6 animate-fade-in-up">
+          <h1 className="text-2xl sm:text-4xl font-serif font-bold text-center text-slate-900 dark:text-white break-words">
             <p className="text-xl sm:text-2xl mb-5">
               Hi{" "}
-              <span className="text-3xl sm:text-5xl text-white break-words">
+              <span className="text-3xl sm:text-5xl text-slate-900 dark:text-white break-words">
                 {username}
               </span>
             </p>
-            <span className="text-2xl sm:text-5xl inline-block text-white break-words">
+            <span className="text-2xl sm:text-5xl inline-block text-slate-900 dark:text-white break-words">
               Welcome To TODOLIFE
             </span>
           </h1>
-          <h1 className="font-serif text-center text-sm sm:text-lg text-white mt-4 break-words">
-            <span className="text-white">
+          <h1 className="font-serif text-center text-sm sm:text-lg text-slate-700 dark:text-white mt-4 break-words">
+            <span className="text-slate-700 dark:text-white">
               TODOLIFE will make your tasks done easier
             </span>
           </h1>
         </div>
-        <AddTasks />
+        <div className="animate-fade-in-up" style={{ animationDelay: "150ms" }}>
+          <AddTasks />
+        </div>
       </div>
       <Footer />
     </div>

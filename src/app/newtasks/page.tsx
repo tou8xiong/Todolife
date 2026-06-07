@@ -8,8 +8,8 @@ export const metadata: Metadata = {
 
 export default function Newtasks() {
     return(
-        <div className="sm:w-full w-full min-h-screen bg-linear-to-b from-gray-900 to-gray-600
-        font-serif text-xl flex justify-center">
+        <div className="sm:w-full w-full min-h-screen bg-linear-to-b from-slate-50 to-white dark:from-gray-900 dark:to-gray-600
+        font-serif text-xl flex justify-center transition-colors">
         <AddTasks />
         </div>
     )

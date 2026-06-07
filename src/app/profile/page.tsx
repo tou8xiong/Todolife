@@ -4,7 +4,6 @@ import { auth } from "@/lib/firebase";
 import { onAuthStateChanged, signOut, updateProfile } from "firebase/auth";
 import { toast } from "sonner";
 import { MdEdit, MdLogout, MdEmail, MdPhotoCamera, MdSave, MdClose, MdPerson } from "react-icons/md";
-import EmojiProfiles from "@/components/ui/cartoonvector";
 import Image from "next/image";
 import { useLanguage } from "@/context/LanguageContext";
 import { authFetch } from "@/lib/authFetch";
@@ -15,7 +14,6 @@ export default function Profile() {
   const [user, setUser] = useState<any>(null);
   const [displayName, setDisplayName] = useState("");
   const [changename, setChangeName] = useState(false);
-  const [userEmoji, setUserEmoji] = useState<string | null>(null);
   const [profileImage, setProfileImage] = useState<File | null>(null);
   const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -26,7 +24,6 @@ export default function Profile() {
       .then((r) => r.json())
       .then((data) => {
         if (data.profileImage) setProfileImageUrl(data.profileImage);
-        if (data.emoji) setUserEmoji(data.emoji);
       })
       .catch(console.error);
   }, [user?.email]);
@@ -79,19 +76,10 @@ export default function Profile() {
         window.dispatchEvent(new Event("profileUpdated"));
       }
 
-      if (userEmoji !== null) {
-        const res = await authFetch("/api/profile", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ emoji: userEmoji }),
-        });
-        if (!res.ok) throw new Error("Failed to save emoji");
-        window.dispatchEvent(new Event("profileUpdated"));
-      }
-
       await updateProfile(user, { displayName });
       await user.reload();
       setUser({ ...auth.currentUser });
+      window.dispatchEvent(new Event("profileUpdated"));
       setChangeName(false);
       setProfileImage(null);
       toast.success("Profile updated successfully!");
@@ -129,13 +117,13 @@ export default function Profile() {
   };
 
   if (!user) return (
-    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-linear-to-b from-gray-900 to-gray-600">
+    <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center bg-linear-to-b from-slate-50 to-white dark:from-gray-900 dark:to-gray-600">
       <div className="w-12 h-12 border-4 border-sky-500 border-t-transparent rounded-full animate-spin" />
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-linear-to-b from-gray-900 to-gray-600 font-serif relative overflow-hidden text-white transition-colors duration-300">
+    <div className="min-h-screen bg-linear-to-b from-slate-50 to-white dark:from-gray-900 dark:to-gray-600 font-serif relative overflow-hidden text-slate-900 dark:text-white transition-colors duration-300">
       {/* Background Orbs */}
       <div className="absolute top-[-15%] left-[-10%] w-[50%] h-[50%] rounded-full bg-sky-500/10 blur-[120px] pointer-events-none" />
       <div className="absolute bottom-[-15%] right-[-10%] w-[50%] h-[50%] rounded-full bg-amber-500/5 blur-[120px] pointer-events-none" />
@@ -152,8 +140,6 @@ export default function Profile() {
                   <Image src={URL.createObjectURL(profileImage)} alt="preview" width={128} height={128} className="object-cover w-full h-full" />
                 ) : profileImageUrl ? (
                   <Image src={profileImageUrl} alt="profile" width={128} height={128} className="object-cover w-full h-full" priority />
-                ) : userEmoji ? (
-                  <Image src={userEmoji} alt="avatar" width={128} height={128} className="object-cover w-full h-full" priority />
                 ) : (
                   <MdPerson className="text-6xl text-gray-400" />
                 )}
@@ -262,14 +248,6 @@ export default function Profile() {
                         {t.profile.removeCurrentImage}
                       </button>
                     )}
-                  </div>
-                </div>
-
-                {/* Avatar Selection */}
-                <div>
-                  <label className="text-sm font-medium text-gray-400 block mb-3">{t.profile.chooseAvatar}</label>
-                  <div className="bg-white/5 p-4 rounded-2xl border border-white/10">
-                    <EmojiProfiles setUserEmoji={setUserEmoji} userEmogi={userEmoji} />
                   </div>
                 </div>
 

@@ -1,14 +1,41 @@
 @import "tailwindcss";
 
-/* ─── Tool pages dark background (#030712) ──────────────────── */
+/* ─── Class-based dark/light mode for Tailwind v4 ────────────── */
+/* next-themes adds .dark or .light to <html>. These directives   */
+/* make dark: and light: variants respond to those classes, NOT   */
+/* the browser OS setting.                                         */
+@variant dark (&:where(.dark, .dark *));
+@variant light (&:where(.light, .light *));
+
+/* ─── Theme-aware utility classes ───────────────────────────── */
+/* Use these classes on page wrappers and elements so the theme   */
+/* switch (from Settings) changes them automatically.             */
+
+@utility bg-page {
+  background-color: var(--page-bg);
+}
+@utility text-page {
+  color: var(--page-text);
+}
+@utility bg-card {
+  background-color: var(--card-bg);
+  border-color: var(--card-border);
+}
 @utility bg-tool {
-  background-color: #030712;
+  background-color: var(--tool-bg);
 }
 
-/* ─── Project Design Tokens ─────────────────────────────────── */
+/* ─── Design tokens (light = default, dark = current look) ──── */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Light mode values */
+  --page-bg: #ffffff;
+  --page-text: #0f172a;
+  --card-bg: #f8fafc;
+  --card-border: #e2e8f0;
+  --tool-bg: #f1f5f9;
+
+  --background: #f8fafc;
+  --foreground: #0f172a;
 
   /* Fonts — EB Garamond as the project-wide default */
   --font-sans: var(--font-eb-garamond), ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
@@ -16,23 +43,30 @@
   --font-serif: var(--font-eb-garamond), ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
 
   /* Brand colors */
-  --color-primary: #16a34a;        /* green-600 */
-  --color-primary-light: #dcfce7;  /* green-100 */
-  --color-danger: #dc2626;         /* red-600 */
-  --color-danger-light: #fee2e2;   /* red-100 */
-  --color-danger-hover: #b91c1c;   /* red-700 */
+  --color-primary: #16a34a;
+  --color-primary-light: #dcfce7;
+  --color-danger: #dc2626;
+  --color-danger-light: #fee2e2;
+  --color-danger-hover: #b91c1c;
   --color-surface: #ffffff;
-  --color-surface-muted: #f9fafb;  /* gray-50 */
-  --color-border: #e5e7eb;         /* gray-200 */
-  --color-text: #111827;           /* gray-900 */
-  --color-text-muted: #6b7280;     /* gray-500 */
-  --color-cancel: #374151;         /* gray-700 */
-  --color-cancel-hover: #1f2937;   /* gray-800 */
+  --color-surface-muted: #f1f5f9;
+  --color-border: #e2e8f0;
+  --color-text: #0f172a;
+  --color-text-muted: #64748b;
+  --color-cancel: #475569;
+  --color-cancel-hover: #334155;
 }
 
+/* Dark mode = current TodoLife look. Activated by class="dark" on <html>. */
 .dark {
-  --background: #0a0a0a;
-  --foreground: #ededed;
+  --page-bg: #111827;
+  --page-text: #f9fafb;
+  --card-bg: #1f2937;
+  --card-border: #374151;
+  --tool-bg: #030712;
+
+  --background: #0f172a;
+  --foreground: #f8fafc;
 
   --color-surface: #1f2937;
   --color-surface-muted: #111827;
@@ -41,39 +75,61 @@
   --color-text-muted: #9ca3af;
 }
 
+html {
+  background-color: var(--background);
+  color: var(--foreground);
+}
+
 body {
   font-family: var(--font-eb-garamond), ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
   font-optical-sizing: auto;
   font-style: normal;
+  background-color: var(--background);
+  color: var(--foreground);
 }
+
 /* Hide scrollbar but still allow scrolling */
 .hide-scrollbar::-webkit-scrollbar {
   display: none;
 }
-
 .hide-scrollbar {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;     /* Firefox */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
-
-.textanimated{
-    background: linear-gradient(90deg, #0062ff, #ff0101, #01ff0dff);
-    background-size: 200% 200%;
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    color: transparent;
-    animation: herotextanimated 3s ease-in-out infinite;
+.textanimated {
+  background: linear-gradient(90deg, #0062ff, #ff0101, #01ff0dff);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  animation: herotextanimated 3s ease-in-out infinite;
 }
 @keyframes herotextanimated {
-    0% {
-        background-position: 0% 50%;
-    }
-    50% {
-        background-position: 100% 50%;
-    }
-    100% {
-        background-position: 0% 50%;
-    }
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
+
+/* ── Entrance & motion animations ──────────────────────────── */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes growUp {
+  from { transform: scaleY(0); }
+  to   { transform: scaleY(1); }
+}
+.animate-fade-in-up { animation: fadeInUp 0.4s ease-out both; }
+.animate-scale-in   { animation: scaleIn 0.18s ease-out both; }
+.animate-fade-in    { animation: fadeIn 0.3s ease-out both; }
+.animate-grow-up    { animation: growUp 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both; transform-origin: bottom; }

@@ -8,13 +8,11 @@ import { useTaskCounts } from "@/hooks/useTaskCounts";
 import {
   Menu, X, LayoutDashboard, Timer, FileText, BookOpen,
   CheckSquare, ListTodo, PlusSquare, ImageIcon, Loader2, Settings, User,
-  Sun, Moon,
 } from "lucide-react";
 import { TbRobot } from "react-icons/tb";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useLanguage } from "@/context/LanguageContext";
-import { useTheme } from "next-themes";
 
 type NavItem = { href: string; labelKey: string; icon: React.ComponentType<{ size?: number; className?: string }>; badge?: string };
 type NavGroup = { group: string; items: NavItem[] };
@@ -46,12 +44,8 @@ export default function Header() {
   const { user, authLoading, profile, profileLoading } = useAppContext();
   const { pending, completed } = useTaskCounts();
   const { t } = useLanguage();
-  const { resolvedTheme, setTheme } = useTheme();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
-  const [themeMounted, setThemeMounted] = useState(false);
-
-  useEffect(() => { setThemeMounted(true); }, []);
 
   // Close drawer on resize to desktop
   useEffect(() => {
@@ -71,7 +65,7 @@ export default function Header() {
   return (
     <>
       {/* ── Header bar ─────────────────────────────────────────────── */}
-      <header className="bg-blue-300 dark:bg-slate-900 sticky top-0 z-50 shadow-md shadow-black/20 h-16 text-slate-900 dark:text-slate-100 transition-colors">
+      <header className="bg-white dark:bg-blue-300 sticky top-0 z-50 shadow-md shadow-black/20 h-16 text-slate-900 transition-colors">
         <div className="flex items-center justify-between px-3 h-full w-full gap-2">
 
           {/* Logo */}
@@ -101,21 +95,8 @@ export default function Header() {
             </Link>
           </nav>
 
-          {/* Right side: theme + auth + mobile menu button */}
+          {/* Right side: auth + mobile menu button */}
           <div className="flex items-center gap-2 ml-auto md:ml-0">
-
-            {/* Theme toggle (always visible) */}
-            {themeMounted && (
-              <button
-                onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
-                aria-label="Toggle theme"
-                className="p-2 rounded-md hover:bg-blue-400/40 dark:hover:bg-white/10 text-slate-800 dark:text-amber-300 transition-colors cursor-pointer"
-              >
-                {resolvedTheme === "dark"
-                  ? <Sun size={18} />
-                  : <Moon size={18} />}
-              </button>
-            )}
 
             {/* Auth area */}
             {authLoading ? (
@@ -150,7 +131,7 @@ export default function Header() {
                       </span>
                     )}
                   </div>
-                  <span className="font-semibold text-base sm:text-lg hidden sm:block text-gray-800 dark:text-slate-100 max-w-[120px] sm:max-w-[160px] truncate">
+                  <span className="font-semibold text-base sm:text-lg hidden sm:block text-gray-800 max-w-[120px] sm:max-w-[160px] truncate">
                     {username}
                   </span>
                 </button>
@@ -158,7 +139,7 @@ export default function Header() {
                 {showProfileMenu && (
                   <>
                     <div className="fixed inset-0 z-40" onClick={() => setShowProfileMenu(false)} />
-                    <div className="absolute right-0 mt-2 w-56 sm:w-60 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-gray-100 dark:border-slate-700 z-50">
+                    <div className="absolute right-0 mt-2 w-56 sm:w-60 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-gray-100 dark:border-slate-700 z-50 animate-scale-in">
                       <ul className="p-2 flex flex-col gap-0.5 font-serif text-gray-800 dark:text-slate-200">
                         <li>
                           <Link href="/profile"
@@ -193,7 +174,7 @@ export default function Header() {
             <button
               onClick={() => setDrawerOpen(!drawerOpen)}
               aria-label="Toggle menu"
-              className="md:hidden p-2 rounded-md hover:bg-blue-400/40 dark:hover:bg-white/10 transition-colors text-gray-800 dark:text-slate-100"
+              className="md:hidden p-2 rounded-md hover:bg-blue-400/40 transition-colors text-gray-800"
             >
               {drawerOpen ? <X size={22} /> : <Menu size={22} />}
             </button>

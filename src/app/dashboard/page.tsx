@@ -411,7 +411,7 @@ function FeatureUsageChart({
     const grandTotal = data.reduce((acc, d) => acc + d.total, 0);
 
     return (
-        <Card className="p-4 sm:p-5 flex flex-col gap-4">
+        <Card className="p-4 sm:p-5 flex flex-col gap-4 animate-fade-in-up" style={{ animationDelay: "325ms" }}>
             <div className="flex items-start justify-between gap-3 flex-wrap">
                 <div className="min-w-0">
                     <SectionTitle icon={TrendingUp} color="text-amber-400">Feature Usage</SectionTitle>
@@ -457,18 +457,19 @@ function FeatureUsageChart({
                         const isHover = hover === i;
                         return (
                             <div
-                                key={b.key}
+                                key={`${b.key}-${range}`}
                                 className="flex-1 flex flex-col justify-end min-w-0 h-full relative"
                                 onMouseEnter={() => setHover(i)}
                                 onMouseLeave={() => setHover(null)}
                             >
                                 <div
-                                    className={`w-full flex flex-col-reverse rounded-t overflow-hidden transition-all ${isHover ? "ring-1 ring-amber-400/60" : ""}`}
+                                    className={`w-full flex flex-col-reverse rounded-t overflow-hidden transition-all animate-grow-up ${isHover ? "ring-1 ring-amber-400/60" : ""}`}
                                     style={{
                                         height: `${heightPct}%`,
                                         minHeight: b.total > 0 ? "4px" : "2px",
                                         opacity: b.total > 0 ? 1 : 0.15,
                                         background: b.total === 0 ? "rgba(251,191,36,0.5)" : undefined,
+                                        animationDelay: `${i * 35}ms`,
                                     }}
                                 >
                                     {b.tasks > 0 && <div style={{ height: `${taskPct}%` }} className="bg-emerald-400" />}
@@ -602,11 +603,11 @@ export default function Dashboard() {
     ];
 
     return (
-        <div className="min-h-screen bg-tool px-3 sm:px-5 lg:px-6 pt-4 sm:pt-6 pb-16 sm:pb-20 font-serif text-white">
+        <div className="min-h-screen bg-tool px-3 sm:px-5 lg:px-6 pt-4 sm:pt-6 pb-16 sm:pb-20 font-serif text-slate-900 dark:text-white transition-colors">
             <div className="max-w-6xl mx-auto flex flex-col gap-4 sm:gap-5">
 
                 {/* ── Hero ── */}
-                <Card className="relative overflow-hidden p-5 sm:p-6">
+                <Card className="relative overflow-hidden p-5 sm:p-6 animate-fade-in-up">
                     <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 via-transparent to-blue-500/10 pointer-events-none" />
                     <div className="relative flex flex-col sm:flex-row sm:items-center gap-4">
                         <div className="flex-1 min-w-0">
@@ -631,7 +632,7 @@ export default function Dashboard() {
                 {/* ── Stat cards ── */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
                     {stats.map((s, i) => (
-                        <Card key={i} className={`p-3 sm:p-4 flex items-center gap-3 hover:border-gray-600/80 transition-colors`}>
+                        <Card key={i} className={`p-3 sm:p-4 flex items-center gap-3 hover:border-gray-600/80 transition-colors animate-fade-in-up`} style={{ animationDelay: `${100 + i * 75}ms` }}>
                             <div className={`shrink-0 inline-flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-md ${s.bg} border ${s.border}`}>
                                 <s.icon size={18} className={s.accent} />
                             </div>
@@ -647,7 +648,7 @@ export default function Dashboard() {
                 <FeatureUsageChart tasks={tasks} ideas={ideas} studySessions={studySessions} />
 
                 {/* ── Today's Tasks + Study Stats ── */}
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 animate-fade-in-up" style={{ animationDelay: "400ms" }}>
                     <Card className="lg:col-span-2 p-4 sm:p-5 flex flex-col gap-3">
                         <SectionTitle icon={Calendar} color="text-amber-400">{d.todaysTasks}</SectionTitle>
                         {todayTasks.length === 0 ? (
@@ -686,13 +687,13 @@ export default function Dashboard() {
                 </div>
 
                 {/* ── Pomodoro + Weekly Chart ── */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 animate-fade-in-up" style={{ animationDelay: "475ms" }}>
                     <PomodoroTimer tasks={pendingTasks} />
                     <WeeklyChart tasks={tasks} />
                 </div>
 
                 {/* ── Recent Notes ── */}
-                <Card className="p-4 sm:p-5 flex flex-col gap-3">
+                <Card className="p-4 sm:p-5 flex flex-col gap-3 animate-fade-in-up" style={{ animationDelay: "550ms" }}>
                     <div className="flex items-center justify-between gap-2">
                         <SectionTitle icon={Lightbulb} color="text-yellow-400">{d.recentNotes}</SectionTitle>
                         <a
@@ -723,7 +724,7 @@ export default function Dashboard() {
 
                 {/* ── Overdue Tasks ── */}
                 {overdueTasks.length > 0 && (
-                    <Card className="p-4 sm:p-5 border-red-500/30 bg-red-950/30 flex flex-col gap-3">
+                    <Card className="p-4 sm:p-5 border-red-500/30 bg-red-950/30 flex flex-col gap-3 animate-fade-in-up" style={{ animationDelay: "600ms" }}>
                         <SectionTitle icon={AlertTriangle} color="text-red-400">{d.overdueTasks}</SectionTitle>
                         <ul className="flex flex-col gap-2">
                             {overdueTasks.map((task) => (
