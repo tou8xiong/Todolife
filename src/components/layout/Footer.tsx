@@ -36,7 +36,7 @@ export default function Footer() {
   ].filter(link => !link.requiresAuth || user);
 
   return (
-    <footer className="bg-gray-900 border-t border-gray-700/50 text-gray-300 font-serif" id="footer">
+    <footer className="bg-white dark:bg-gray-900 border-t border-slate-200 dark:border-gray-700/50 text-slate-600 dark:text-gray-300 font-serif" id="footer">
       <div className="max-w-5xl mx-auto px-6 py-12 flex flex-col gap-10">
 
         {/* Top row */}
@@ -47,20 +47,20 @@ export default function Footer() {
             <div className="bg-white rounded-xl p-2 w-fit">
               <Image src={Logo} alt="TodoLife" className="h-10 w-auto" />
             </div>
-            <p className="text-sm text-gray-400 max-w-[180px] leading-relaxed">
+            <p className="text-sm text-slate-500 dark:text-gray-400 max-w-[180px] leading-relaxed">
               Your personal task and life management app.
             </p>
           </div>
 
           {/* Tasks */}
           <div>
-            <h3 className="text-white font-semibold text-sm uppercase tracking-widest mb-4">Tasks</h3>
+            <h3 className="text-slate-900 dark:text-white font-semibold text-sm uppercase tracking-widest mb-4">Tasks</h3>
             <ul className="flex flex-col gap-2.5">
               {taskLinks.map(({ href, label, icon: Icon }) => (
                 <li key={href}>
                   <Link
                     href={href}
-                    className="flex items-center gap-2 text-sm text-gray-400 hover:text-amber-400 transition-colors"
+                    className="flex items-center gap-2 text-sm text-slate-500 dark:text-gray-400 hover:text-amber-500 dark:hover:text-amber-400 transition-colors"
                   >
                     {Icon && <Icon size={14} className="shrink-0" />}
                     {label}
@@ -72,13 +72,13 @@ export default function Footer() {
 
           {/* Features */}
           <div>
-            <h3 className="text-white font-semibold text-sm uppercase tracking-widest mb-4">Features</h3>
+            <h3 className="text-slate-900 dark:text-white font-semibold text-sm uppercase tracking-widest mb-4">Features</h3>
             <ul className="flex flex-col gap-2.5">
               {featureLinks.map(({ href, label, icon: Icon }) => (
                 <li key={href}>
                   <Link
                     href={href}
-                    className="flex items-center gap-2 text-sm text-gray-400 hover:text-amber-400 transition-colors"
+                    className="flex items-center gap-2 text-sm text-slate-500 dark:text-gray-400 hover:text-amber-500 dark:hover:text-amber-400 transition-colors"
                   >
                     <Icon size={14} className="shrink-0" />
                     {label}
@@ -90,13 +90,13 @@ export default function Footer() {
 
           {/* Contact */}
           <div>
-            <h3 className="text-white font-semibold text-sm uppercase tracking-widest mb-4">Contact</h3>
+            <h3 className="text-slate-900 dark:text-white font-semibold text-sm uppercase tracking-widest mb-4">Contact</h3>
             <ul className="flex flex-col gap-3">
-              <li className="flex items-center gap-2.5 text-sm text-gray-400">
+              <li className="flex items-center gap-2.5 text-sm text-slate-500 dark:text-gray-400">
                 <FaSquarePhone size={18} className="text-green-400 shrink-0" />
                 78292260
               </li>
-              <li className="flex items-center gap-2.5 text-sm text-gray-400">
+              <li className="flex items-center gap-2.5 text-sm text-slate-500 dark:text-gray-400">
                 <MdOutlineEmail size={18} className="text-amber-400 shrink-0" />
                 touxhk@gmail.com
               </li>
@@ -105,7 +105,7 @@ export default function Footer() {
         </div>
 
         {/* Divider + copyright */}
-        <div className="border-t border-gray-700/50 pt-6 text-center text-xs text-gray-600">
+        <div className="border-t border-slate-200 dark:border-gray-700/50 pt-6 text-center text-xs text-slate-400 dark:text-gray-600">
           © 2025 TodoLife · Vientiane, Laos · Built by TouXY
         </div>
       </div>

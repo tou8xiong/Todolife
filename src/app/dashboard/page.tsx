@@ -47,13 +47,16 @@ function formatDuration(centis: number) {
 function Card({
     children,
     className = "",
+    style,
 }: {
     children: React.ReactNode;
     className?: string;
+    style?: React.CSSProperties;
 }) {
     return (
         <div
-            className={`bg-gray-900/70 backdrop-blur-sm border border-gray-700/60 rounded-md shadow-lg ${className}`}
+            className={`bg-white/80 dark:bg-gray-900/70 backdrop-blur-sm border border-slate-200/60 dark:border-gray-700/60 rounded-md shadow-lg ${className}`}
+            style={style}
         >
             {children}
         </div>
@@ -70,7 +73,7 @@ function SectionTitle({
     children: React.ReactNode;
 }) {
     return (
-        <h2 className="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+        <h2 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
             <span className={`inline-flex items-center justify-center w-7 h-7 rounded-md bg-white/5 ${color}`}>
                 <Icon size={16} />
             </span>
@@ -96,21 +99,21 @@ function StudyStats({ sessions }: { sessions: StudySession[] }) {
             </div>
 
             {sessions.length === 0 ? (
-                <div className="flex flex-col items-center justify-center gap-2 py-6 rounded-md border border-dashed border-gray-700 bg-white/5">
+                <div className="flex flex-col items-center justify-center gap-2 py-6 rounded-md border border-dashed border-slate-200 dark:border-gray-700 bg-white/5">
                     <BookOpen size={22} className="text-gray-500" />
-                    <p className="text-xs text-gray-400 text-center px-3 break-words">{d.noStudySessions}</p>
+                    <p className="text-xs text-slate-500 dark:text-gray-400 text-center px-3 break-words">{d.noStudySessions}</p>
                 </div>
             ) : (
                 <div className="space-y-2.5">
-                    <p className="text-[11px] text-gray-400 uppercase font-bold tracking-wider">{d.recentSessions}</p>
+                    <p className="text-[11px] text-slate-500 dark:text-gray-400 uppercase font-bold tracking-wider">{d.recentSessions}</p>
                     {recent.map((s) => (
-                        <div key={s.id} className="flex items-center gap-3 p-2.5 bg-white/5 rounded-md border border-gray-700/40">
+                        <div key={s.id} className="flex items-center gap-3 p-2.5 bg-white/5 rounded-md border border-slate-200 dark:border-gray-700/40">
                             <div className="p-1.5 bg-amber-500/15 rounded-md shrink-0">
                                 <Clock size={14} className="text-amber-400" />
                             </div>
                             <div className="flex-1 min-w-0">
-                                <p className="text-sm font-semibold text-white truncate">{s.videoName}</p>
-                                <p className="text-[11px] text-gray-400">{new Date(s.timestamp).toLocaleDateString()}</p>
+                                <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{s.videoName}</p>
+                                <p className="text-[11px] text-slate-500 dark:text-gray-400">{new Date(s.timestamp).toLocaleDateString()}</p>
                             </div>
                             <span className="text-sm font-mono font-bold text-amber-400 shrink-0">{formatDuration(s.duration)}</span>
                         </div>
@@ -169,7 +172,7 @@ function PomodoroTimer({ tasks }: { tasks: Task[] }) {
             <select
                 value={focusTask}
                 onChange={(e) => setFocusTask(e.target.value)}
-                className="w-full rounded-md px-3 py-2 text-sm bg-gray-800 border border-gray-700 text-white outline-none focus:border-amber-400/60 focus:ring-1 focus:ring-amber-400/40 transition-colors"
+                className="w-full rounded-md px-3 py-2 text-sm bg-slate-100 dark:bg-gray-800 border border-slate-200 dark:border-gray-700 text-slate-900 dark:text-white outline-none focus:border-amber-400/60 focus:ring-1 focus:ring-amber-400/40 transition-colors"
             >
                 <option value="">{d.selectTaskToFocus}</option>
                 {tasks.map((t) => (
@@ -180,16 +183,16 @@ function PomodoroTimer({ tasks }: { tasks: Task[] }) {
                 <p className="text-xs text-amber-400 font-medium truncate">{d.focusing} {focusTask}</p>
             )}
 
-            <div className="text-5xl sm:text-6xl font-mono font-bold text-center text-white py-2 tracking-tight">
+            <div className="text-5xl sm:text-6xl font-mono font-bold text-center text-slate-900 dark:text-white py-2 tracking-tight">
                 {minutes}:{seconds}
             </div>
-            <div className="w-full bg-gray-800 rounded-full h-1.5 overflow-hidden">
+            <div className="w-full bg-slate-200 dark:bg-gray-800 rounded-full h-1.5 overflow-hidden">
                 <div
                     className="bg-gradient-to-r from-amber-400 to-amber-500 h-full rounded-full transition-all duration-1000"
                     style={{ width: `${progress}%` }}
                 />
             </div>
-            <p className="text-center text-[11px] text-gray-400 uppercase tracking-wider">{d.pomodoroSession}</p>
+            <p className="text-center text-[11px] text-slate-500 dark:text-gray-400 uppercase tracking-wider">{d.pomodoroSession}</p>
 
             <div className="flex gap-2 justify-center mt-1">
                 <button
@@ -250,7 +253,7 @@ function WeeklyChart({ tasks }: { tasks: Task[] }) {
                     const isToday = i === todayIdx;
                     return (
                         <div key={day} className="flex flex-col items-center flex-1 gap-1 min-w-0">
-                            <span className={`text-[11px] font-bold ${counts[i] > 0 ? (isToday ? "text-amber-400" : "text-white") : "text-transparent"}`}>
+                            <span className={`text-[11px] font-bold ${counts[i] > 0 ? (isToday ? "text-amber-400" : "text-slate-900 dark:text-white") : "text-transparent"}`}>
                                 {counts[i] || "·"}
                             </span>
                             <div
@@ -261,7 +264,7 @@ function WeeklyChart({ tasks }: { tasks: Task[] }) {
                                     opacity: counts[i] > 0 ? 1 : 0.2,
                                 }}
                             />
-                            <span className={`text-[11px] ${isToday ? "text-amber-400 font-bold" : "text-gray-400"}`}>{day}</span>
+                            <span className={`text-[11px] ${isToday ? "text-amber-400 font-bold" : "text-slate-500 dark:text-gray-400"}`}>{day}</span>
                         </div>
                     );
                 })}
@@ -415,18 +418,18 @@ function FeatureUsageChart({
             <div className="flex items-start justify-between gap-3 flex-wrap">
                 <div className="min-w-0">
                     <SectionTitle icon={TrendingUp} color="text-amber-400">Feature Usage</SectionTitle>
-                    <p className="text-xs text-gray-400 mt-1">
+                    <p className="text-xs text-slate-500 dark:text-gray-400 mt-1">
                         {grandTotal} {grandTotal === 1 ? "activity" : "activities"} in selected range
                     </p>
                 </div>
-                <div className="flex gap-0.5 p-1 bg-gray-800/60 rounded-md border border-gray-700/50 flex-wrap">
+                <div className="flex gap-0.5 p-1 bg-slate-100/80 dark:bg-gray-800/60 rounded-md border border-slate-200 dark:border-gray-700/50 flex-wrap">
                     {ranges.map((r) => (
                         <button
                             key={r.value}
                             onClick={() => setRange(r.value)}
                             className={`px-2.5 sm:px-3 py-1 text-xs font-semibold rounded-md transition-colors ${range === r.value
                                 ? "bg-amber-500 text-gray-900"
-                                : "text-gray-300 hover:text-white hover:bg-white/5"
+                                : "text-slate-600 dark:text-gray-300 hover:text-slate-900 dark:hover:text-white hover:bg-white/5"
                                 }`}
                         >
                             {r.label}
@@ -478,8 +481,8 @@ function FeatureUsageChart({
                                 </div>
 
                                 {isHover && b.total > 0 && (
-                                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 z-10 whitespace-nowrap px-2 py-1.5 rounded-md bg-gray-950 border border-gray-700 shadow-lg text-[11px] leading-tight pointer-events-none">
-                                        <p className="font-bold text-white">{b.tasks + b.notes + b.study} total</p>
+                                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 z-10 whitespace-nowrap px-2 py-1.5 rounded-md bg-gray-950 border border-slate-200 dark:border-gray-700 shadow-lg text-[11px] leading-tight pointer-events-none">
+                                        <p className="font-bold text-white dark:text-white">{b.tasks + b.notes + b.study} total</p>
                                         {b.tasks > 0 && <p className="text-emerald-400">{b.tasks} tasks</p>}
                                         {b.notes > 0 && <p className="text-yellow-400">{b.notes} notes</p>}
                                         {b.study > 0 && <p className="text-blue-400">{b.study} study</p>}
@@ -491,7 +494,7 @@ function FeatureUsageChart({
                 </div>
                 <div className="flex gap-0.5 sm:gap-1 mt-1.5">
                     {data.map((b, i) => (
-                        <div key={`l-${b.key}`} className="flex-1 min-w-0 text-center text-[10px] text-gray-400 truncate">
+                        <div key={`l-${b.key}`} className="flex-1 min-w-0 text-center text-[10px] text-slate-500 dark:text-gray-400 truncate">
                             {b.label}
                         </div>
                     ))}
@@ -611,11 +614,11 @@ export default function Dashboard() {
                     <div className="absolute inset-0 bg-gradient-to-br from-amber-500/10 via-transparent to-blue-500/10 pointer-events-none" />
                     <div className="relative flex flex-col sm:flex-row sm:items-center gap-4">
                         <div className="flex-1 min-w-0">
-                            <h1 className="text-xl sm:text-3xl font-bold text-white flex items-center gap-2 flex-wrap">
+                            <h1 className="text-xl sm:text-3xl font-bold text-slate-900 dark:text-white flex items-center gap-2 flex-wrap">
                                 <span className="break-words">{getGreeting(d)}, {displayName} <span className="inline-block">👋</span></span>
                                 <PageHelpTooltip subtitle={t.pageHelp.dashboard.subtitle} description={t.pageHelp.dashboard.description} />
                             </h1>
-                            <p className="text-gray-300 text-xs sm:text-sm mt-1 flex items-center gap-1.5">
+                            <p className="text-slate-600 dark:text-gray-300 text-xs sm:text-sm mt-1 flex items-center gap-1.5">
                                 <Calendar size={14} className="shrink-0" />
                                 {new Date().toLocaleDateString(locale === "lo" ? "lo-LA" : "en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
                             </p>
@@ -638,7 +641,7 @@ export default function Dashboard() {
                             </div>
                             <div className="min-w-0">
                                 <p className={`text-xl sm:text-2xl font-bold ${s.accent} leading-tight`}>{s.value}</p>
-                                <p className="text-[11px] sm:text-xs text-gray-400 truncate">{s.label}</p>
+                                <p className="text-[11px] sm:text-xs text-slate-500 dark:text-gray-400 truncate">{s.label}</p>
                             </div>
                         </Card>
                     ))}
@@ -652,23 +655,23 @@ export default function Dashboard() {
                     <Card className="lg:col-span-2 p-4 sm:p-5 flex flex-col gap-3">
                         <SectionTitle icon={Calendar} color="text-amber-400">{d.todaysTasks}</SectionTitle>
                         {todayTasks.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center gap-2 py-8 rounded-md border border-dashed border-gray-700 bg-white/5">
+                            <div className="flex flex-col items-center justify-center gap-2 py-8 rounded-md border border-dashed border-slate-200 dark:border-gray-700 bg-white/5">
                                 <CheckCircle size={26} className="text-gray-500" />
-                                <p className="text-sm text-gray-400 text-center px-3 break-words">{d.noTasksToday}</p>
+                                <p className="text-sm text-slate-500 dark:text-gray-400 text-center px-3 break-words">{d.noTasksToday}</p>
                             </div>
                         ) : (
                             <ul className="flex flex-col gap-2">
                                 {todayTasks.map((task) => (
-                                    <li key={task.id} className="flex items-center gap-3 p-3 rounded-md border border-gray-700/50 bg-white/5 hover:bg-white/10 transition-colors">
+                                    <li key={task.id} className="flex items-center gap-3 p-3 rounded-md border border-slate-200 dark:border-gray-700/50 bg-white/5 hover:bg-white/10 transition-colors">
                                         <button
                                             onClick={() => handleMarkDone(task.id)}
                                             aria-label="Mark done"
                                             className="w-5 h-5 rounded-full border-2 border-amber-400 hover:bg-amber-400 shrink-0 transition-colors"
                                         />
                                         <div className="flex-1 min-w-0">
-                                            <p className="text-sm font-semibold text-white truncate">{task.title}</p>
+                                            <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{task.title}</p>
                                             {task.time && (
-                                                <p className="text-[11px] text-gray-400 flex items-center gap-1 mt-0.5">
+                                                <p className="text-[11px] text-slate-500 dark:text-gray-400 flex items-center gap-1 mt-0.5">
                                                     <Clock size={11} /> {task.time}
                                                 </p>
                                             )}
@@ -704,16 +707,16 @@ export default function Dashboard() {
                         </a>
                     </div>
                     {ideas.length === 0 ? (
-                        <div className="flex flex-col items-center justify-center gap-2 py-6 rounded-md border border-dashed border-gray-700 bg-white/5">
+                        <div className="flex flex-col items-center justify-center gap-2 py-6 rounded-md border border-dashed border-slate-200 dark:border-gray-700 bg-white/5">
                             <Lightbulb size={22} className="text-gray-500" />
-                            <p className="text-xs text-gray-400 text-center px-3 break-words">{d.noNotesYet}</p>
+                            <p className="text-xs text-slate-500 dark:text-gray-400 text-center px-3 break-words">{d.noNotesYet}</p>
                         </div>
                     ) : (
                         <ul className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                             {[...ideas].reverse().slice(0, 3).map((idea) => (
                                 <li
                                     key={idea.id}
-                                    className="text-sm text-gray-200 p-3 bg-white/5 border border-gray-700/50 rounded-md break-words line-clamp-3"
+                                    className="text-sm text-slate-700 dark:text-gray-200 p-3 bg-white/5 border border-slate-200 dark:border-gray-700/50 rounded-md break-words line-clamp-3"
                                 >
                                     {idea.ideatext}
                                 </li>
@@ -728,12 +731,12 @@ export default function Dashboard() {
                         <SectionTitle icon={AlertTriangle} color="text-red-400">{d.overdueTasks}</SectionTitle>
                         <ul className="flex flex-col gap-2">
                             {overdueTasks.map((task) => (
-                                <li key={task.id} className="flex items-center gap-3 p-3 bg-gray-900/60 border border-red-500/20 rounded-md">
+                                <li key={task.id} className="flex items-center gap-3 p-3 bg-white/80 dark:bg-gray-900/60 border border-red-500/20 rounded-md">
                                     <div className="shrink-0 inline-flex items-center justify-center w-8 h-8 rounded-md bg-red-500/15 border border-red-500/30">
                                         <Clock size={14} className="text-red-400" />
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                        <p className="text-sm font-semibold text-white truncate">{task.title}</p>
+                                        <p className="text-sm font-semibold text-slate-900 dark:text-white truncate">{task.title}</p>
                                         <p className="text-[11px] text-red-300">{d.due} {task.date} {task.time}</p>
                                     </div>
                                     <button
