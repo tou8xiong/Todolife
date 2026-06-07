@@ -29,7 +29,7 @@ export default function Footer() {
   const featureLinks = [
     { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, requiresAuth: true },
     { href: "/settimepage", label: "Set Timer", icon: Timer },
-    { href: "/noteidea", label: "Idea Notes", icon: BookOpen },
+    { href: "/notetext", label: "Documents", icon: BookOpen },
     { href: "/pdfeditor", label: "PDF Annotator", icon: FileText },
     { href: "/background-removal", label: "Remove BG", icon: ImageIcon },
     { href: "/agent", label: "AI Agent", icon: TbRobot, requiresAuth: true },

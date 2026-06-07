@@ -19,6 +19,7 @@ import { EditorContent } from "@tiptap/react";
 import { authFetch } from "@/lib/authFetch";
 import { useLanguage } from "@/context/LanguageContext";
 import PageHelpTooltip from "@/components/ui/PageHelpTooltip";
+import NoteTabs from "@/components/notes/NoteTabs";
 
 interface Doc {
   id: number;
@@ -789,7 +790,7 @@ export default function NoteTextPage() {
   return (
     <>
       {initialLoading ? (
-        <div className="flex h-[calc(100vh-4rem)] bg-linear-to-b from-gray-900 to-gray-600 overflow-hidden">
+        <div className="flex h-[calc(100vh-4rem)] bg-linear-to-b from-slate-50 to-white dark:from-gray-900 dark:to-gray-600 overflow-hidden transition-colors">
           {/* Sidebar skeleton */}
           <div className="w-64 sm:w-72 shrink-0 bg-white/5 backdrop-blur-xl border-r border-white/10 flex flex-col max-md:hidden">
             {/* Sidebar header */}
@@ -855,7 +856,7 @@ export default function NoteTextPage() {
           </div>
         </div>
       ) : (
-        <div className="flex h-[calc(100vh-4rem)] bg-linear-to-b from-gray-900 to-gray-600 overflow-hidden font-serif">
+        <div className="flex h-[calc(100vh-4rem)] bg-linear-to-b from-slate-50 to-white dark:from-gray-900 dark:to-gray-600 overflow-hidden transition-colors font-serif">
           <div className="w-64 sm:w-72 shrink-0 bg-white/5 backdrop-blur-xl border-r border-white/10 flex flex-col max-md:hidden">
             <div className="p-4 border-b border-gray-200 dark:border-gray-800">
               <div className="flex items-center justify-between mb-3">
@@ -1379,6 +1380,9 @@ export default function NoteTextPage() {
             ) : (
               <div className="flex-1 overflow-auto bg-transparent p-8">
                 <div className="max-w-6xl mx-auto">
+                  <div className="mb-6">
+                    <NoteTabs />
+                  </div>
                   <div className="flex items-center justify-between mb-6">
                     <div className="flex items-center gap-3">
                       <div className="p-3 rounded-2xl bg-gradient-to-br from-sky-100 to-sky-200 dark:from-sky-900/40 dark:to-sky-800/30">

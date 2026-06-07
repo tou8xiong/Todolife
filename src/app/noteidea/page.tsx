@@ -1,16 +1,16 @@
 "use client"
 import { GiNotebook } from "react-icons/gi";
 import { useState, useEffect } from "react";
-import { MdDelete, MdEdit, MdCheck, MdClose, MdDescription } from "react-icons/md";
+import { MdDelete, MdEdit, MdCheck, MdClose } from "react-icons/md";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { toast } from "sonner";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAlert } from "@/hooks/useAlert";
 import { authFetch } from "@/lib/authFetch";
 import { useLanguage } from "@/context/LanguageContext";
 import PageHelpTooltip from "@/components/ui/PageHelpTooltip";
+import NoteTabs from "@/components/notes/NoteTabs";
 
 interface Idea {
     id: number;
@@ -132,16 +132,12 @@ export default function NooteBook() {
     };
 
     return (
-        <div className="min-h-screen bg-tool p-4 sm:p-8 font-serif text-white relative transition-all duration-300">
+        <div className="min-h-screen bg-tool p-4 sm:p-8 font-serif text-slate-900 dark:text-white relative transition-all duration-300">
 
-            {/* Top Right Button */}
-            <Link
-                href="/notetext"
-                className="absolute top-4 right-4 flex items-center gap-2 px-4 py-2 bg-sky-500 hover:bg-sky-600 active:scale-95 text-white text-sm font-semibold rounded-xl shadow-lg shadow-sky-500/30 transition-all z-20"
-            >
-                <MdDescription size={18} />
-                {t.noteIdea.noteText}
-            </Link>
+            {/* Tabs */}
+            <div className="flex justify-center mb-6">
+                <NoteTabs />
+            </div>
 
             {/* Header */}
             <div className="flex flex-col items-center mb-8" data-aos="fade-down">

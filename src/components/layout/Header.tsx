@@ -8,11 +8,13 @@ import { useTaskCounts } from "@/hooks/useTaskCounts";
 import {
   Menu, X, LayoutDashboard, Timer, FileText, BookOpen,
   CheckSquare, ListTodo, PlusSquare, ImageIcon, Loader2, Settings, User,
+  Sun, Moon,
 } from "lucide-react";
 import { TbRobot } from "react-icons/tb";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useLanguage } from "@/context/LanguageContext";
+import { useTheme } from "next-themes";
 
 type NavItem = { href: string; labelKey: string; icon: React.ComponentType<{ size?: number; className?: string }>; badge?: string };
 type NavGroup = { group: string; items: NavItem[] };
@@ -31,7 +33,7 @@ const drawerNav: NavGroup[] = [
     items: [
       { href: "/dashboard", labelKey: "dashboard", icon: LayoutDashboard },
       { href: "/settimepage", labelKey: "timer", icon: Timer },
-      { href: "/noteidea", labelKey: "ideaNotes", icon: BookOpen },
+      { href: "/notetext", labelKey: "documents", icon: BookOpen },
       { href: "/pdfeditor", labelKey: "pdfAnnotator", icon: FileText },
       { href: "/background-removal", labelKey: "removeBg", icon: ImageIcon },
       { href: "/imagetotext", labelKey: "imageToText", icon: FileText },
@@ -44,8 +46,12 @@ export default function Header() {
   const { user, authLoading, profile, profileLoading } = useAppContext();
   const { pending, completed } = useTaskCounts();
   const { t } = useLanguage();
+  const { resolvedTheme, setTheme } = useTheme();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [showProfileMenu, setShowProfileMenu] = useState(false);
+  const [themeMounted, setThemeMounted] = useState(false);
+
+  useEffect(() => { setThemeMounted(true); }, []);
 
   // Close drawer on resize to desktop
   useEffect(() => {
@@ -65,7 +71,7 @@ export default function Header() {
   return (
     <>
       {/* ── Header bar ─────────────────────────────────────────────── */}
-      <header className="bg-blue-300 sticky top-0 z-50 shadow-md shadow-black/20 h-16 text-slate-900">
+      <header className="bg-blue-300 dark:bg-slate-900 sticky top-0 z-50 shadow-md shadow-black/20 h-16 text-slate-900 dark:text-slate-100 transition-colors">
         <div className="flex items-center justify-between px-3 h-full w-full gap-2">
 
           {/* Logo */}
@@ -95,10 +101,21 @@ export default function Header() {
             </Link>
           </nav>
 
-          {/* Right side: auth + mobile menu button */}
+          {/* Right side: theme + auth + mobile menu button */}
           <div className="flex items-center gap-2 ml-auto md:ml-0">
 
-
+            {/* Theme toggle (always visible) */}
+            {themeMounted && (
+              <button
+                onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
+                aria-label="Toggle theme"
+                className="p-2 rounded-md hover:bg-blue-400/40 dark:hover:bg-white/10 text-slate-800 dark:text-amber-300 transition-colors cursor-pointer"
+              >
+                {resolvedTheme === "dark"
+                  ? <Sun size={18} />
+                  : <Moon size={18} />}
+              </button>
+            )}
 
             {/* Auth area */}
             {authLoading ? (
@@ -133,7 +150,7 @@ export default function Header() {
                       </span>
                     )}
                   </div>
-                  <span className="font-semibold text-base sm:text-lg hidden sm:block text-gray-800 max-w-[120px] sm:max-w-[160px] truncate">
+                  <span className="font-semibold text-base sm:text-lg hidden sm:block text-gray-800 dark:text-slate-100 max-w-[120px] sm:max-w-[160px] truncate">
                     {username}
                   </span>
                 </button>
@@ -141,27 +158,27 @@ export default function Header() {
                 {showProfileMenu && (
                   <>
                     <div className="fixed inset-0 z-40" onClick={() => setShowProfileMenu(false)} />
-                    <div className="absolute right-0 mt-2 w-56 sm:w-60 bg-white rounded-xl shadow-xl border border-gray-100 z-50">
-                      <ul className="p-2 flex flex-col gap-0.5 font-serif text-gray-800">
+                    <div className="absolute right-0 mt-2 w-56 sm:w-60 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-gray-100 dark:border-slate-700 z-50">
+                      <ul className="p-2 flex flex-col gap-0.5 font-serif text-gray-800 dark:text-slate-200">
                         <li>
                           <Link href="/profile"
                             onClick={() => setShowProfileMenu(false)}
-                            className="flex items-center gap-2 px-4 py-2.5 rounded-lg hover:bg-gray-100 text-base transition-colors">
-                            <User size={18} className="text-gray-500" />
+                            className="flex items-center gap-2 px-4 py-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700/60 text-base transition-colors">
+                            <User size={18} className="text-gray-500 dark:text-slate-400" />
                             {t.nav.profile}
                           </Link>
                         </li>
                         <li>
                           <Link href="/settings"
                             onClick={() => setShowProfileMenu(false)}
-                            className="flex items-center gap-2 px-4 py-2.5 rounded-lg hover:bg-gray-100 text-base transition-colors">
-                            <Settings size={18} className="text-gray-500" />
+                            className="flex items-center gap-2 px-4 py-2.5 rounded-lg hover:bg-gray-100 dark:hover:bg-slate-700/60 text-base transition-colors">
+                            <Settings size={18} className="text-gray-500 dark:text-slate-400" />
                             {t.nav.settings}
                           </Link>
                         </li>
                         <li>
                           <button onClick={handleLogout}
-                            className="w-full text-left px-4 py-2.5 rounded-lg hover:bg-red-50 text-base text-red-600 transition-colors">
+                            className="w-full text-left px-4 py-2.5 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10 text-base text-red-600 dark:text-red-400 transition-colors">
                             {t.nav.logout}
                           </button>
                         </li>
@@ -176,7 +193,7 @@ export default function Header() {
             <button
               onClick={() => setDrawerOpen(!drawerOpen)}
               aria-label="Toggle menu"
-              className="md:hidden p-2 rounded-md hover:bg-blue-400/40 transition-colors text-gray-800"
+              className="md:hidden p-2 rounded-md hover:bg-blue-400/40 dark:hover:bg-white/10 transition-colors text-gray-800 dark:text-slate-100"
             >
               {drawerOpen ? <X size={22} /> : <Menu size={22} />}
             </button>
@@ -193,16 +210,16 @@ export default function Header() {
 
       {/* Drawer panel */}
       <aside
-        className={`fixed top-0 left-0 h-full w-72 bg-gray-900 z-50 md:hidden shadow-2xl flex flex-col
+        className={`fixed top-0 left-0 h-full w-72 bg-white dark:bg-gray-900 z-50 md:hidden shadow-2xl flex flex-col
           transition-transform duration-300 ease-in-out
           ${drawerOpen ? "translate-x-0" : "-translate-x-full"}`}
       >
         {/* Drawer header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-700">
-          <span className="text-white font-bold text-base font-serif tracking-wide">{t.nav.menu}</span>
+        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-gray-700">
+          <span className="text-slate-800 dark:text-white font-bold text-base font-serif tracking-wide">{t.nav.menu}</span>
           <button
             onClick={() => setDrawerOpen(false)}
-            className="text-gray-400 hover:text-white p-1 rounded-md hover:bg-gray-700 transition-colors"
+            className="text-gray-500 hover:text-slate-800 dark:text-gray-400 dark:hover:text-white p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
           >
             <X size={20} />
           </button>
@@ -212,7 +229,7 @@ export default function Header() {
         <nav className="flex-1 overflow-y-auto p-4 flex flex-col gap-5">
           {drawerNav.map(({ group, items }) => (
             <div key={group}>
-              <p className="text-[10px] text-gray-500 uppercase tracking-widest font-semibold mb-2 px-1">
+              <p className="text-[10px] text-gray-500 dark:text-gray-500 uppercase tracking-widest font-semibold mb-2 px-1">
                 {group}
               </p>
               <ul className="flex flex-col gap-0.5">
@@ -221,12 +238,12 @@ export default function Header() {
                     <Link
                       href={href}
                       onClick={() => setDrawerOpen(false)}
-                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-300 hover:bg-gray-800 hover:text-white transition-colors text-sm font-serif"
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-gray-700 dark:text-gray-300 hover:bg-gray-100 hover:text-slate-900 dark:hover:bg-gray-800 dark:hover:text-white transition-colors text-sm font-serif"
                     >
-                      <Icon size={17} className="text-amber-400 shrink-0" />
+                      <Icon size={17} className="text-amber-500 dark:text-amber-400 shrink-0" />
                       <span className="flex-1">{t.nav[labelKey as keyof typeof t.nav]}</span>
                       {badge && badgeCount(badge) > 0 && (
-                        <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold text-white ${badge === "pending" ? "bg-slate-700" : "bg-green-700"}`}>
+                        <span className={`rounded-full px-2 py-0.5 text-[10px] font-bold text-white ${badge === "pending" ? "bg-slate-700" : "bg-amber-600"}`}>
                           {badgeCount(badge)}
                         </span>
                       )}
@@ -239,8 +256,8 @@ export default function Header() {
         </nav>
 
         {/* Drawer footer */}
-        <div className="px-5 py-4 border-t border-gray-700">
-          <p className="text-[10px] text-gray-600 text-center tracking-widest uppercase">TodoLife</p>
+        <div className="px-5 py-4 border-t border-gray-200 dark:border-gray-700">
+          <p className="text-[10px] text-gray-500 dark:text-gray-600 text-center tracking-widest uppercase">TodoLife</p>
         </div>
       </aside>
     </>
