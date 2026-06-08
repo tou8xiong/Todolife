@@ -1,4 +1,5 @@
 "use client";
+import { Extension } from "@tiptap/core";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { TextStyle } from "@tiptap/extension-text-style";
@@ -12,11 +13,55 @@ import { BulletList, OrderedList } from "@tiptap/extension-list";
 import ListItem from "@tiptap/extension-list-item";
 import Image from "@tiptap/extension-image";
 import Link from "@tiptap/extension-link";
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
+
+// Carries the active font size into each new paragraph, like MS Word.
+// Runs at priority 150 so it intercepts Enter before list extensions (100).
+const FontSizePersistExtension = Extension.create({
+  name: "fontSizePersist",
+  priority: 150,
+  addKeyboardShortcuts() {
+    return {
+      Enter: ({ editor }) => {
+        // Let list extensions handle Enter inside list items
+        if (editor.isActive("listItem")) return false;
+
+        // Read font size from cursor's text attributes
+        const attrSize = editor.getAttributes("textStyle").fontSize as string | undefined;
+
+        // Also check stored marks (set when font size applied to empty selection)
+        let storedSize: string | undefined;
+        const sm = editor.state.storedMarks;
+        if (sm) {
+          const m = sm.find(mk => mk.type.name === "textStyle");
+          if (m) storedSize = m.attrs.fontSize as string | undefined;
+        }
+
+        const fontSize = attrSize || storedSize;
+        if (!fontSize) return false; // No explicit size — default Enter behaviour
+
+        // Split the block (same as pressing Enter normally)
+        editor.commands.splitBlock();
+
+        // Re-apply font size as stored mark so the first typed character in the
+        // new paragraph inherits the same size
+        const textStyleType = editor.schema.marks.textStyle;
+        if (textStyleType) {
+          editor.view.dispatch(
+            editor.state.tr.addStoredMark(textStyleType.create({ fontSize }))
+          );
+        }
+        return true;
+      },
+    };
+  },
+});
 
 export function useTipTapEditor() {
   const [currentFontFamily, setCurrentFontFamily] = useState("EB Garamond");
   const [currentFontSize, setCurrentFontSize] = useState("16");
+  // Tracks the user's intentional font size across cursor moves and paragraph breaks
+  const pendingFontSizeRef = useRef("16");
   const [currentTextColor, setCurrentTextColor] = useState("#000000");
   const [currentHighlightColor, setCurrentHighlightColor] = useState("#ffff00");
   const [isBulletList, setIsBulletList] = useState(false);
@@ -36,6 +81,7 @@ export function useTipTapEditor() {
           keepAttributes: false,
         },
       }),
+      FontSizePersistExtension,
       TextStyle,
       FontSize,
       FontFamily,
@@ -81,35 +127,44 @@ export function useTipTapEditor() {
         const allElements = doc.querySelectorAll('*');
         allElements.forEach((el) => {
           if (el instanceof HTMLElement) {
-            // Store the text color before clearing styles
+            // Preserve formatting before clearing styles
             const textColor = el.style.color;
+            const fontSize = el.style.fontSize;
+            const fontWeight = el.style.fontWeight;
+            const fontStyle = el.style.fontStyle;
+            const textDecoration = el.style.textDecoration;
 
-            // Remove ALL inline styles first
             el.removeAttribute('style');
-
-            // Remove all classes that might contain background styles
             el.removeAttribute('class');
-
-            // Remove other attributes that might affect styling
             el.removeAttribute('bgcolor');
             el.removeAttribute('background');
-
-            // Explicitly set background to transparent to override any inherited styles
             el.style.background = 'transparent';
             el.style.backgroundColor = 'transparent';
 
-            // Restore only the text color if it's dark enough to be visible on white
+            // Restore font size so copied text keeps its size when pasted
+            if (fontSize) {
+              el.style.fontSize = fontSize;
+            }
+            if (fontWeight && fontWeight !== 'normal' && fontWeight !== '400') {
+              el.style.fontWeight = fontWeight;
+            }
+            if (fontStyle && fontStyle !== 'normal') {
+              el.style.fontStyle = fontStyle;
+            }
+            if (textDecoration && textDecoration !== 'none') {
+              el.style.textDecoration = textDecoration;
+            }
+
+            // Restore text color if dark enough to be visible on white
             if (textColor) {
               const rgb = textColor.match(/\d+/g);
               if (rgb && rgb.length >= 3) {
                 const r = parseInt(rgb[0]);
                 const g = parseInt(rgb[1]);
                 const b = parseInt(rgb[2]);
-                // Only keep dark colors (visible on white background)
                 if (r < 200 || g < 200 || b < 200) {
                   el.style.color = textColor;
                 } else {
-                  // If text is too light, make it black for visibility
                   el.style.color = '#000000';
                 }
               }
@@ -186,10 +241,15 @@ export function useTipTapEditor() {
       setCurrentFontFamily(fontName);
     }
 
-    // Get current font size
-    const fontSize = ed.getAttributes("textStyle").fontSize;
+    // Get current font size from cursor position
+    const fontSize = ed.getAttributes("textStyle").fontSize as string | undefined;
     if (fontSize) {
-      setCurrentFontSize(fontSize.replace("px", ""));
+      const numSize = fontSize.replace("px", "");
+      setCurrentFontSize(numSize);
+      pendingFontSizeRef.current = numSize; // Keep pending in sync with explicit text
+    } else {
+      // Cursor on text with no explicit size — display the user's last chosen size
+      setCurrentFontSize(pendingFontSizeRef.current);
     }
   }, []);
 
@@ -235,6 +295,7 @@ export function useTipTapEditor() {
   }, [editor]);
 
   const setFontSize = useCallback((size: string) => {
+    pendingFontSizeRef.current = size;
     editor?.chain().focus().setFontSize(size + "px").run();
     setCurrentFontSize(size);
   }, [editor]);

@@ -1927,6 +1927,12 @@ function NoteSheet({ index, content, onUpdate, onFocus, isFirst, title, setTitle
   const tools = useTipTapEditor();
   const { editor, EditorContent, handleKeyDown } = tools;
   const indexRef = useRef(index);
+  // Stable refs so TipTap event handlers always see the latest values
+  const toolsRef = useRef(tools);
+  const onFocusRef = useRef(onFocus);
+  const isFocusedRef = useRef(isFirst);
+  toolsRef.current = tools;
+  onFocusRef.current = onFocus;
 
   useEffect(() => {
     indexRef.current = index;
@@ -1947,13 +1953,35 @@ function NoteSheet({ index, content, onUpdate, onFocus, isFirst, title, setTitle
     return () => { editor.off('update', updateHandler); };
   }, [editor, onUpdate]);
 
+  // Push live toolbar state to parent on every selection/transaction change
+  useEffect(() => {
+    if (!editor) return;
+    const sync = () => {
+      if (isFocusedRef.current) onFocusRef.current(toolsRef.current);
+    };
+    const onEditorFocus = () => { isFocusedRef.current = true; };
+    const onEditorBlur = () => { isFocusedRef.current = false; };
+    editor.on('selectionUpdate', sync);
+    editor.on('transaction', sync);
+    editor.on('focus', onEditorFocus);
+    editor.on('blur', onEditorBlur);
+    return () => {
+      editor.off('selectionUpdate', sync);
+      editor.off('transaction', sync);
+      editor.off('focus', onEditorFocus);
+      editor.off('blur', onEditorBlur);
+    };
+  }, [editor]);
+
   const handleInternalFocus = () => {
-    onFocus(tools);
+    isFocusedRef.current = true;
+    onFocusRef.current(toolsRef.current);
   };
 
   useEffect(() => {
     if (isFirst && editor) {
-      onFocus(tools);
+      isFocusedRef.current = true;
+      onFocusRef.current(toolsRef.current);
     }
   }, [isFirst, !!editor]);
 
