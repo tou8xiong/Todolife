@@ -67,9 +67,9 @@ function pickLangPath(codes: string[]): string {
 // photo regions come back as low-confidence blocks full of stray punctuation
 // and isolated glyphs. We drop those by looking at block/line confidence and
 // by a cheap "alphanumeric density" check on the text itself.
-const MIN_BLOCK_CONFIDENCE = 30;
-const MIN_LINE_CONFIDENCE = 35;
-const MIN_ALPHANUMERIC_RATIO = 0.30;
+const MIN_BLOCK_CONFIDENCE = 15;
+const MIN_LINE_CONFIDENCE = 18;
+const MIN_ALPHANUMERIC_RATIO = 0.10;
 
 function isMostlyJunk(text: string): boolean {
     const trimmed = text.trim();
@@ -102,6 +102,77 @@ function cleanRecognitionOutput(blocks: Tesseract.Block[] | null, fallback: stri
     return kept.join("\n\n").trim();
 }
 
+// Reconstruct text layout from bounding boxes so the output mirrors the
+// spatial arrangement in the image: indentation, blank lines between
+// paragraphs, and side-by-side columns are all approximated with spaces/newlines.
+function reconstructLayout(blocks: Tesseract.Block[] | null, imageWidth: number): string {
+    if (!blocks || blocks.length === 0) return "";
+
+    type LayoutLine = { y0: number; y1: number; x0: number; text: string };
+    const allLines: LayoutLine[] = [];
+
+    for (const block of blocks) {
+        if (!block || (block.confidence ?? 0) < MIN_BLOCK_CONFIDENCE) continue;
+        for (const paragraph of block.paragraphs ?? []) {
+            for (const line of paragraph.lines ?? []) {
+                const lineText = (line.text ?? "").replace(/\n$/, "").trim();
+                if (!lineText) continue;
+                if ((line.confidence ?? 0) < MIN_LINE_CONFIDENCE) continue;
+                if (isMostlyJunk(lineText)) continue;
+                const b = (line as any).bbox;
+                if (!b) continue;
+                allLines.push({ y0: b.y0, y1: b.y1, x0: b.x0, text: lineText });
+            }
+        }
+    }
+
+    if (allLines.length === 0) return "";
+
+    // Sort top-to-bottom, then left-to-right for same y-band items.
+    allLines.sort((a, b) => a.y0 - b.y0 || a.x0 - b.x0);
+
+    const avgLineH = allLines.reduce((s, l) => s + (l.y1 - l.y0), 0) / allLines.length;
+
+    // Detect multi-column: if two lines have overlapping y-bands, they're side by side.
+    // We group lines into "rows" where y-bands overlap.
+    const rows: LayoutLine[][] = [];
+    for (const line of allLines) {
+        const last = rows[rows.length - 1];
+        const overlap = last && last.some((l) => l.y0 < line.y1 && line.y0 < l.y1);
+        if (overlap) {
+            last.push(line);
+        } else {
+            rows.push([line]);
+        }
+    }
+
+    const result: string[] = [];
+    let prevRowBottom = -1;
+
+    for (const row of rows) {
+        // Add blank line when there's a vertical gap bigger than 1.5× line height.
+        if (prevRowBottom >= 0) {
+            const gap = row[0].y0 - prevRowBottom;
+            if (gap > avgLineH * 1.5) result.push("");
+        }
+
+        if (row.length === 1) {
+            // Single column line — add left-margin indent.
+            const indentRatio = Math.min(row[0].x0 / Math.max(imageWidth, 1), 0.5);
+            const spaces = " ".repeat(Math.round(indentRatio * 10));
+            result.push(spaces + row[0].text);
+        } else {
+            // Multi-column row — sort by x and join with a tab separator.
+            row.sort((a, b) => a.x0 - b.x0);
+            result.push(row.map((l) => l.text).join("    "));
+        }
+
+        prevRowBottom = Math.max(...row.map((l) => l.y1));
+    }
+
+    return result.join("\n").trim();
+}
+
 const MIN_OCR_WIDTH = 1200;
 
 function upscaleForOcr(dataUrl: string): Promise<string> {
@@ -112,8 +183,10 @@ function upscaleForOcr(dataUrl: string): Promise<string> {
                 resolve(dataUrl);
                 return;
             }
-            const w = img.naturalWidth * 2;
-            const h = img.naturalHeight * 2;
+            // Scale up enough so the shortest side is at least MIN_OCR_WIDTH.
+            const scale = Math.ceil(MIN_OCR_WIDTH / img.naturalWidth);
+            const w = img.naturalWidth * scale;
+            const h = img.naturalHeight * scale;
             const canvas = document.createElement('canvas');
             canvas.width = w;
             canvas.height = h;
@@ -146,7 +219,7 @@ export default function ImageToText() {
     const [langPickerOpen, setLangPickerOpen] = useState(false);
     const [layoutMode, setLayoutMode] = useState<string>('auto');
     const [layoutPickerOpen, setLayoutPickerOpen] = useState(false);
-    const [filterNoise, setFilterNoise] = useState<boolean>(true);
+    const [filterNoise, setFilterNoise] = useState<boolean>(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const langPickerRef = useRef<HTMLDivElement>(null);
     const layoutPickerRef = useRef<HTMLDivElement>(null);
@@ -297,15 +370,29 @@ export default function ImageToText() {
                 tessedit_pageseg_mode: psm as Tesseract.PSM,
             });
 
-            // Request blocks so we can drop low-confidence regions (the noise
-            // that comes from running OCR over photographic content).
             const upscaled = await upscaleForOcr(imageData);
+
+            // Measure the upscaled image dimensions so reconstructLayout can
+            // calculate relative x-positions correctly.
+            const imgDimensions = await new Promise<{ w: number; h: number }>((res) => {
+                const tmp = new Image();
+                tmp.onload = () => res({ w: tmp.naturalWidth, h: tmp.naturalHeight });
+                tmp.onerror = () => res({ w: 1200, h: 800 });
+                tmp.src = upscaled;
+            });
+
             const result = await worker.recognize(upscaled, {}, { text: true, blocks: true });
             const rawText = result.data.text.trim();
-            const cleaned = filterNoise
-                ? cleanRecognitionOutput(result.data.blocks ?? null, rawText)
+            const blocks = result.data.blocks ?? null;
+
+            // Prefer layout-preserving reconstruction (uses bbox positions to
+            // reproduce indentation, columns, and paragraph spacing).
+            // Fall back to noise-cleaned text, then raw text.
+            const layoutText = reconstructLayout(blocks, imgDimensions.w);
+            const cleanedText = filterNoise
+                ? cleanRecognitionOutput(blocks, rawText)
                 : rawText;
-            const text = cleaned || rawText;
+            const text = layoutText || cleanedText || rawText;
 
             if (!text || text.length === 0) {
                 toast.error(
@@ -314,18 +401,6 @@ export default function ImageToText() {
                 );
                 setIsProcessing(false);
                 return;
-            }
-
-            // Surface how aggressive the filter was so the user knows whether
-            // to turn it off if too much was dropped.
-            if (filterNoise && rawText.length > 0) {
-                const removed = rawText.length - text.length;
-                if (removed > 0) {
-                    const pct = Math.round((removed / rawText.length) * 100);
-                    if (pct >= 10) {
-                        toast.success(`Cleaned out ${pct}% noise from photo regions`, { duration: 3500 });
-                    }
-                }
             }
 
             setExtractedText(text);
@@ -824,16 +899,16 @@ export default function ImageToText() {
                                             </div>
                                         </div>
 
-                                        <div className="bg-slate-50 dark:bg-slate-950/60 rounded-xl p-4 border border-slate-200 dark:border-slate-800 max-h-[28rem] overflow-y-auto hide-scrollbar">
+                                        <div className="bg-white dark:bg-white rounded-xl p-4 border border-slate-200 dark:border-slate-300 max-h-[28rem] overflow-y-auto hide-scrollbar">
                                             {isEditing ? (
                                                 <textarea
                                                     value={editedText}
                                                     onChange={(e) => setEditedText(e.target.value)}
-                                                    className="w-full min-h-[300px] bg-transparent text-slate-800 dark:text-slate-100 text-sm sm:text-base resize-none focus:outline-none leading-relaxed"
+                                                    className="w-full min-h-[300px] bg-transparent text-slate-900 text-sm sm:text-base resize-none focus:outline-none leading-relaxed"
                                                     placeholder="Edit your text here..."
                                                 />
                                             ) : (
-                                                <pre className="text-slate-800 dark:text-slate-100 text-sm sm:text-base whitespace-pre-wrap leading-relaxed font-sans">
+                                                <pre className="text-slate-900 text-sm sm:text-base whitespace-pre-wrap leading-relaxed font-sans">
                                                     {extractedText}
                                                 </pre>
                                             )}
