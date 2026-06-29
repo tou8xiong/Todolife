@@ -5,9 +5,12 @@ import { onAuthStateChanged } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { Task } from "@/types/task";
 import {
-  Bot, Send, Loader2, MessageSquare, FileText, ListTodo,
+  Send, Loader2, MessageSquare, FileText, ListTodo,
   AlertCircle, ChevronUp, CheckCircle2, SquarePen, Trash2, Menu, X,
 } from "lucide-react";
+import AiIcon from "@/components/ui/AiIcon";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { buildSystemPrompt, parseTaskFromResponse, AgentSystemPromptOptions, ParsedUpdateData } from "@/utils/aiPrompts";
 import { authFetch } from "@/lib/authFetch";
 import { useLanguage } from "@/context/LanguageContext";
@@ -62,6 +65,41 @@ function groupConversations(convs: ConvMeta[]) {
     { label: "Yesterday", items: yesterday },
     { label: "Previous 7 Days", items: older },
   ].filter((g) => g.items.length > 0);
+}
+
+// ── Markdown renderer for assistant replies ──────────────────────────────────
+
+function AssistantMarkdown({ content }: { content: string }) {
+  return (
+    <ReactMarkdown
+      remarkPlugins={[remarkGfm]}
+      components={{
+        h1: ({ children }) => <h1 className="text-base font-bold mb-2 mt-3 first:mt-0">{children}</h1>,
+        h2: ({ children }) => <h2 className="text-sm font-bold mb-2 mt-3 first:mt-0">{children}</h2>,
+        h3: ({ children }) => <h3 className="text-sm font-bold mb-1.5 mt-2.5 first:mt-0">{children}</h3>,
+        p: ({ children }) => <p className="mb-2 last:mb-0 leading-relaxed">{children}</p>,
+        strong: ({ children }) => <strong className="font-bold">{children}</strong>,
+        em: ({ children }) => <em className="italic">{children}</em>,
+        ul: ({ children }) => <ul className="list-disc pl-5 mb-2 last:mb-0 space-y-1">{children}</ul>,
+        ol: ({ children }) => <ol className="list-decimal pl-5 mb-2 last:mb-0 space-y-1">{children}</ol>,
+        li: ({ children }) => <li className="leading-relaxed">{children}</li>,
+        a: ({ children, href }) => (
+          <a href={href} target="_blank" rel="noopener noreferrer" className="text-sky-600 dark:text-sky-400 underline underline-offset-2">{children}</a>
+        ),
+        code: ({ className, children }) =>
+          className?.includes("language-") ? (
+            <code className="block bg-slate-200/70 dark:bg-gray-800 rounded-md p-2.5 my-2 text-xs font-mono overflow-x-auto">{children}</code>
+          ) : (
+            <code className="bg-slate-200/70 dark:bg-gray-800 rounded px-1 py-0.5 text-[0.85em] font-mono">{children}</code>
+          ),
+        blockquote: ({ children }) => (
+          <blockquote className="border-l-2 border-slate-300 dark:border-gray-500 pl-3 italic my-2">{children}</blockquote>
+        ),
+      }}
+    >
+      {content}
+    </ReactMarkdown>
+  );
 }
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -424,38 +462,38 @@ export default function AgentChat() {
             groups.map((group) => {
               const groupLabel = group.label === "Today" ? t.agent.today : group.label === "Yesterday" ? t.agent.yesterday : t.agent.previous7Days;
               return (
-              <div key={group.label} className="mb-4">
-                <p className="text-[10px] font-semibold text-slate-400 dark:text-gray-600 uppercase tracking-widest px-3 mb-1">
-                  {groupLabel}
-                </p>
-                <ul className="flex flex-col gap-0.5">
-                  {group.items.map((conv) => (
-                    <li key={conv.id} className="group relative">
-                      <button
-                        onClick={() => selectConv(conv)}
-                        className={`w-full text-left px-3 py-2 rounded-md text-xs transition-all pr-8 leading-snug
+                <div key={group.label} className="mb-4">
+                  <p className="text-[10px] font-semibold text-slate-400 dark:text-gray-600 uppercase tracking-widest px-3 mb-1">
+                    {groupLabel}
+                  </p>
+                  <ul className="flex flex-col gap-0.5">
+                    {group.items.map((conv) => (
+                      <li key={conv.id} className="group relative">
+                        <button
+                          onClick={() => selectConv(conv)}
+                          className={`w-full text-left px-3 py-2 rounded-md text-xs transition-all pr-8 leading-snug
                           ${activeId === conv.id
-                            ? "bg-slate-100 dark:bg-gray-700 text-slate-900 dark:text-white"
-                            : "text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-gray-800 hover:text-slate-900 dark:hover:text-gray-200"
-                          }`}
-                      >
-                        <span className="block truncate">{conv.title}</span>
-                        <span className={`text-[10px] mt-0.5 block opacity-60 ${activeId === conv.id ? "text-sky-500 dark:text-sky-400" : ""}`}>
-                          {conv.mode}
-                        </span>
-                      </button>
-                      {/* Delete on hover */}
-                      <button
-                        onClick={(e) => { e.stopPropagation(); if (userEmail) deleteConv(userEmail, conv.id); }}
-                        className="absolute right-1.5 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 p-1 rounded-md hover:bg-red-100 dark:hover:bg-red-900/40 text-slate-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 transition-all"
-                        title="Delete conversation"
-                      >
-                        <Trash2 size={12} />
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              </div>
+                              ? "bg-slate-100 dark:bg-gray-700 text-slate-900 dark:text-white"
+                              : "text-slate-600 dark:text-gray-300 hover:bg-slate-100 dark:hover:bg-gray-800 hover:text-slate-900 dark:hover:text-gray-200"
+                            }`}
+                        >
+                          <span className="block truncate">{conv.title}</span>
+                          <span className={`text-[10px] mt-0.5 block opacity-60 ${activeId === conv.id ? "text-sky-500 dark:text-sky-400" : ""}`}>
+                            {conv.mode}
+                          </span>
+                        </button>
+                        {/* Delete on hover */}
+                        <button
+                          onClick={(e) => { e.stopPropagation(); if (userEmail) deleteConv(userEmail, conv.id); }}
+                          className="absolute right-1.5 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 p-1 rounded-md hover:bg-red-100 dark:hover:bg-red-900/40 text-slate-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 transition-all"
+                          title="Delete conversation"
+                        >
+                          <Trash2 size={12} />
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               );
             })
           )}
@@ -470,7 +508,7 @@ export default function AgentChat() {
       <div className="flex-1 flex flex-col overflow-hidden">
 
         {/* Top bar */}
-        <div className="bg-slate-50 dark:bg-gray-800 border-b border-slate-200 dark:border-gray-700 px-4 py-3 flex items-center gap-3 shrink-0">
+        <div className="bg-tool border-b border-slate-200 dark:border-gray-700 px-4 py-3 flex items-center gap-3 shrink-0">
           {/* Mobile sidebar toggle */}
           <button
             onClick={() => setSidebarOpen((v) => !v)}
@@ -480,7 +518,7 @@ export default function AgentChat() {
           </button>
 
           <div className="flex items-center gap-2">
-            <Bot size={18} className="text-sky-500 dark:text-sky-400 shrink-0" />
+            <AiIcon size={20} className="shrink-0" />
             <span className="font-semibold text-slate-900 dark:text-white text-sm">
               {activeId
                 ? (conversations.find((c) => c.id === activeId)?.title ?? "Conversation")
@@ -502,9 +540,7 @@ export default function AgentChat() {
 
           {!historyLoading && !activeId && messages.length === 0 && (
             <div className="flex flex-col items-center justify-center h-full py-20 gap-4 text-center">
-              <div className="p-5 rounded-full bg-slate-100 dark:bg-gray-800 shadow-md border border-slate-200 dark:border-gray-700">
-                <Bot size={36} className="text-sky-500 dark:text-sky-400" />
-              </div>
+              <AiIcon size={72} className="shadow-md border border-slate-200 dark:border-gray-700" />
               <h2 className="text-2xl font-bold text-slate-900 dark:text-white">{t.agent.howCanIHelp}</h2>
               {mode === "chat" && (
                 <span className="text-xs bg-sky-50 dark:bg-sky-900/30 text-sky-600 dark:text-sky-300 border border-sky-200 dark:border-sky-800 px-3 py-1 rounded-full">
@@ -517,18 +553,18 @@ export default function AgentChat() {
 
           {!historyLoading && messages.map((msg, i) => (
             <div key={i} className={`flex flex-col gap-1.5 ${msg.role === "user" ? "items-end" : "items-start"}`}>
-              <div className={`flex gap-3 max-w-[80%] ${msg.role === "user" ? "flex-row-reverse" : "flex-row"}`}>
+              <div className={`flex gap-3 ${msg.role === "user" ? "flex-row-reverse max-w-[80%]" : "flex-row max-w-[92%]"}`}>
                 {msg.role === "assistant" && (
-                  <div className="shrink-0 w-7 h-7 rounded-full bg-sky-900/40 border border-sky-800 flex items-center justify-center mt-0.5">
-                    <Bot size={14} className="text-sky-500" />
-                  </div>
+                  <AiIcon size={28} className="shrink-0 mt-0.5" />
                 )}
-                <div className={`px-4 py-3 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap shadow-sm
+                <div className={`min-w-0 px-5 py-3 text-sm leading-relaxed wrap-break-word text-left
                   ${msg.role === "user"
-                    ? "bg-sky-500 text-white rounded-br-sm"
-                    : "bg-slate-100 dark:bg-gray-700 text-slate-800 dark:text-gray-100 border border-slate-200 dark:border-gray-600 rounded-bl-sm"
+                    ? "rounded-2xl rounded-br-sm bg-sky-500 text-white shadow-sm whitespace-pre-wrap"
+                    : "rounded-2xl rounded-bl-sm bg-slate-100 dark:bg-gray-700 text-slate-800 dark:text-gray-100 border border-slate-200 dark:border-gray-600 shadow-sm"
                   }`}>
-                  {msg.content}
+                  {msg.role === "assistant"
+                    ? <AssistantMarkdown content={msg.content} />
+                    : msg.content}
                 </div>
               </div>
 
@@ -562,9 +598,7 @@ export default function AgentChat() {
 
           {loading && (
             <div className="flex gap-3">
-              <div className="shrink-0 w-7 h-7 rounded-full bg-sky-900/40 border border-sky-800 flex items-center justify-center">
-                <Bot size={14} className="text-sky-500" />
-              </div>
+              <AiIcon size={28} className="shrink-0" />
               <div className="px-4 py-3 rounded-2xl rounded-bl-sm bg-slate-100 dark:bg-gray-700 border border-slate-200 dark:border-gray-600 flex items-center gap-2 shadow-sm">
                 <Loader2 size={14} className="text-sky-500 dark:text-sky-400 animate-spin" />
                 <span className="text-xs text-slate-500 dark:text-gray-300">{t.agent.thinking}</span>
@@ -583,7 +617,7 @@ export default function AgentChat() {
         </div>
 
         {/* Input area */}
-        <div className="p-4 bg-slate-50 dark:bg-gray-800 border-t border-slate-200 dark:border-gray-700">
+        <div className="p-4 bg-tool border-t border-slate-200 dark:border-gray-700">
           <div className="max-w-3xl mx-auto bg-white dark:bg-gray-700 rounded-2xl shadow-md border border-slate-200 dark:border-gray-600 focus-within:border-sky-500 transition-colors p-2 flex gap-2 items-end">
             <textarea
               ref={textareaRef}

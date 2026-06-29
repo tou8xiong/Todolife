@@ -49,19 +49,19 @@ export default function PageHelpTooltip({
         aria-label="Help"
         aria-expanded={open}
         onClick={(e) => { e.stopPropagation(); setOpen((v) => !v); }}
-        className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-white/10 hover:bg-amber-500/20 text-gray-300 hover:text-amber-400 transition-colors shrink-0 cursor-pointer"
+        className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-slate-200/70 hover:bg-amber-500/20 text-slate-500 hover:text-amber-500 dark:bg-white/10 dark:text-gray-300 dark:hover:text-amber-400 transition-colors shrink-0 cursor-pointer"
       >
         <FaRegQuestionCircle size={iconSize} />
       </button>
       <div
         role="tooltip"
-        className={`absolute ${SIDE_POS[side]} z-50 w-64 sm:w-72 bg-gray-800 text-left rounded-lg shadow-xl border border-amber-400/30 px-3 py-2.5
+        className={`absolute ${SIDE_POS[side]} z-50 w-64 sm:w-72 bg-white dark:bg-gray-800 text-left rounded-lg shadow-xl border border-amber-400/40 dark:border-amber-400/30 px-3 py-2.5
           transition-opacity duration-150
           ${open ? "opacity-100 visible" : "opacity-0 invisible pointer-events-none"}
           group-hover:opacity-100 group-hover:visible group-hover:pointer-events-auto`}
       >
-        <p className="text-xs font-bold text-amber-400 mb-1">{subtitle}</p>
-        <p className="text-xs text-gray-200 leading-relaxed font-normal whitespace-normal">{description}</p>
+        <p className="text-xs font-bold text-amber-600 dark:text-amber-400 mb-1">{subtitle}</p>
+        <p className="text-xs text-slate-600 dark:text-gray-200 leading-relaxed font-normal whitespace-normal">{description}</p>
       </div>
     </div>
   );

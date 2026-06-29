@@ -9,7 +9,7 @@ import {
   Menu, X, LayoutDashboard, Timer, FileText, BookOpen,
   CheckSquare, ListTodo, PlusSquare, ImageIcon, Loader2, Settings, User,
 } from "lucide-react";
-import { TbRobot } from "react-icons/tb";
+import AiIcon from "@/components/ui/AiIcon";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useLanguage } from "@/context/LanguageContext";
@@ -35,7 +35,7 @@ const drawerNav: NavGroup[] = [
       { href: "/pdfeditor", labelKey: "pdfAnnotator", icon: FileText },
       { href: "/background-removal", labelKey: "removeBg", icon: ImageIcon },
       { href: "/imagetotext", labelKey: "imageToText", icon: FileText },
-      { href: "/agent", labelKey: "agent", icon: TbRobot },
+      { href: "/agent", labelKey: "agent", icon: AiIcon },
     ],
   },
 ];

@@ -13,7 +13,7 @@ import {
   FileText,
   ImageIcon,
 } from "lucide-react";
-import { TbRobot } from "react-icons/tb";
+import AiIcon from "@/components/ui/AiIcon";
 import { useAppContext } from "@/context/AppContext";
 
 const taskLinks = [
@@ -32,7 +32,7 @@ export default function Footer() {
     { href: "/notetext", label: "Documents", icon: BookOpen },
     { href: "/pdfeditor", label: "PDF Annotator", icon: FileText },
     { href: "/background-removal", label: "Remove BG", icon: ImageIcon },
-    { href: "/agent", label: "AI Agent", icon: TbRobot, requiresAuth: true },
+    { href: "/agent", label: "AI Agent", icon: AiIcon, requiresAuth: true },
   ].filter(link => !link.requiresAuth || user);
 
   return (
