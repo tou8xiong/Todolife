@@ -2,7 +2,7 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import Tesseract, { createWorker } from "tesseract.js";
 import {
-    Upload, Image as ImageIcon, Copy, Trash2, FileText, Loader2, CheckCircle,
+    Upload, Image as ImageIcon, Copy, Trash2, ScanText, Loader2, CheckCircle,
     Edit2, Save, History, X, ArrowLeft, Languages, ChevronDown, Check, Sparkles,
     LayoutGrid, SlidersHorizontal,
 } from "lucide-react";
@@ -488,7 +488,7 @@ export default function ImageToText() {
                         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-3">
                             <div className="flex items-center gap-3">
                                 <div className="p-2.5 rounded-2xl bg-gradient-to-br from-sky-500/20 to-indigo-500/20 ring-1 ring-sky-400/20">
-                                    <FileText className="w-6 h-6 sm:w-7 sm:h-7 text-sky-500 dark:text-sky-300" />
+                                    <ScanText className="w-6 h-6 sm:w-7 sm:h-7 text-sky-500 dark:text-sky-300" />
                                 </div>
                                 <div>
                                     <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 dark:text-white font-serif tracking-tight flex items-center gap-2">
@@ -789,7 +789,7 @@ export default function ImageToText() {
                                         </div>
 
                                         {isProcessing && (
-                                            <div className="space-y-2 p-4 rounded-xl bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 shadow-sm">
+                                            <div className="space-y-2 p-4 rounded-2xl bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 shadow-sm">
                                                 <div className="flex items-center justify-between gap-2">
                                                     <div className="flex items-center gap-2 text-sky-600 dark:text-sky-300">
                                                         <Loader2 className="w-4 h-4 animate-spin" />
@@ -813,7 +813,7 @@ export default function ImageToText() {
                             {extractedText && (
                                 <div className="space-y-4">
                                     {/* Image meta strip */}
-                                    <div className="flex items-center gap-3 p-3 rounded-xl bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 shadow-sm">
+                                    <div className="flex items-center gap-3 p-3 rounded-2xl bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 shadow-sm">
                                         <div
                                             onClick={() => setShowImagePreview(true)}
                                             className="relative w-16 h-16 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 hover:border-sky-400 cursor-pointer transition-all group shrink-0"
