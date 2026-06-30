@@ -526,11 +526,12 @@ export default function ImageToText() {
                                     <div className="flex items-center gap-3 p-3 rounded-2xl bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800">
                                         <div
                                             onClick={() => setShowImagePreview(true)}
-                                            className="relative w-16 h-16 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 hover:border-sky-400 cursor-pointer transition-all group shrink-0"
+                                            className="relative w-16 h-16 rounded-xl overflow-hidden border-2 border-slate-200 dark:border-slate-700 hover:border-sky-400 dark:hover:border-sky-500 cursor-pointer transition-all group shrink-0"
+                                            title="Click to expand"
                                         >
                                             <img src={selectedImage!} alt="Preview" className="w-full h-full object-cover" />
-                                            <div className="absolute inset-0 bg-slate-950/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                                <ImageIcon className="w-5 h-5 text-white" />
+                                            <div className="absolute inset-0 bg-slate-950/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                                <ImageIcon className="w-5 h-5 text-white drop-shadow" />
                                             </div>
                                         </div>
                                         <div className="flex-1 min-w-0">
@@ -623,21 +624,24 @@ export default function ImageToText() {
                             {/* Image Preview Modal */}
                             {showImagePreview && (
                                 <div
-                                    className="fixed inset-0 bg-slate-950/90 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+                                    className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
                                     onClick={() => setShowImagePreview(false)}
                                 >
-                                    <div className="relative max-w-4xl max-h-[90vh] w-full" onClick={(e) => e.stopPropagation()}>
-                                        <button
-                                            onClick={() => setShowImagePreview(false)}
-                                            className="absolute -top-12 right-0 p-2 rounded-full bg-slate-800 hover:bg-slate-700 text-white transition-all border border-slate-700"
-                                        >
-                                            <X className="w-5 h-5" />
-                                        </button>
+                                    <div
+                                        className="relative bg-slate-900 rounded-2xl border border-slate-700 shadow-2xl overflow-hidden max-w-4xl w-full max-h-[90vh] flex items-center justify-center"
+                                        onClick={(e) => e.stopPropagation()}
+                                    >
                                         <img
                                             src={selectedImage!}
                                             alt="Full preview"
-                                            className="w-full h-full object-contain rounded-2xl border border-slate-800"
+                                            className="max-w-full max-h-[85vh] object-contain p-4"
                                         />
+                                        <button
+                                            onClick={() => setShowImagePreview(false)}
+                                            className="absolute top-3 right-3 p-1.5 rounded-full bg-slate-800 hover:bg-slate-700 text-white border border-slate-600 transition-all"
+                                        >
+                                            <X className="w-4 h-4" />
+                                        </button>
                                     </div>
                                 </div>
                             )}
