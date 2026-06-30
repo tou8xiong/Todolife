@@ -195,6 +195,15 @@ export default function ImageToText() {
         }
     };
 
+    const clearImage = () => {
+        setSelectedImage(null);
+        setExtractedText("");
+        setEditedText("");
+        setIsEditing(false);
+        setImageName("");
+        if (fileInputRef.current) fileInputRef.current.value = "";
+    };
+
     const copyToClipboard = () => {
         const textToCopy = isEditing ? editedText : extractedText;
         if (textToCopy) {
@@ -565,7 +574,14 @@ export default function ImageToText() {
                                                     {extractedText.length.toLocaleString()} chars
                                                 </span>
                                             </div>
-                                            <div className="flex gap-2">
+                                            <div className="flex gap-2 items-center">
+                                                <button
+                                                    onClick={clearImage}
+                                                    className="p-1.5 rounded-xl bg-slate-100 dark:bg-slate-800/60 hover:bg-rose-50 dark:hover:bg-rose-900/30 border border-slate-200 dark:border-slate-700 text-slate-400 hover:text-rose-500 dark:hover:text-rose-400 transition-all"
+                                                    title="Close and upload new image"
+                                                >
+                                                    <X className="w-4 h-4" />
+                                                </button>
                                                 {!isEditing ? (
                                                     <>
                                                         <button
