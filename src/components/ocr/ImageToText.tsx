@@ -305,9 +305,6 @@ export default function ImageToText() {
                                                             <p className="text-xs text-slate-500 truncate">{lang.native}</p>
                                                         )}
                                                     </div>
-                                                    {lang.preferBest && (
-                                                        <span className="text-[9px] font-bold text-amber-600 dark:text-amber-300 bg-amber-500/10 border border-amber-400/30 px-1.5 py-0.5 rounded">BEST</span>
-                                                    )}
                                                 </button>
                                             );
                                         })}
@@ -514,20 +511,9 @@ export default function ImageToText() {
                                         )}
                                     </div>
                                     {isProcessing && (
-                                        <div className="space-y-2 p-4 rounded-2xl bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800">
-                                            <div className="flex items-center justify-between gap-2">
-                                                <div className="flex items-center gap-2 text-sky-600 dark:text-sky-300">
-                                                    <Loader2 className="w-4 h-4 animate-spin" />
-                                                    <span className="text-sm font-semibold">{progressLabel || "Processing"}</span>
-                                                </div>
-                                                <span className="text-sm font-mono text-slate-500 dark:text-slate-400">{progress}%</span>
-                                            </div>
-                                            <div className="w-full bg-slate-200 dark:bg-slate-800 rounded-full h-1.5 overflow-hidden">
-                                                <div
-                                                    className="bg-gradient-to-r from-sky-500 to-indigo-500 h-full transition-all duration-300"
-                                                    style={{ width: `${progress}%` }}
-                                                />
-                                            </div>
+                                        <div className="flex items-center gap-3 p-4 rounded-2xl bg-white dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800">
+                                            <Loader2 className="w-4 h-4 animate-spin text-sky-500 dark:text-sky-400 shrink-0" />
+                                            <span className="text-sm font-semibold text-sky-600 dark:text-sky-300">Extracting text with Gemini…</span>
                                         </div>
                                     )}
                                 </div>
