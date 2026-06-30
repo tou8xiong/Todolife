@@ -1,10 +1,8 @@
 "use client";
 import { useState, useRef, useEffect, useMemo } from "react";
-import Tesseract, { createWorker } from "tesseract.js";
 import {
     Upload, Image as ImageIcon, Copy, Trash2, ScanText, Loader2, CheckCircle,
-    Edit2, Save, History, X, ArrowLeft, Languages, ChevronDown, Check, Sparkles,
-    LayoutGrid, SlidersHorizontal,
+    Edit2, Save, History, X, ArrowLeft, Languages, ChevronDown, Check, Sparkles, LayoutGrid,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useLanguage } from "@/context/LanguageContext";
@@ -18,208 +16,49 @@ interface HistoryItem {
     langs?: string[];
 }
 
-// Page-segmentation modes Tesseract supports. AUTO is the right default for
-// any document with mixed images + text — it segments the page and ignores
-// non-text regions so photos don't get "read" as garbage glyphs.
-const LAYOUT_MODES: { code: string; name: string; hint: string; psm: string }[] = [
-    { code: 'auto', name: 'Auto (mixed layout)', hint: 'Best for documents with photos, columns, or headings', psm: '3' },
-    { code: 'block', name: 'Single block', hint: 'Plain paragraph, screenshot of text', psm: '6' },
-    { code: 'sparse', name: 'Sparse text', hint: 'Receipts, signs, scattered words', psm: '11' },
-    { code: 'line', name: 'Single line', hint: 'One row of text only', psm: '7' },
+const LAYOUT_MODES: { code: string; name: string; hint: string }[] = [
+    { code: 'auto', name: 'Auto (mixed layout)', hint: 'Best for documents with photos, columns, or headings' },
+    { code: 'block', name: 'Single block', hint: 'Plain paragraph, screenshot of text' },
+    { code: 'sparse', name: 'Sparse text', hint: 'Receipts, signs, scattered words' },
+    { code: 'line', name: 'Single line', hint: 'One row of text only' },
 ];
 
 interface LangEntry {
     code: string;
     name: string;
     native?: string;
-    // Scripts where tessdata_best gives a noticeably better result than the
-    // default fast pack — applies mainly to abugida/CJK scripts.
-    preferBest?: boolean;
 }
 
 const SUPPORTED_LANGUAGES: LangEntry[] = [
-    { code: 'eng', name: 'English', native: 'English' },
-    { code: 'lao', name: 'Lao', native: 'ລາວ', preferBest: true },
-    { code: 'tha', name: 'Thai', native: 'ไทย', preferBest: true },
-    { code: 'chi_sim', name: 'Chinese (Simplified)', native: '简体中文', preferBest: true },
-    { code: 'chi_tra', name: 'Chinese (Traditional)', native: '繁體中文', preferBest: true },
-    { code: 'jpn', name: 'Japanese', native: '日本語', preferBest: true },
-    { code: 'kor', name: 'Korean', native: '한국어', preferBest: true },
-    { code: 'vie', name: 'Vietnamese', native: 'Tiếng Việt' },
-    { code: 'fra', name: 'French', native: 'Français' },
-    { code: 'deu', name: 'German', native: 'Deutsch' },
-    { code: 'spa', name: 'Spanish', native: 'Español' },
+    { code: 'English', name: 'English', native: 'English' },
+    { code: 'Lao', name: 'Lao', native: 'ລາວ' },
+    { code: 'Thai', name: 'Thai', native: 'ไทย' },
+    { code: 'Chinese Simplified', name: 'Chinese (Simplified)', native: '简体中文' },
+    { code: 'Chinese Traditional', name: 'Chinese (Traditional)', native: '繁體中文' },
+    { code: 'Japanese', name: 'Japanese', native: '日本語' },
+    { code: 'Korean', name: 'Korean', native: '한국어' },
+    { code: 'Vietnamese', name: 'Vietnamese', native: 'Tiếng Việt' },
+    { code: 'French', name: 'French', native: 'Français' },
+    { code: 'German', name: 'German', native: 'Deutsch' },
+    { code: 'Spanish', name: 'Spanish', native: 'Español' },
 ];
-
-// tessdata_best gives much higher accuracy on Lao/Thai/CJK at the cost of a
-// larger download. Plain "fast" data is fine for Latin-script languages.
-const TESSDATA_BEST = 'https://tessdata.projectnaptha.com/4.0.0_best';
-const TESSDATA_FAST = 'https://tessdata.projectnaptha.com/4.0.0';
-
-function pickLangPath(codes: string[]): string {
-    const needsBest = codes.some(
-        (c) => SUPPORTED_LANGUAGES.find((l) => l.code === c)?.preferBest
-    );
-    return needsBest ? TESSDATA_BEST : TESSDATA_FAST;
-}
-
-// When OCR runs over a document that mixes real text with photographs, the
-// photo regions come back as low-confidence blocks full of stray punctuation
-// and isolated glyphs. We drop those by looking at block/line confidence and
-// by a cheap "alphanumeric density" check on the text itself.
-const MIN_BLOCK_CONFIDENCE = 15;
-const MIN_LINE_CONFIDENCE = 18;
-const MIN_ALPHANUMERIC_RATIO = 0.10;
-
-function isMostlyJunk(text: string): boolean {
-    const trimmed = text.trim();
-    if (trimmed.length === 0) return true;
-    // Lines that are just symbols/spaces are junk regardless of confidence.
-    // Use Unicode \p{L} + \p{N} so this works for Lao/Thai/CJK, not just Latin.
-    const letters = trimmed.match(/[\p{L}\p{N}]/gu)?.length ?? 0;
-    return letters / trimmed.length < MIN_ALPHANUMERIC_RATIO;
-}
-
-function cleanRecognitionOutput(blocks: Tesseract.Block[] | null, fallback: string): string {
-    if (!blocks || blocks.length === 0) return fallback;
-    const kept: string[] = [];
-    for (const block of blocks) {
-        if (!block || (block.confidence ?? 0) < MIN_BLOCK_CONFIDENCE) continue;
-        const paragraphTexts: string[] = [];
-        for (const paragraph of block.paragraphs ?? []) {
-            const lines: string[] = [];
-            for (const line of paragraph.lines ?? []) {
-                const lineText = (line.text ?? "").trim();
-                if (!lineText) continue;
-                if ((line.confidence ?? 0) < MIN_LINE_CONFIDENCE) continue;
-                if (isMostlyJunk(lineText)) continue;
-                lines.push(lineText);
-            }
-            if (lines.length > 0) paragraphTexts.push(lines.join("\n"));
-        }
-        if (paragraphTexts.length > 0) kept.push(paragraphTexts.join("\n\n"));
-    }
-    return kept.join("\n\n").trim();
-}
-
-// Reconstruct text layout from bounding boxes so the output mirrors the
-// spatial arrangement in the image: indentation, blank lines between
-// paragraphs, and side-by-side columns are all approximated with spaces/newlines.
-function reconstructLayout(blocks: Tesseract.Block[] | null, imageWidth: number): string {
-    if (!blocks || blocks.length === 0) return "";
-
-    type LayoutLine = { y0: number; y1: number; x0: number; text: string };
-    const allLines: LayoutLine[] = [];
-
-    for (const block of blocks) {
-        if (!block || (block.confidence ?? 0) < MIN_BLOCK_CONFIDENCE) continue;
-        for (const paragraph of block.paragraphs ?? []) {
-            for (const line of paragraph.lines ?? []) {
-                const lineText = (line.text ?? "").replace(/\n$/, "").trim();
-                if (!lineText) continue;
-                if ((line.confidence ?? 0) < MIN_LINE_CONFIDENCE) continue;
-                if (isMostlyJunk(lineText)) continue;
-                const b = (line as any).bbox;
-                if (!b) continue;
-                allLines.push({ y0: b.y0, y1: b.y1, x0: b.x0, text: lineText });
-            }
-        }
-    }
-
-    if (allLines.length === 0) return "";
-
-    // Sort top-to-bottom, then left-to-right for same y-band items.
-    allLines.sort((a, b) => a.y0 - b.y0 || a.x0 - b.x0);
-
-    const avgLineH = allLines.reduce((s, l) => s + (l.y1 - l.y0), 0) / allLines.length;
-
-    // Detect multi-column: if two lines have overlapping y-bands, they're side by side.
-    // We group lines into "rows" where y-bands overlap.
-    const rows: LayoutLine[][] = [];
-    for (const line of allLines) {
-        const last = rows[rows.length - 1];
-        const overlap = last && last.some((l) => l.y0 < line.y1 && line.y0 < l.y1);
-        if (overlap) {
-            last.push(line);
-        } else {
-            rows.push([line]);
-        }
-    }
-
-    const result: string[] = [];
-    let prevRowBottom = -1;
-
-    for (const row of rows) {
-        // Add blank line when there's a vertical gap bigger than 1.5× line height.
-        if (prevRowBottom >= 0) {
-            const gap = row[0].y0 - prevRowBottom;
-            if (gap > avgLineH * 1.5) result.push("");
-        }
-
-        if (row.length === 1) {
-            // Single column line — add left-margin indent.
-            const indentRatio = Math.min(row[0].x0 / Math.max(imageWidth, 1), 0.5);
-            const spaces = " ".repeat(Math.round(indentRatio * 10));
-            result.push(spaces + row[0].text);
-        } else {
-            // Multi-column row — sort by x and join with a tab separator.
-            row.sort((a, b) => a.x0 - b.x0);
-            result.push(row.map((l) => l.text).join("    "));
-        }
-
-        prevRowBottom = Math.max(...row.map((l) => l.y1));
-    }
-
-    return result.join("\n").trim();
-}
-
-const MIN_OCR_WIDTH = 1200;
-
-function upscaleForOcr(dataUrl: string): Promise<string> {
-    return new Promise((resolve) => {
-        const img = new Image();
-        img.onload = () => {
-            if (img.naturalWidth >= MIN_OCR_WIDTH) {
-                resolve(dataUrl);
-                return;
-            }
-            // Scale up enough so the shortest side is at least MIN_OCR_WIDTH.
-            const scale = Math.ceil(MIN_OCR_WIDTH / img.naturalWidth);
-            const w = img.naturalWidth * scale;
-            const h = img.naturalHeight * scale;
-            const canvas = document.createElement('canvas');
-            canvas.width = w;
-            canvas.height = h;
-            const ctx = canvas.getContext('2d');
-            if (!ctx) { resolve(dataUrl); return; }
-            ctx.imageSmoothingEnabled = true;
-            ctx.imageSmoothingQuality = 'high';
-            ctx.drawImage(img, 0, 0, w, h);
-            resolve(canvas.toDataURL('image/png'));
-        };
-        img.onerror = () => resolve(dataUrl);
-        img.src = dataUrl;
-    });
-}
 
 export default function ImageToText() {
     const { t } = useLanguage();
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
+    const [imageMimeType, setImageMimeType] = useState<string>("image/jpeg");
     const [extractedText, setExtractedText] = useState<string>("");
     const [isProcessing, setIsProcessing] = useState(false);
-    const [progress, setProgress] = useState(0);
-    const [progressLabel, setProgressLabel] = useState<string>("");
     const [isEditing, setIsEditing] = useState(false);
     const [editedText, setEditedText] = useState<string>("");
     const [history, setHistory] = useState<HistoryItem[]>([]);
     const [showHistory, setShowHistory] = useState(false);
     const [imageName, setImageName] = useState<string>("");
     const [showImagePreview, setShowImagePreview] = useState(false);
-    const [selectedLangs, setSelectedLangs] = useState<string[]>(['eng']);
+    const [selectedLangs, setSelectedLangs] = useState<string[]>(['English']);
     const [langPickerOpen, setLangPickerOpen] = useState(false);
     const [layoutMode, setLayoutMode] = useState<string>('auto');
     const [layoutPickerOpen, setLayoutPickerOpen] = useState(false);
-    const [filterNoise, setFilterNoise] = useState<boolean>(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const langPickerRef = useRef<HTMLDivElement>(null);
     const layoutPickerRef = useRef<HTMLDivElement>(null);
@@ -240,14 +79,10 @@ export default function ImageToText() {
         if (savedLayout && LAYOUT_MODES.some((m) => m.code === savedLayout)) {
             setLayoutMode(savedLayout);
         }
-        const savedFilter = localStorage.getItem('ocr-filter-noise');
-        if (savedFilter !== null) setFilterNoise(savedFilter === '1');
     }, []);
 
     useEffect(() => {
-        if (history.length > 0) {
-            localStorage.setItem('ocr-history', JSON.stringify(history));
-        }
+        if (history.length > 0) localStorage.setItem('ocr-history', JSON.stringify(history));
     }, [history]);
 
     useEffect(() => {
@@ -259,16 +94,9 @@ export default function ImageToText() {
     }, [layoutMode]);
 
     useEffect(() => {
-        localStorage.setItem('ocr-filter-noise', filterNoise ? '1' : '0');
-    }, [filterNoise]);
-
-    // Close the language popover when clicking outside.
-    useEffect(() => {
         if (!langPickerOpen) return;
         const onDown = (e: MouseEvent) => {
-            if (langPickerRef.current && !langPickerRef.current.contains(e.target as Node)) {
-                setLangPickerOpen(false);
-            }
+            if (langPickerRef.current && !langPickerRef.current.contains(e.target as Node)) setLangPickerOpen(false);
         };
         window.addEventListener('mousedown', onDown);
         return () => window.removeEventListener('mousedown', onDown);
@@ -277,9 +105,7 @@ export default function ImageToText() {
     useEffect(() => {
         if (!layoutPickerOpen) return;
         const onDown = (e: MouseEvent) => {
-            if (layoutPickerRef.current && !layoutPickerRef.current.contains(e.target as Node)) {
-                setLayoutPickerOpen(false);
-            }
+            if (layoutPickerRef.current && !layoutPickerRef.current.contains(e.target as Node)) setLayoutPickerOpen(false);
         };
         window.addEventListener('mousedown', onDown);
         return () => window.removeEventListener('mousedown', onDown);
@@ -287,9 +113,7 @@ export default function ImageToText() {
 
     const toggleLang = (code: string) => {
         setSelectedLangs((prev) => {
-            const has = prev.includes(code);
-            if (has) {
-                // Don't allow an empty selection — always keep at least one.
+            if (prev.includes(code)) {
                 if (prev.length === 1) return prev;
                 return prev.filter((c) => c !== code);
             }
@@ -300,8 +124,7 @@ export default function ImageToText() {
     const selectedLangLabel = useMemo(() => {
         if (selectedLangs.length === 0) return 'English';
         if (selectedLangs.length === 1) {
-            const entry = SUPPORTED_LANGUAGES.find((l) => l.code === selectedLangs[0]);
-            return entry?.name ?? 'English';
+            return SUPPORTED_LANGUAGES.find((l) => l.code === selectedLangs[0])?.name ?? 'English';
         }
         return `${selectedLangs.length} languages`;
     }, [selectedLangs]);
@@ -314,118 +137,61 @@ export default function ImageToText() {
             return;
         }
         setImageName(file.name);
+        setImageMimeType(file.type || "image/jpeg");
         const reader = new FileReader();
         reader.onload = (e) => {
             const imageData = e.target?.result as string;
             setSelectedImage(imageData);
             setExtractedText("");
-            setProgress(0);
             setIsEditing(false);
-            extractTextFromImage(imageData, file.name);
+            extractTextFromImage(imageData, file.name, file.type || "image/jpeg");
         };
         reader.readAsDataURL(file);
     };
 
     const retryExtraction = () => {
         if (!selectedImage) return;
-        extractTextFromImage(selectedImage, imageName);
+        extractTextFromImage(selectedImage, imageName, imageMimeType);
     };
 
-    const extractTextFromImage = async (imageData: string, fileName: string) => {
+    const extractTextFromImage = async (imageData: string, fileName: string, mimeType: string) => {
         setIsProcessing(true);
-        setProgress(0);
-        setProgressLabel("Loading language data");
-
-        // Auto-include English alongside other scripts: most real-world docs
-        // contain mixed Latin tokens (numbers, names, URLs) and pure-script
-        // recognition tends to miss them.
-        const langs = Array.from(new Set(
-            selectedLangs.length === 0 ? ['eng'] : selectedLangs.includes('eng') ? selectedLangs : [...selectedLangs, 'eng']
-        ));
-        const langPath = pickLangPath(langs);
-        const psm = LAYOUT_MODES.find((m) => m.code === layoutMode)?.psm ?? '3';
-
-        let worker: Tesseract.Worker | null = null;
         try {
-            worker = await createWorker(langs, 1, {
-                langPath,
-                logger: (m: { status: string; progress: number }) => {
-                    if (m.status === 'recognizing text') {
-                        setProgress(Math.round(m.progress * 100));
-                        setProgressLabel("Extracting text");
-                    } else if (m.status === 'loading tesseract core' || m.status === 'initializing tesseract') {
-                        setProgressLabel("Loading engine");
-                    } else if (m.status === 'loading language traineddata' || m.status === 'loaded language traineddata') {
-                        setProgressLabel(`Loading ${langs.join(' + ')} data`);
-                    } else if (m.status === 'initializing api' || m.status === 'initialized api') {
-                        setProgressLabel("Preparing");
-                    }
-                },
+            const res = await fetch('/api/ocr', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    imageData,
+                    mimeType,
+                    langs: selectedLangs,
+                    layoutMode,
+                }),
             });
 
-            // PSM controls page segmentation. AUTO (3) makes Tesseract detect
-            // text regions and skip non-text — critical for documents with
-            // photos, otherwise images get "read" as garbage characters.
-            await worker.setParameters({
-                tessedit_pageseg_mode: psm as Tesseract.PSM,
-            });
-
-            const upscaled = await upscaleForOcr(imageData);
-
-            // Measure the upscaled image dimensions so reconstructLayout can
-            // calculate relative x-positions correctly.
-            const imgDimensions = await new Promise<{ w: number; h: number }>((res) => {
-                const tmp = new Image();
-                tmp.onload = () => res({ w: tmp.naturalWidth, h: tmp.naturalHeight });
-                tmp.onerror = () => res({ w: 1200, h: 800 });
-                tmp.src = upscaled;
-            });
-
-            const result = await worker.recognize(upscaled, {}, { text: true, blocks: true });
-            const rawText = result.data.text.trim();
-            const blocks = result.data.blocks ?? null;
-
-            // Prefer layout-preserving reconstruction (uses bbox positions to
-            // reproduce indentation, columns, and paragraph spacing).
-            // Fall back to noise-cleaned text, then raw text.
-            const layoutText = reconstructLayout(blocks, imgDimensions.w);
-            const cleanedText = filterNoise
-                ? cleanRecognitionOutput(blocks, rawText)
-                : rawText;
-            const text = layoutText || cleanedText || rawText;
-
-            if (!text || text.length === 0) {
-                toast.error(
-                    "No text detected. Try selecting more languages, switching layout mode, or use a clearer image.",
-                    { duration: 5000 }
-                );
-                setIsProcessing(false);
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                if (res.status === 422) {
+                    toast.error("No text detected. Try a clearer image.", { duration: 5000 });
+                } else {
+                    toast.error((err as any).error || t.imageToText?.status?.error || "Failed to extract text");
+                }
                 return;
             }
 
+            const { text } = await res.json();
+
             setExtractedText(text);
             setEditedText(text);
-
-            const newHistoryItem: HistoryItem = {
-                id: Date.now().toString(),
-                text,
-                timestamp: Date.now(),
-                imageName: fileName,
-                langs,
-            };
-            setHistory((prev) => [newHistoryItem, ...prev]);
-
+            setHistory((prev) => [
+                { id: Date.now().toString(), text, timestamp: Date.now(), imageName: fileName, langs: selectedLangs },
+                ...prev,
+            ]);
             toast.success(t.imageToText?.status?.success || "Text extracted successfully!");
         } catch (error) {
             console.error("OCR Error:", error);
             toast.error(t.imageToText?.status?.error || "Failed to extract text from image");
         } finally {
-            if (worker) {
-                try { await worker.terminate(); } catch { /* ignore */ }
-            }
             setIsProcessing(false);
-            setProgress(0);
-            setProgressLabel("");
         }
     };
 
@@ -592,19 +358,6 @@ export default function ImageToText() {
                                     </div>
                                 </div>
                             )}
-                        </div>
-
-                        {/* Noise filter toggle */}
-                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 shadow-sm">
-                            <span className="text-sm text-slate-600 dark:text-slate-300 font-medium">Noise Filter:</span>
-                            <button
-                                onClick={() => setFilterNoise((v) => !v)}
-                                title="Drop low-confidence text from photo regions"
-                                className={`relative inline-flex w-10 h-5 shrink-0 rounded-full transition-colors duration-200 focus:outline-none ${filterNoise ? "bg-sky-500" : "bg-slate-300 dark:bg-slate-600"}`}
-                            >
-                                <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform duration-200 ${filterNoise ? "translate-x-5" : "translate-x-0"}`} />
-                            </button>
-                            <span className="text-xs font-bold text-slate-500 dark:text-slate-400">{filterNoise ? "ON" : "OFF"}</span>
                         </div>
 
                         {/* History button */}
