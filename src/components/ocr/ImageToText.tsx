@@ -66,7 +66,15 @@ export default function ImageToText() {
     useEffect(() => {
         const savedHistory = localStorage.getItem('ocr-history');
         if (savedHistory) {
-            try { setHistory(JSON.parse(savedHistory)); } catch { /* ignore */ }
+            try {
+                const TWO_WEEKS = 14 * 24 * 60 * 60 * 1000;
+                const parsed: HistoryItem[] = JSON.parse(savedHistory);
+                const recent = parsed.filter((item) => Date.now() - item.timestamp < TWO_WEEKS);
+                setHistory(recent);
+                if (recent.length !== parsed.length) {
+                    localStorage.setItem('ocr-history', JSON.stringify(recent));
+                }
+            } catch { /* ignore */ }
         }
         const savedLangs = localStorage.getItem('ocr-langs');
         if (savedLangs) {
