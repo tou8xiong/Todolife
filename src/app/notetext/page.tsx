@@ -1335,7 +1335,7 @@ export default function NoteTextPage() {
                           <div
                             key={doc.id}
                             onClick={() => handleOpen(doc)}
-                            className={`group relative p-5 rounded-2xl bg-white dark:bg-white/5 backdrop-blur-md border border-slate-200 dark:${color.border} hover:shadow-xl hover:scale-[1.02] transition-all duration-200 cursor-pointer shadow-sm dark:shadow-none`}
+                            className={`group relative p-5 rounded-md bg-white dark:bg-white/5 backdrop-blur-md border border-slate-200 dark:${color.border} hover:shadow-xl hover:scale-[1.02] transition-all duration-200 cursor-pointer shadow-sm dark:shadow-none`}
                           >
                             <div className="flex items-start gap-3">
                               <div className={`p-2 rounded-xl bg-slate-100 dark:bg-white/10 border border-slate-200 dark:border-white/10 shadow-sm`}>
